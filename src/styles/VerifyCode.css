@@ -1,0 +1,72 @@
+/* src/styles/VerifyCode.css */
+.verify-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: transparent;
+  }
+  
+  .verify-container {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  
+  .verify-container h2 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+  }
+  
+  .verify-container p {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 20px;
+  }
+  
+  .verify-form {
+    width: 100%;
+  }
+  
+  .verification-code {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+  }
+  
+  .verification-code input {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    font-size: 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin: 0 5px;
+  }
+  
+  .verify-form button {
+    width: 100%;
+    padding: 12px;
+    background: #AB0831;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .verify-form button:hover {
+    background: #0056b3;
+  }
+  
+  .error-message {
+    color: red;
+    font-size: 0.9rem;
+    margin-top: 10px;
+  }
+  
