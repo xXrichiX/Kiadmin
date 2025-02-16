@@ -31,6 +31,7 @@ const HomePage = () => {
           <li onClick={() => navigate("/reportes")}>Categorías</li>
           <li onClick={() => navigate("/categorias")}>productos</li>
           <li onClick={() => navigate("/proveedores")}>órdenes</li>
+          <li onClick={() => navigate("/proveedores")}>Restaurante</li>
         </ul>
       </div>
 
