@@ -1,45 +1,109 @@
-/* src/styles/HomePage.css */
+/* Estilos generales */
 .home-page {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background-color: #f0f0f0;
-  }
-  
-  .home-container {
-    background: rgba(255, 255, 255, 0.9);
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 100%;
-    max-width: 400px;
-  }
-  
-  .home-container h1 {
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-  }
-  
-  .home-container p {
-    font-size: 1.2rem;
-    margin-bottom: 30px;
-  }
-  
-  .logout-button {
-    width: 100%;
-    padding: 12px;
-    background: #AB0831;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  
-  .logout-button:hover {
-    background: #0056b3;
-  }
-  
+  display: flex;
+  height: 100vh;
+}
+
+/* Menú Vertical */
+.slider-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 100%;
+  background-color: #333;
+  color: white;
+  padding-top: 80px; /* Ajuste para que el menú no se solape con la barra superior */
+  transition: transform 0.3s ease;
+  transform: translateX(-250px); /* El menú está fuera de la pantalla por defecto */
+}
+
+.slider-menu.open {
+  transform: translateX(0); /* El menú se desliza hacia la izquierda */
+}
+
+.slider-menu ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.slider-menu li {
+  padding: 15px;
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid #444;
+}
+
+.slider-menu li:hover {
+  background-color: #575757;
+}
+
+.slider-menu li:active {
+  background-color: #333;
+}
+
+/* Menú Horizontal */
+.top-menu {
+  display: flex;
+  justify-content: flex-end;  /* Alinea todos los botones al extremo derecho */
+  align-items: center;
+  background-color: #333;
+  color: white;
+  padding: 10px 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.top-menu button {
+  color: white;
+  background-color: #AB0831;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-left: 10px; /* Espacio entre los botones */
+}
+
+.top-menu button:hover {
+  background-color: #0b7dda;
+}
+
+/* Estilo para el botón de perfil */
+.top-menu .profile-button {
+  background-color: #AB0831; /* Azul para el botón de perfil */
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.top-menu .profile-button:hover {
+  background-color: #0b7dda; /* Efecto hover para el botón de perfil */
+}
+
+/* Área de contenido */
+.content-area {
+  transition: margin-left 0.3s ease;
+  margin-left: 0;
+  padding: 60px 20px 20px 20px; /* Ajuste para espacio por el menú superior */
+  width: 100%;
+}
+
+.content-area.menu-open {
+  margin-left: 250px; /* Da espacio para el menú cuando está abierto */
+}
+
+.content {
+  padding: 20px;
+}
+
+.content h1 {
+  margin-bottom: 20px;
+}
+
+.content p {
+  font-size: 18px;
+}
