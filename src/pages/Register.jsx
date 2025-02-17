@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // Usamos useNavigate para redirigir
+import Cookies from "js-cookie"; // 👈 Importar librería para cookies
 import "../styles/Register.css"; // Importa el CSS
 
 function Register() {
@@ -17,16 +18,43 @@ function Register() {
     navigate("/login");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => { // 👈 Hacer la función asíncrona
     e.preventDefault();
-    // Validación para asegurar que las contraseñas coinciden
+    
     if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden.");
       return;
     }
 
-    // Aquí se puede agregar la lógica para registrar al usuario
-    console.log("Usuario registrado", { name, lastName, phone, birthDate, email, password });
+    try {
+      const response = await fetch("https://orderandout.onrender.com/api/intern/admins/start-register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName: name,
+          lastName: lastName,
+          phone: phone.toString(), // Convertir a string
+          birthDate,
+          email,
+          password
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || "Error en el registro");
+      }
+
+      // Guardar tempId en cookies
+      Cookies.set("tempId", data.tempId, { expires: 1 }); // 👈 Expira en 1 día
+      navigate("/verify-code", { state: { tempId: data.tempId } }); // 👈 Redirigir con estado
+
+    } catch (err) {
+      setError(err.message || "Error al registrar usuario");
+    }
   };
 
   return (

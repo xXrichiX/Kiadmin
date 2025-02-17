@@ -1,22 +1,47 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // Usamos useNavigate para redirigir
+import Cookies from "js-cookie";
 import "../styles/Login.css"; // Importa el CSS
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   // Función para manejar el submit del formulario
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    try {
+      const response = await fetch("https://orderandout.onrender.com/api/intern/admins/login/admin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password
+        }),
+      });
 
-    // Aquí se puede agregar la lógica para validar las credenciales
-    if (email === "test@example.com" && password === "password123") {
-      // Redirigir a la página principal si las credenciales son correctas
-      navigate("/home");
-    } else {
-      alert("Credenciales incorrectas");
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || "Error de autenticación");
+      }
+
+      // Limpiar tempId y guardar nuevo token
+      Cookies.remove("tempId"); // 👈 Limpiar tempId anterior
+      Cookies.set("authToken", data.token, { 
+        expires: 1,
+        secure: true,
+        sameSite: 'strict'
+      });
+      
+      navigate("/home"); // 👈 Redirigir a homePage
+
+    } catch (err) {
+      setError(err.message || "Error al iniciar sesión");
     }
   };
 
