@@ -16,14 +16,24 @@ const Profile = () => {
     <div className="profile-container">
       <div className="profile-card">
         <div className="profile-header">
-          <img src={user.profilePicture} alt="Perfil" className="profile-pic" />
+          <img
+            src={user.profilePicture}
+            alt="Perfil"
+            className="profile-pic"
+          />
           <h2>{user.name}</h2>
           <p className="profile-email">{user.email}</p>
         </div>
         <div className="profile-details">
-          <p><strong>Teléfono:</strong> {user.phone}</p>
-          <p><strong>Fecha de Nacimiento:</strong> {user.birthdate}</p>
-          <p><strong>Restaurante:</strong> {user.restaurant}</p>
+          <p>
+            <strong>Teléfono:</strong> {user.phone}
+          </p>
+          <p>
+            <strong>Fecha de Nacimiento:</strong> {user.birthdate}
+          </p>
+          <p>
+            <strong>Restaurante:</strong> {user.restaurant}
+          </p>
         </div>
         <button className="edit-profile-btn">Editar Perfil</button>
       </div>

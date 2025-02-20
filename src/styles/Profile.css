@@ -1,67 +1,125 @@
+/* Estilo general para el contenedor */
 .profile-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    background-color: #f4f4f4;
-  }
-  
-  .profile-card {
-    background: white;
+    min-height: 100vh; /* Asegura que ocupe toda la pantalla */
+    background-color: #f9f9f9;
     padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 320px;
   }
   
+  /* Estilo para la tarjeta de perfil */
+  .profile-card {
+    background: #fff;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 450px; /* Aumentado el tamaño */
+    transition: all 0.3s ease;
+    border: 1px solid #eee; /* Borde sutil */
+  }
+  
+  /* Efecto hover en la tarjeta de perfil */
+  .profile-card:hover {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    transform: translateY(-5px); /* Sutil efecto de elevación */
+  }
+  
+  /* Estilo para el encabezado de la tarjeta de perfil */
   .profile-header {
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-bottom: 20px;
   }
   
+  /* Estilo para la imagen de perfil */
   .profile-pic {
-    width: 100px;
-    height: 100px;
+    width: 160px; /* Tamaño de imagen más grande */
+    height: 160px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid #AB0831;
+    border: 5px solid #AB0831;
+    margin-bottom: 15px;
   }
   
+  /* Estilo para el nombre y correo del usuario */
   .profile-header h2 {
-    margin: 10px 0 5px;
-    font-size: 22px;
+    margin: 5px 0;
+    font-size: 28px; /* Aumentado el tamaño de fuente */
+    color: #333;
+    font-weight: 600;
   }
   
   .profile-email {
-    color: gray;
-    font-size: 14px;
+    color: #777;
+    font-size: 20px; /* Aumentado el tamaño de la fuente */
   }
   
+  /* Estilo para los detalles del perfil */
   .profile-details {
-    margin-top: 15px;
     text-align: left;
+    margin-top: 20px;
+    color: #555;
   }
   
   .profile-details p {
-    margin: 5px 0;
-    font-size: 16px;
+    margin: 10px 0;
+    font-size: 20px; /* Aumentado el tamaño de la fuente */
   }
   
+  .profile-details strong {
+    font-weight: 600;
+    color: #333;
+  }
+  
+  /* Estilo para el botón de editar perfil */
   .edit-profile-btn {
-    margin-top: 15px;
+    margin-top: 25px;
     background-color: #AB0831;
     color: white;
     border: none;
-    padding: 10px;
-    border-radius: 6px;
+    padding: 15px; /* Aumentado el tamaño del botón */
+    border-radius: 8px;
     cursor: pointer;
     width: 100%;
-    font-size: 16px;
+    font-size: 18px; /* Aumentado el tamaño de la fuente */
+    transition: background-color 0.3s ease;
+    font-weight: 600;
   }
   
+  /* Efecto hover para el botón de editar */
   .edit-profile-btn:hover {
     background-color: #8e0628;
+  }
+  
+  /* Responsividad para pantallas más pequeñas */
+  @media (max-width: 768px) {
+    .profile-card {
+      width: 90%;
+      padding: 30px;
+    }
+  
+    .profile-pic {
+      width: 120px;
+      height: 120px;
+    }
+  
+    .profile-header h2 {
+      font-size: 24px;
+    }
+  
+    .profile-email {
+      font-size: 18px;
+    }
+  
+    .profile-details p {
+      font-size: 18px;
+    }
+  
+    .edit-profile-btn {
+      font-size: 16px;
+    }
   }
   

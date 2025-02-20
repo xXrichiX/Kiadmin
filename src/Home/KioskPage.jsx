@@ -72,7 +72,6 @@ const KiosksPage = () => {
         throw new Error(data.message || "Error al crear kiosko");
       }
 
-      // Actualizar lista de kioskos
       setKiosks([...kiosks, data]);
       setShowForm(false);
       setPassword("");
@@ -83,11 +82,11 @@ const KiosksPage = () => {
     }
   };
 
-  if (loading) return <div>Cargando...</div>;
+  if (loading) return <div className="loading-message">Cargando...</div>;
 
   return (
     <div className="kiosks-page">
-      <h2>Gestión de Kioskos</h2>
+      <h2 className="page-title">Gestión de Kioskos</h2>
       
       {error && <p className="error-message">{error}</p>}
       
@@ -100,14 +99,18 @@ const KiosksPage = () => {
 
       {showForm && (
         <form onSubmit={handleCreateKiosk} className="kiosk-form">
+          <label>Tipo de Pago:</label>
           <select
             value={paymentType}
             onChange={(e) => setPaymentType(e.target.value)}
+            className="select-input"
           >
             <option value="card">Tarjeta</option>
             <option value="cash">Efectivo</option>
             <option value="both">Ambos</option>
           </select>
+
+          <label>Contraseña del Kiosko:</label>
           <input
             type="password"
             placeholder="Contraseña del kiosko"
@@ -115,10 +118,12 @@ const KiosksPage = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength="8"
+            className="text-input"
           />
+          
           <div className="form-buttons">
-            <button type="submit">Crear</button>
-            <button type="button" onClick={() => setShowForm(false)}>
+            <button type="submit" className="submit-btn">Crear</button>
+            <button type="button" onClick={() => setShowForm(false)} className="cancel-btn">
               Cancelar
             </button>
           </div>
@@ -129,9 +134,9 @@ const KiosksPage = () => {
         {kiosks.length > 0 ? (
           kiosks.map((kiosk) => (
             <div key={kiosk._id} className="kiosk-card">
-              <h3>Kiosko {kiosk.paymentType}</h3>
-              <p>ID: {kiosk._id}</p>
-              <p>Creado: {new Date(kiosk.createdAt).toLocaleDateString()}</p>
+              <h3 className="kiosk-title">Kiosko {kiosk.paymentType}</h3>
+              <p className="kiosk-id">ID: {kiosk._id}</p>
+              <p className="kiosk-date">Creado: {new Date(kiosk.createdAt).toLocaleDateString()}</p>
             </div>
           ))
         ) : (
@@ -142,4 +147,4 @@ const KiosksPage = () => {
   );
 };
 
-export default KiosksPage; 
+export default KiosksPage;

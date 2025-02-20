@@ -108,11 +108,11 @@ const ProductsPage = () => {
     });
   };
 
-  if (loading) return <div>Cargando...</div>;
+  if (loading) return <div className="loading-message">Cargando...</div>;
 
   return (
     <div className="products-page">
-      <h2>Gestión de Productos</h2>
+      <h2 className="page-title">Gestión de Productos</h2>
       
       {error && <p className="error-message">{error}</p>}
       
@@ -125,6 +125,7 @@ const ProductsPage = () => {
 
       {showForm && (
         <form onSubmit={handleCreateProduct} className="product-form">
+          <label>Nombre del Producto:</label>
           <input
             type="text"
             name="name"
@@ -133,6 +134,8 @@ const ProductsPage = () => {
             onChange={handleChange}
             required
           />
+
+          <label>Descripción:</label>
           <textarea
             name="description"
             placeholder="Descripción"
@@ -140,6 +143,8 @@ const ProductsPage = () => {
             onChange={handleChange}
             required
           />
+
+          <label>URL de Imagen:</label>
           <input
             type="url"
             name="image"
@@ -148,6 +153,8 @@ const ProductsPage = () => {
             onChange={handleChange}
             required
           />
+
+          <label>Precio de Costo:</label>
           <input
             type="number"
             step="0.01"
@@ -157,6 +164,8 @@ const ProductsPage = () => {
             onChange={handleChange}
             required
           />
+
+          <label>Precio de Venta:</label>
           <input
             type="number"
             step="0.01"
@@ -166,6 +175,8 @@ const ProductsPage = () => {
             onChange={handleChange}
             required
           />
+
+          <label>Categoría:</label>
           <select
             name="category"
             value={formData.category}
@@ -179,16 +190,19 @@ const ProductsPage = () => {
               </option>
             ))}
           </select>
+
+          <label>Ingredientes (separados por comas):</label>
           <input
             type="text"
             name="ingredients"
-            placeholder="Ingredientes (separados por comas)"
+            placeholder="Ingredientes"
             value={formData.ingredients}
             onChange={handleChange}
           />
+
           <div className="form-buttons">
-            <button type="submit">Crear</button>
-            <button type="button" onClick={() => setShowForm(false)}>
+            <button type="submit" className="submit-btn">Crear</button>
+            <button type="button" onClick={() => setShowForm(false)} className="cancel-btn">
               Cancelar
             </button>
           </div>
@@ -200,8 +214,8 @@ const ProductsPage = () => {
           products.map(product => (
             <div key={product._id} className="product-card">
               <img src={product.image} alt={product.name} className="product-image" />
-              <h3>{product.name}</h3>
-              <p>{product.description}</p>
+              <h3 className="product-name">{product.name}</h3>
+              <p className="product-description">{product.description}</p>
               <div className="product-details">
                 <p>💰 Costo: ${product.costPrice}</p>
                 <p>🏷 Venta: ${product.salePrice}</p>
@@ -221,4 +235,4 @@ const ProductsPage = () => {
   );
 };
 
-export default ProductsPage; 
+export default ProductsPage;

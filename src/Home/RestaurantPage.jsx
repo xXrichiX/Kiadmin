@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
+import "../styles/RestaurantPage.css";
 
 const RestaurantManagement = () => {
   const [hasRestaurant, setHasRestaurant] = useState(false);
@@ -112,67 +113,74 @@ const RestaurantManagement = () => {
 
   return (
     <div className="restaurant-details">
-      {!hasRestaurant ? (
-        <div className="restaurant-prompt">
-          {error && <p className="error-message">{error}</p>}
-          {!showForm ? (
-            <button onClick={handleCreateClick} className="create-restaurant-btn">
-              Comenzar restaurante
-            </button>
-          ) : (
-            <form onSubmit={handleCreateRestaurant}>
-              <input
-                type="text"
-                placeholder="Nombre del restaurante"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-              <input
-                type="url"
-                placeholder="URL de la imagen"
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-                required
-              />
-              <input
-                type="text"
-                placeholder="País"
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-                required
-              />
-              <input
-                type="text"
-                placeholder="Ciudad"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                required
-              />
-              <input
-                type="text"
-                placeholder="Dirección"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                required
-              />
-              <input
-                type="text"
-                placeholder="Código Postal"
-                value={postalCode}
-                onChange={(e) => setPostalCode(e.target.value)}
-                required
-              />
-              <button type="submit">Crear Restaurante</button>
-            </form>
-          )}
-        </div>
+      {loading ? (
+        <p>Cargando...</p>
       ) : (
-        <div>
-          <h3>{restaurant.name}</h3>
-          <img src={restaurant.image} alt="Restaurante" className="restaurant-image" />
-          <p>{restaurant.address}, {restaurant.city}</p>
-        </div>
+        !hasRestaurant ? (
+          <div className="restaurant-prompt">
+            {error && <p className="error-message">{error}</p>}
+            {!showForm ? (
+              <button onClick={handleCreateClick} className="create-restaurant-btn">
+                Comenzar restaurante
+              </button>
+            ) : (
+              <form onSubmit={handleCreateRestaurant} className="restaurant-form">
+                <input
+                  type="text"
+                  placeholder="Nombre del restaurante"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+                <input
+                  type="url"
+                  placeholder="URL de la imagen"
+                  value={image}
+                  onChange={(e) => setImage(e.target.value)}
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="País"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Ciudad"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Dirección"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Código Postal"
+                  value={postalCode}
+                  onChange={(e) => setPostalCode(e.target.value)}
+                  required
+                />
+                <button type="submit" className="submit-btn">Crear Restaurante</button>
+              </form>
+            )}
+          </div>
+        ) : (
+          <div>
+            <h3>{restaurant.name}</h3>
+            <img src={restaurant.image} alt="Restaurante" className="restaurant-image" />
+            <p>{restaurant.address}, {restaurant.city}</p>
+            <button onClick={() => navigate(`/restaurant/${restaurant.name}`)} className="manage-btn">
+              Gestionar Restaurante
+            </button>
+          </div>
+        )
       )}
     </div>
   );
