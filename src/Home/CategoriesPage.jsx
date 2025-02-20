@@ -10,7 +10,7 @@ const CategoriesPage = () => {
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const fetchCategories = async () => {

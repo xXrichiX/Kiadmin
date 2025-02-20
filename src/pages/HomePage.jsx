@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
-import "../styles/HomePage.css";  // Importa el archivo CSS
+import "../styles/HomePage.css"; // Importa el archivo CSS
+import RestaurantManagement from "../Home/RestaurantPage"; // Asegúrate de la ruta correcta
+import CategoriesPage from "../Home/CategoriesPage";
+import ProductsPage from "../Home/ProductsPage";
+import KiosksPage from "../Home/KioskPage";
+import Profile from "../Home/Profile"; 
+import OrdersPage from "../Home/OrdersPage";
+
 
 const HomePage = () => {
-  const [hasRestaurant, setHasRestaurant] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(true);  // Mantiene el menú abierto por defecto
-  const [showForm, setShowForm] = useState(false);
-  const [name, setName] = useState("");
-  const [image, setImage] = useState("");
-  const [country, setCountry] = useState("");
-  const [city, setCity] = useState("");
-  const [address, setAddress] = useState("");
-  const [postalCode, setPostalCode] = useState("");
-  const [restaurant, setRestaurant] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(true); // Mantiene el menú abierto por defecto
+  const [activeSection, setActiveSection] = useState("home"); // Sección activa
 
   useEffect(() => {
     const checkRestaurant = async () => {
@@ -37,20 +36,13 @@ const HomePage = () => {
 
         const data = await response.json();
         
-        if (data.code === "RESTAURANT_REQUIRED") {
-          setHasRestaurant(false);
-        } else if (response.ok) {
-          const simplifiedData = {
-            name: data.name,
-            image: data.image,
-            country: data.location.country,
-            city: data.location.city,
-            address: data.location.address,
-            postalCode: data.location.postalCode
-          };
-          setRestaurant(simplifiedData);
-          setHasRestaurant(true);
-        } else {
+        if (response.status === 403) {
+          Cookies.remove("authToken");
+          navigate("/login");
+          return;
+        }
+
+        if (!response.ok) {
           throw new Error(data.message || "Error al verificar restaurante");
         }
       } catch (err) {
@@ -62,69 +54,6 @@ const HomePage = () => {
 
     checkRestaurant();
   }, [navigate]);
-
-  const handleCreateClick = () => {
-    setShowForm(true);
-  };
-
-  const handleCreateRestaurant = async (e) => {
-    e.preventDefault();
-    
-    // Debug: Verificar token
-    const token = Cookies.get("authToken");
-    console.log("Token JWT actual:", token ? "Presente" : "Ausente", token);
-    
-    try {
-      if (!name || !image || !country || !city || !address || !postalCode) {
-        throw new Error("Todos los campos son obligatorios");
-      }
-
-      const response = await fetch("https://orderandout.onrender.com/api/intern/restaurants/", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${Cookies.get("authToken")}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          name,
-          image,
-          location: { country, city, address, postalCode }
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.status === 403) {
-        Cookies.remove("authToken");
-        navigate("/login");
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error(data.message || "Error al crear restaurante");
-      }
-
-      // Actualizar token si viene en la respuesta
-      if (data.token) {
-        Cookies.set("authToken", data.token, { 
-          expires: 1,
-          secure: true,
-          sameSite: 'strict'
-        });
-        console.log("Nuevo token guardado:", data.token);
-      }
-
-      setHasRestaurant(true);
-      setShowForm(false);
-      setError("");
-      
-      window.location.reload();
-
-    } catch (err) {
-      setError(err.message);
-      console.error("Error en la petición:", err);
-    }
-  };
 
   // Función para alternar el menú
   const toggleMenu = () => {
@@ -138,38 +67,41 @@ const HomePage = () => {
 
   // Función para ir al perfil del usuario
   const handleProfile = () => {
-    navigate("/perfil");  // Ruta para el perfil del usuario
+    navigate("/perfil");
+  };
+
+  // Función para cambiar la sección activa
+  const changeSection = (section) => {
+    setActiveSection(section);
   };
 
   if (loading) return <div>Cargando...</div>;
-  
+
   return (
     <div className="home-page">
       {/* Menú Vertical */}
       <div className={`slider-menu ${isMenuOpen ? "open" : ""}`}>
         <ul>
-          <li onClick={() => navigate("/ventas")}>Dashboard</li>
-          <li onClick={() => navigate("/productos")}>Kioskos</li>
-          <li onClick={() => navigate("/reportes")}>Categorías</li>
-          <li onClick={() => navigate("/categorias")}>Productos</li>
-          <li onClick={() => navigate("/proveedores")}>órdenes</li>
-          <li onClick={() => navigate("/proveedores")}>Restaurante</li>
+          <li onClick={() => changeSection("dashboard")}>Dashboard</li>
+          <li onClick={() => changeSection("categories")}>Categorías</li>
+          <li onClick={() => changeSection("kiosks")}>Kioskos</li>
+          <li onClick={() => changeSection("products")}>Productos</li>
+          <li onClick={() => changeSection("restaurant")}>Restaurante</li>
+          <li onClick={() => changeSection("orders")}>Órdenes</li>
         </ul>
       </div>
 
       {/* Menú Horizontal */}
       <div className="top-menu">
-        {/* Botón de abrir/cerrar menú */}
         <button className="menu-toggle-button" onClick={toggleMenu}>
           {isMenuOpen ? "Cerrar Menú" : "Abrir Menú"}
         </button>
 
-        {/* Botón de perfil del usuario */}
-        <button className="profile-button" onClick={handleProfile}>
-          Perfil
-        </button>
+        <button className="profile-button" onClick={() => setActiveSection("profile")}>
+  Perfil
+</button>
+
         
-        {/* Botón de cerrar sesión */}
         <button className="logout-button" onClick={handleLogout}>
           Cerrar Sesión
         </button>
@@ -178,76 +110,15 @@ const HomePage = () => {
       {/* Contenido Principal */}
       <div className={`content-area ${isMenuOpen ? "menu-open" : ""}`}>
         <div className="content">
-          {!hasRestaurant && (
-            <div className="restaurant-prompt">
-              {error && <p className="error-message">{error}</p>}
-              
-              {!showForm ? (
-                <button 
-                  onClick={handleCreateClick}
-                  className="create-restaurant-btn"
-                >
-                  Comenzar restaurante
-                </button>
-              ) : (
-                <form onSubmit={handleCreateRestaurant}>
-                  <input
-                    type="text"
-                    placeholder="Nombre del restaurante"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                  <input
-                    type="url"
-                    placeholder="URL de la imagen"
-                    value={image}
-                    onChange={(e) => setImage(e.target.value)}
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="País"
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Ciudad"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Dirección completa"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Código postal"
-                    value={postalCode}
-                    onChange={(e) => setPostalCode(e.target.value)}
-                    required
-                  />
-                  <button type="submit">Crear restaurante</button>
-                </form>
-              )}
-            </div>
-          )}
-          {hasRestaurant && restaurant && (
-            <div className="restaurant-details">
-              <h3>{restaurant.name}</h3>
-              <img src={restaurant.image} alt="Restaurante" className="restaurant-image" />
-              <div className="location-info">
-                <p>📍 {restaurant.address}, {restaurant.city}</p>
-                <p>🌎 {restaurant.country} | 📮 {restaurant.postalCode}</p>
-              </div>
-            </div>
-          )}
+          {/* Mostrar el contenido de acuerdo a la sección seleccionada */}
+          {activeSection === "home" && <h2>Bienvenido al Home 🏠</h2>}
+          {activeSection === "dashboard" && <h2>Dashboard</h2>}
+          {activeSection === "categories" && <CategoriesPage />}
+          {activeSection === "kiosks" && <KiosksPage />}
+          {activeSection === "products" && <ProductsPage />}
+          {activeSection === "restaurant" && <RestaurantManagement />} 
+          {activeSection === "orders" && <OrdersPage />}
+          {activeSection === "profile" && <Profile />} {/* 👈 Aquí agregamos Profile */}
         </div>
       </div>
     </div>

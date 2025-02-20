@@ -3,13 +3,15 @@ import { Routes, Route, Link } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
-import VerifyCode from "./pages/VerifyCode";
+import VerifyCode from "./components/VerifyCode";
 import ResetPassword from "./pages/ResetPassword";
-import HomePage from "./pages/HomePage"; // Importar HomePage
-import CategoriesPage from "./pages/CategoriesPage"; // 👈 Añadir importación
-import KiosksPage from "./pages/KiosksPage"; // �� Nueva importación
-import ProductsPage from "./pages/ProductsPage"; // 👈 Nueva importación
-import RestaurantPage from "./pages/RestaurantPage";
+import HomePage from "./pages/HomePage";
+import CategoriesPage from "./Home/CategoriesPage";
+import KiosksPage from "./Home/KioskPage";
+import ProductsPage from "./Home/ProductsPage";
+import RestaurantPage from "./Home/RestaurantPage";
+import Profile from "./Home/Profile";
+import OrdersPage from "./Home/OrdersPage"; 
 
 function App() {
   return (
@@ -23,11 +25,13 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-code" element={<VerifyCode />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/home" element={<HomePage />} /> {/* Ruta de HomePage */}
-        <Route path="/categories" element={<CategoriesPage />} /> {/* 👈 Nueva ruta */}
-        <Route path="/kiosks" element={<KiosksPage />} /> {/* 👈 Nueva ruta */}
-        <Route path="/products" element={<ProductsPage />} /> {/* 👈 Nueva ruta */}
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/kiosks" element={<KiosksPage />} />
+        <Route path="/products" element={<ProductsPage />} />
         <Route path="/restaurant" element={<RestaurantPage />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/orders" element={<OrdersPage />} /> 
       </Routes>
 
       {/* Navegación */}
@@ -36,10 +40,13 @@ function App() {
         <Link to="/forgot-password">Recuperar Contraseña</Link> | 
         <Link to="/verify-code">Verificar Código</Link> | 
         <Link to="/reset-password">Restablecer Contraseña</Link> | 
-        <Link to="/home">Home</Link> {/* Enlace para ir a la página de inicio */}
-        <Link to="/categories">Categorías</Link> {/* 👈 Nuevo enlace */}
-        <Link to="/kiosks">Kioskos</Link> {/* 👈 Nuevo enlace */}
-        <Link to="/products">Productos</Link> {/* 👈 Nuevo enlace */}
+        <Link to="/home">Home</Link> |
+        <Link to="/categories">Categorías</Link> |
+        <Link to="/kiosks">Kioskos</Link> |
+        <Link to="/products">Productos</Link> |
+        <Link to="/restaurant">Restaurante</Link> |
+        <Link to="/profile">Perfil</Link> |
+        <Link to="/orders">Órdenes</Link> 
       </nav>
     </div>
   );

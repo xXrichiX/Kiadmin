@@ -1,28 +1,26 @@
 import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom"; // Importamos useNavigate
+import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import "../styles/VerifyCode.css";
 
 const VerifyCode = () => {
-  const [verificationCode, setVerificationCode] = useState(Array(6).fill("")); // Estado para el código de verificación
-  const [error, setError] = useState(""); // Estado para manejar errores
+  const [verificationCode, setVerificationCode] = useState(Array(6).fill(""));
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const inputsRef = useRef([]); // 👈 Añadir referencia para los inputs
+  const inputsRef = useRef([]);
 
   const handleVerificationCodeChange = (e, index) => {
     const newCode = [...verificationCode];
-    newCode[index] = e.target.value.replace(/\D/, ''); // 👈 Solo números
+    newCode[index] = e.target.value.replace(/\D/, "");
     setVerificationCode(newCode);
 
-    // Avanzar al siguiente input si se ingresó un número
     if (e.target.value && index < 5) {
       inputsRef.current[index + 1].focus();
     }
   };
 
   const handleKeyDown = (e, index) => {
-    if (e.key === 'Backspace' && !e.target.value && index > 0) {
-      // 👇 Mover al input anterior si está vacío
+    if (e.key === "Backspace" && !e.target.value && index > 0) {
       inputsRef.current[index - 1].focus();
     }
   };
@@ -30,29 +28,27 @@ const VerifyCode = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const tempId = Cookies.get("tempId");
-      
-      const response = await fetch("https://orderandout.onrender.com/api/intern/admins/verify-account", {
+      const response = await fetch("https://orderandout.onrender.com/api/intern/admins/verify-code", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          tempId,
-          code: verificationCode.join("")
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: verificationCode.join("") }),
       });
 
       const data = await response.json();
-      
       if (!response.ok) {
-        throw new Error(data.message || "Código inválido");
+        throw new Error(data.message || "Código incorrecto");
       }
 
-      // Limpiar cookie después de verificación exitosa
-      Cookies.remove("tempId");
-      navigate("/login"); // 👈 Redirigir a login
-
+      if (data.token) {
+        Cookies.set("authToken", data.token, {
+          expires: 1,
+          secure: true,
+          sameSite: "strict",
+        });
+        navigate("/home");
+      } else {
+        navigate("/reset-password");
+      }
     } catch (err) {
       setError(err.message || "Error al verificar el código");
     }
@@ -68,13 +64,13 @@ const VerifyCode = () => {
             {verificationCode.map((digit, index) => (
               <input
                 key={index}
-                ref={(el) => (inputsRef.current[index] = el)} // 👈 Conectar refs
+                ref={(el) => (inputsRef.current[index] = el)}
                 type="tel"
                 pattern="[0-9]*"
                 maxLength="1"
                 value={digit}
                 onChange={(e) => handleVerificationCodeChange(e, index)}
-                onKeyDown={(e) => handleKeyDown(e, index)} // 👈 Manejar teclas
+                onKeyDown={(e) => handleKeyDown(e, index)}
                 autoFocus={index === 0}
                 required
               />

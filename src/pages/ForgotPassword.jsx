@@ -1,14 +1,39 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Importamos useNavigate
 import "../styles/ForgotPassword.css";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate(); // 👈 Agregamos useNavigate
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulación de envío del formulario
-    setMessage("Si tu correo está registrado, recibirás un enlace para restablecer tu contraseña.");
+    try {
+      // Simulación de envío del formulario
+      const response = await fetch("https://orderandout.onrender.com/api/intern/admins/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Error al enviar el correo");
+      }
+
+      // Guardamos un identificador temporal en cookies
+      document.cookie = `tempId=${data.tempId}; path=/`;
+
+      // Mensaje de confirmación y redirección
+      setMessage("Si tu correo está registrado, recibirás un enlace para restablecer tu contraseña.");
+      setTimeout(() => navigate("/verify-code"), 3000); // 👈 Redirige después de 3 segundos
+
+    } catch (err) {
+      setMessage(err.message || "Error al enviar el correo");
+    }
   };
 
   return (
