@@ -5,12 +5,12 @@ import "../styles/KiosksPage.css";
 
 const KiosksPage = () => {
   const [kiosks, setKiosks] = useState([]);
-  const [showForm, setShowForm] = useState(false);
   const [paymentType, setPaymentType] = useState("card");
   const [password, setPassword] = useState("");
   const [editingKiosk, setEditingKiosk] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false); // Para el formulario de creación
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -109,9 +109,8 @@ const KiosksPage = () => {
   const handleEditKiosk = (kiosk) => {
     setEditingKiosk(kiosk);
     setPaymentType(kiosk.paymentType);
-    // Se asume que el kiosko incluye la propiedad "password"; si no, se deja vacío.
     setPassword(kiosk.password || "");
-    setShowForm(true);
+    setIsCreating(true); // Abre la ventana modal
     setError("");
   };
 
@@ -138,10 +137,10 @@ const KiosksPage = () => {
 
   // Limpia el formulario y resetea el modo de edición
   const handleCancel = () => {
-    setShowForm(false);
     setPaymentType("card");
     setPassword("");
     setEditingKiosk(null);
+    setIsCreating(false); // Cierra la ventana modal
     setError("");
   };
 
@@ -153,10 +152,11 @@ const KiosksPage = () => {
       
       {error && <p className="error-message">{error}</p>}
       
+      {/* Botón para crear un nuevo kiosko (siempre visible) */}
       <button 
         onClick={() => {
-          setShowForm(true);
-          setEditingKiosk(null);
+          setIsCreating(true);
+          setEditingKiosk(null); // Asegura que no estemos en modo edición
           setPaymentType("card");
           setPassword("");
           setError("");
@@ -166,43 +166,52 @@ const KiosksPage = () => {
         Crear Nuevo Kiosko
       </button>
 
-      {showForm && (
-        <form onSubmit={handleSubmit} className="kiosk-form">
-          <label>Tipo de Pago:</label>
-          <select
-            value={paymentType}
-            onChange={(e) => setPaymentType(e.target.value)}
-            className="select-input"
-          >
-            <option value="card">Tarjeta</option>
-            <option value="cash">Efectivo</option>
-            <option value="both">Ambos</option>
-          </select>
+      {/* Ventana modal para el formulario de creación/edición */}
+      {(isCreating || editingKiosk) && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>{editingKiosk ? "Editar Kiosko" : "Crear Nuevo Kiosko"}</h3>
+            <form onSubmit={handleSubmit} className="kiosk-form">
+              <label>Tipo de Pago:</label>
+              <select
+                value={paymentType}
+                onChange={(e) => setPaymentType(e.target.value)}
+                className="select-input"
+              >
+                <option value="card">Tarjeta</option>
+                <option value="cash">Efectivo</option>
+                <option value="both">Ambos</option>
+              </select>
 
-          <label>Contraseña del Kiosko:</label>
-          <input
-            type="password"
-            placeholder="Contraseña del kiosko"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength="8"
-            className="text-input"
-          />
+              <label>Contraseña del Kiosko:</label>
+              <input
+                type="password"
+                placeholder="Contraseña del kiosko"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength="8"
+                className="text-input"
+              />
 
-          <button type="submit" className="submit-btn">
-            {editingKiosk ? "Actualizar Kiosko" : "Crear Kiosko"}
-          </button>
-          <button 
-            type="button" 
-            onClick={handleCancel} 
-            className="cancel-btn"
-          >
-            Cancelar
-          </button>
-        </form>
+              <div className="modal-buttons">
+                <button type="submit" className="submit-btn">
+                  {editingKiosk ? "Actualizar Kiosko" : "Crear Kiosko"}
+                </button>
+                <button 
+                  type="button" 
+                  onClick={handleCancel} 
+                  className="cancel-btn"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
+      {/* Lista de kioskos */}
       <div className="kiosks-list">
         {kiosks.length > 0 ? (
           kiosks.map((kiosk) => (

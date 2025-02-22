@@ -1,122 +1,65 @@
-.kiosks-page {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 1rem;
-  background-color: #f9f9f9;
-  border-radius: 10px;
-}
-
-.page-title {
-  font-size: 2rem;
-  color: #333;
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.create-kiosk-btn {
-  background-color: #2196F3;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-bottom: 1rem;
-  display: block;
+/* Estilos para la ventana modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  font-size: 1.1rem;
-}
-
-.create-kiosk-btn:hover {
-  background-color: #1e88e5;
-}
-
-.kiosk-form {
-  background: #ffffff;
-  padding: 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 2rem;
-}
-
-.kiosk-form label {
-  font-size: 1.1rem;
-  color: #333;
-  margin-bottom: 0.5rem;
-}
-
-.select-input, .text-input {
-  width: 100%;
-  padding: 12px;
-  border-radius: 5px;
-  border: 1px solid #ddd;
-  margin-bottom: 1.2rem;
-  font-size: 1rem;
-}
-
-.text-input {
-  height: 40px;
-}
-
-.form-buttons {
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Fondo oscuro semi-transparente */
   display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Asegura que esté por encima de todo */
 }
 
-.submit-btn, .cancel-btn {
-  padding: 10px 20px;
-  font-size: 1rem;
-  cursor: pointer;
-  border: none;
-  border-radius: 5px;
-}
-
-.submit-btn {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.submit-btn:hover {
-  background-color: #45a049;
-}
-
-.cancel-btn {
-  background-color: #f44336;
-  color: white;
-}
-
-.cancel-btn:hover {
-  background-color: #e53935;
-}
-
-.kiosks-list {
-  display: grid;
-  gap: 1.5rem;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-}
-
-.kiosk-card {
-  background: #fff;
-  padding: 1rem;
+.modal-content {
+  background-color: white;
+  padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 400px;
+  max-width: 90%;
 }
 
-.kiosk-card h3 {
+.modal-content h3 {
+  margin-bottom: 20px;
+  font-size: 1.5rem;
   color: #333;
-  font-size: 1.3rem;
-  margin-bottom: 0.5rem;
 }
 
-.kiosk-card p {
-  color: #666;
-  font-size: 0.9rem;
-  margin: 0.2rem 0;
+.modal-content .kiosk-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.loading-message {
-  text-align: center;
-  font-size: 1.2rem;
-  color: #333;
+.modal-content .select-input,
+.modal-content .text-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.modal-buttons .submit-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+.modal-buttons .cancel-btn {
+  background-color: #dc3545;
+  color: white;
 }

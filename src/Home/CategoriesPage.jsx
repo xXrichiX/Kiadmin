@@ -7,13 +7,32 @@ const CategoriesPage = () => {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null);
+  const [isCreating, setIsCreating] = useState(false); // Para el formulario de creación
+  const [editingCategoryId, setEditingCategoryId] = useState(null); // Para el formulario de edición
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); 
+  const [sortOrder, setSortOrder] = useState("default"); // Para el ordenamiento
+  const navigate = useNavigate();
+
+  // Función para devolver una categoría vacía
+  function getEmptyCategory() {
+    return {
+      name: "",
+      description: ""
+    };
+  }
+
+  // Validación: verifica que los campos requeridos no estén vacíos
+  const validateCategory = () => {
+    if (!name.trim() || !description.trim()) {
+      setError("Por favor, completa todos los campos requeridos.");
+      return false;
+    }
+    setError("");
+    return true;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,25 +44,15 @@ const CategoriesPage = () => {
         }
 
         const categoriesResponse = await fetch("https://orderandout.onrender.com/api/intern/categories/mine", {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
+          headers: { "Authorization": `Bearer ${token}` }
         });
+        const categoriesData = await categoriesResponse.json();
+        setCategories(categoriesData);
 
         const productsResponse = await fetch("https://orderandout.onrender.com/api/intern/products/mine", {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
+          headers: { "Authorization": `Bearer ${token}` }
         });
-
-        const categoriesData = await categoriesResponse.json();
         const productsData = await productsResponse.json();
-
-        setCategories(categoriesData);
         setProducts(productsData);
       } catch (err) {
         setError(err.message);
@@ -51,89 +60,106 @@ const CategoriesPage = () => {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [navigate]);
 
-  const handleCategoryClick = (categoryId) => {
-    setSelectedCategory(categoryId);
-  };
-
-  // Validación: asegúrate de que el nombre y la descripción no estén vacíos
-  const validateCategory = () => {
-    if (!name.trim() || !description.trim()) {
-      setError("Por favor, completa los campos requeridos.");
-      return false;
+  // Función para ordenar las categorías
+  const sortCategories = (order) => {
+    let sortedCategories = [...categories];
+    switch (order) {
+      case "first":
+        sortedCategories.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        break;
+      case "last":
+        sortedCategories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        break;
+      case "alphabetical":
+        sortedCategories.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      default:
+        // Sin ordenamiento
+        break;
     }
-    setError("");
-    return true;
+    return sortedCategories;
   };
 
-  const handleSaveCategory = async () => {
+  const deleteCategory = async (categoryId) => {
+    try {
+      const token = Cookies.get("authToken");
+      await fetch(`https://orderandout.onrender.com/api/intern/categories/${categoryId}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      setCategories(categories.filter(category => category._id !== categoryId));
+      setProducts(products.filter(product => product.category !== categoryId));
+    } catch (err) {
+      setError("Error al eliminar la categoría");
+    }
+  };
+
+  const editCategory = (category) => {
+    setEditingCategoryId(category._id); // Establece el ID de la categoría en edición
+    setIsCreating(false); // Asegura que no estemos en modo creación
+    setName(category.name); // Carga los datos de la categoría en el formulario
+    setDescription(category.description);
+    setError("");
+  };
+
+  const updateCategory = async (categoryId) => {
     if (!validateCategory()) return;
     try {
       const token = Cookies.get("authToken");
-      const url = editingCategory 
-        ? `https://orderandout.onrender.com/api/intern/categories/${editingCategory}` 
-        : "https://orderandout.onrender.com/api/intern/categories";
-      const method = editingCategory ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
+      const response = await fetch(`https://orderandout.onrender.com/api/intern/categories/${categoryId}`, {
+        method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ name, description })
       });
-      const newCategory = await response.json();
-
-      if (editingCategory) {
-        setCategories(categories.map(category => category._id === editingCategory ? newCategory : category));
-      } else {
-        setCategories([...categories, newCategory]);
-      }
-
-      // Limpia el formulario y los estados de edición
-      setName("");
+      const updatedCategory = await response.json();
+      setCategories(categories.map(category => category._id === updatedCategory._id ? updatedCategory : category));
+      setEditingCategoryId(null); // Cierra el formulario de edición
+      setName(""); // Limpia el formulario
       setDescription("");
-      setShowForm(false);
-      setEditingCategory(null);
-      setError("");
     } catch (err) {
-      setError(err.message);
+      setError("Error al actualizar la categoría");
     }
   };
 
-  const handleDeleteCategory = async (categoryId) => {
+  const createCategory = async () => {
+    if (!validateCategory()) return;
     try {
       const token = Cookies.get("authToken");
-      await fetch(`https://orderandout.onrender.com/api/intern/categories/${categoryId}`, {
-        method: "DELETE",
+      const response = await fetch("https://orderandout.onrender.com/api/intern/categories", {
+        method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
-        }
+        },
+        body: JSON.stringify({ name, description })
       });
-      setCategories(categories.filter(category => category._id !== categoryId));
+      const createdCategory = await response.json();
+      setCategories([...categories, createdCategory]);
+      setIsCreating(false); // Cierra el formulario de creación
+      setName(""); // Limpia el formulario
+      setDescription("");
     } catch (err) {
-      setError(err.message);
+      setError("Error al crear la categoría");
     }
   };
 
-  const handleEditCategory = (category) => {
-    setEditingCategory(category._id);
-    setName(category.name);
-    setDescription(category.description);
-    setShowForm(true);
-    setError("");
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "name") setName(value);
+    if (name === "description") setDescription(value);
   };
 
   const handleCancel = () => {
-    setEditingCategory(null);
-    setName("");
+    setEditingCategoryId(null); // Cierra el formulario de edición
+    setIsCreating(false); // Cierra el formulario de creación
+    setName(""); // Limpia el formulario
     setDescription("");
-    setShowForm(false);
     setError("");
   };
 
@@ -141,51 +167,106 @@ const CategoriesPage = () => {
     ? products.filter(product => product.category === selectedCategory)
     : [];
 
-  if (loading) return <div>Cargando...</div>;
+  // Categorías ordenadas según el filtro seleccionado
+  const sortedCategories = sortCategories(sortOrder);
 
   return (
     <div className="categories-page">
-      <h2>Gestión de Categorías</h2>
+      <h2 className="page-title">Gestión de Categorías</h2>
       {error && <p className="error-message">{error}</p>}
 
-      <button onClick={() => {
-        setShowForm(true);
-        setEditingCategory(null);
-        setName("");
-        setDescription("");
-        setError("");
-      }}>Agregar Categoría</button>
-      
-      {showForm && (
-        <div className="category-form">
-          <input
-            type="text"
-            placeholder="Nombre de la categoría"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <input
-            type="text"
-            placeholder="Descripción"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-          <button onClick={handleSaveCategory}>{editingCategory ? "Actualizar" : "Guardar"}</button>
-          <button onClick={handleCancel}>Cancelar</button>
+      {/* Botón para crear una nueva categoría (siempre visible) */}
+      <button
+        onClick={() => {
+          setIsCreating(true);
+          setEditingCategoryId(null); // Asegura que no estemos en modo edición
+          setName("");
+          setDescription("");
+          setError("");
+        }}
+        className="create-category-btn"
+      >
+        Crear Nueva Categoría
+      </button>
+
+      {/* Filtro de ordenamiento */}
+      <div className="sort-filter">
+        <label>Ordenar por:</label>
+        <select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value)}
+        >
+          <option value="default">Predeterminado</option>
+          <option value="first">Primera creada</option>
+          <option value="last">Última creada</option>
+          <option value="alphabetical">Orden alfabético</option>
+        </select>
+      </div>
+
+      {/* Ventana modal para el formulario de creación */}
+      {isCreating && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Crear Nueva Categoría</h3>
+            <input
+              type="text"
+              name="name"
+              placeholder="Nombre de la categoría"
+              value={name}
+              onChange={handleInputChange}
+            />
+            <input
+              type="text"
+              name="description"
+              placeholder="Descripción"
+              value={description}
+              onChange={handleInputChange}
+            />
+            <div className="modal-buttons">
+              <button onClick={createCategory}>Crear</button>
+              <button onClick={handleCancel}>Cancelar</button>
+            </div>
+          </div>
         </div>
       )}
 
-      <div className="categories-list">
-        {categories.length > 0 ? (
-          categories.map(category => (
-            <div 
-              key={category._id} 
-              className="category-card"
-            >
-              <h3 onClick={() => handleCategoryClick(category._id)}>{category.name}</h3>
-              {category.description && <p>{category.description}</p>}
-              <button onClick={() => handleEditCategory(category)}>Editar</button>
-              <button onClick={() => handleDeleteCategory(category._id)}>Eliminar</button>
+      {/* Lista de categorías (horizontal) */}
+      <div className="categories-list horizontal">
+        {loading ? (
+          <p>Cargando...</p>
+        ) : sortedCategories.length > 0 ? (
+          sortedCategories.map(category => (
+            <div key={category._id} className="category-card">
+              {editingCategoryId === category._id ? (
+                <div className="edit-category-form">
+                  <h3>Editar Categoría</h3>
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Nombre de la categoría"
+                    value={name}
+                    onChange={handleInputChange}
+                  />
+                  <input
+                    type="text"
+                    name="description"
+                    placeholder="Descripción"
+                    value={description}
+                    onChange={handleInputChange}
+                  />
+                  <div className="edit-buttons">
+                    <button onClick={() => updateCategory(category._id)}>Actualizar</button>
+                    <button onClick={handleCancel}>Cancelar</button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <h3 onClick={() => setSelectedCategory(category._id)}>{category.name}</h3>
+                  <p>{category.description}</p>
+                  <button onClick={() => editCategory(category)}>✏️ Editar</button>
+                  <button onClick={() => deleteCategory(category._id)}>🗑 Eliminar</button>
+                </>
+              )}
             </div>
           ))
         ) : (
@@ -193,6 +274,7 @@ const CategoriesPage = () => {
         )}
       </div>
 
+      {/* Lista de productos de la categoría seleccionada */}
       {selectedCategory && (
         <div className="products-list">
           <h3>Productos de la categoría seleccionada:</h3>
