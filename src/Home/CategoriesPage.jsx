@@ -59,7 +59,18 @@ const CategoriesPage = () => {
     setSelectedCategory(categoryId);
   };
 
+  // Validación: asegúrate de que el nombre y la descripción no estén vacíos
+  const validateCategory = () => {
+    if (!name.trim() || !description.trim()) {
+      setError("Por favor, completa los campos requeridos.");
+      return false;
+    }
+    setError("");
+    return true;
+  };
+
   const handleSaveCategory = async () => {
+    if (!validateCategory()) return;
     try {
       const token = Cookies.get("authToken");
       const url = editingCategory 
@@ -83,10 +94,12 @@ const CategoriesPage = () => {
         setCategories([...categories, newCategory]);
       }
 
+      // Limpia el formulario y los estados de edición
       setName("");
       setDescription("");
       setShowForm(false);
       setEditingCategory(null);
+      setError("");
     } catch (err) {
       setError(err.message);
     }
@@ -113,6 +126,7 @@ const CategoriesPage = () => {
     setName(category.name);
     setDescription(category.description);
     setShowForm(true);
+    setError("");
   };
 
   const handleCancel = () => {
@@ -120,6 +134,7 @@ const CategoriesPage = () => {
     setName("");
     setDescription("");
     setShowForm(false);
+    setError("");
   };
 
   const filteredProducts = selectedCategory
@@ -133,7 +148,14 @@ const CategoriesPage = () => {
       <h2>Gestión de Categorías</h2>
       {error && <p className="error-message">{error}</p>}
 
-      <button onClick={() => setShowForm(true)}>Agregar Categoría</button>
+      <button onClick={() => {
+        setShowForm(true);
+        setEditingCategory(null);
+        setName("");
+        setDescription("");
+        setError("");
+      }}>Agregar Categoría</button>
+      
       {showForm && (
         <div className="category-form">
           <input

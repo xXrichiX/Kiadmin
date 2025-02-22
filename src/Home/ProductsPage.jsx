@@ -10,17 +10,41 @@ const ProductsPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
-  const [newProduct, setNewProduct] = useState({
-    name: "",
-    description: "",
-    image: "",
-    costPrice: "",
-    salePrice: "",
-    category: "",
-    ingredients: ""
-  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [newProduct, setNewProduct] = useState(getEmptyProduct());
 
   const navigate = useNavigate();
+
+  // Función para devolver un producto vacío
+  function getEmptyProduct() {
+    return {
+      name: "",
+      description: "",
+      image: "",
+      costPrice: "",
+      salePrice: "",
+      category: "",
+      ingredients: ""
+    };
+  }
+
+  // Validación: verifica que los campos requeridos no estén vacíos
+  const validateProduct = () => {
+    if (
+      !newProduct.name.trim() ||
+      !newProduct.description.trim() ||
+      !newProduct.image.trim() ||
+      !newProduct.costPrice.toString().trim() ||
+      !newProduct.salePrice.toString().trim() ||
+      !newProduct.category.trim()
+    ) {
+      setError("Por favor, completa todos los campos requeridos.");
+      return false;
+    }
+    setError("");
+    return true;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -78,11 +102,40 @@ const ProductsPage = () => {
     }
   };
 
-  const editProduct = (productId) => {
-    navigate(`/edit-product/${productId}`);
+  const editProduct = (product) => {
+    setEditingProduct(product);
+    setIsEditing(true);
+    setIsCreating(false);
+    setError("");
+    // Se carga el producto en el formulario para editar
+    setNewProduct(product);
+  };
+
+  const updateProduct = async () => {
+    if (!validateProduct()) return;
+    try {
+      const token = Cookies.get("authToken");
+      const response = await fetch(`https://orderandout.onrender.com/api/intern/products/${editingProduct._id}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(newProduct)
+      });
+      const updatedProduct = await response.json();
+      setProducts(products.map(p => (p._id === updatedProduct._id ? updatedProduct : p)));
+      setIsEditing(false);
+      setEditingProduct(null);
+      // Se limpia el formulario al finalizar la edición
+      setNewProduct(getEmptyProduct());
+    } catch (err) {
+      setError("Error al actualizar el producto");
+    }
   };
 
   const createProduct = async () => {
+    if (!validateProduct()) return;
     try {
       const token = Cookies.get("authToken");
       const response = await fetch("https://orderandout.onrender.com/api/intern/products", {
@@ -96,6 +149,8 @@ const ProductsPage = () => {
       const createdProduct = await response.json();
       setProducts([...products, createdProduct]);
       setIsCreating(false);
+      // Se limpia el formulario al finalizar la creación
+      setNewProduct(getEmptyProduct());
     } catch (err) {
       setError("Error al crear el producto");
     }
@@ -107,6 +162,14 @@ const ProductsPage = () => {
       ...prevState,
       [name]: value
     }));
+  };
+
+  const handleCancel = () => {
+    setIsCreating(false);
+    setIsEditing(false);
+    setEditingProduct(null);
+    setError("");
+    setNewProduct(getEmptyProduct());
   };
 
   const filteredProducts = selectedCategory === "all"
@@ -129,11 +192,13 @@ const ProductsPage = () => {
         ))}
       </select>
 
-      <button onClick={() => setIsCreating(true)}>Crear Producto</button>
+      <button onClick={() => { setIsCreating(true); setIsEditing(false); setNewProduct(getEmptyProduct()); setError(""); }}>
+        Crear Producto
+      </button>
 
-      {isCreating && (
+      {(isCreating || isEditing) && (
         <div className="create-product-form">
-          <h3>Crear Producto</h3>
+          <h3>{isEditing ? "Editar Producto" : "Crear Producto"}</h3>
           <input
             type="text"
             name="name"
@@ -185,13 +250,17 @@ const ProductsPage = () => {
             value={newProduct.ingredients}
             onChange={handleInputChange}
           />
-          <button onClick={createProduct}>Crear</button>
-          <button onClick={() => setIsCreating(false)}>Cancelar</button>
+          <button onClick={isEditing ? updateProduct : createProduct}>
+            {isEditing ? "Actualizar" : "Crear"}
+          </button>
+          <button onClick={handleCancel}>Cancelar</button>
         </div>
       )}
 
       <div className="products-list">
-        {filteredProducts.length > 0 ? (
+        {loading ? (
+          <p>Cargando...</p>
+        ) : filteredProducts.length > 0 ? (
           filteredProducts.map(product => (
             <div key={product._id} className="product-card">
               <img src={product.image} alt={product.name} className="product-image" />
@@ -200,13 +269,9 @@ const ProductsPage = () => {
               <div className="product-details">
                 <p>💰 Costo: ${product.costPrice}</p>
                 <p>🏷 Venta: ${product.salePrice}</p>
-                <p>📦 Disponible: {product.availability ? "Sí" : "No"}</p>
                 <p>🗂 Categoría: {categories.find(c => c._id === product.category)?.name}</p>
-                {product.ingredients?.length > 0 && (
-                  <p>🥗 Ingredientes: {product.ingredients.join(", ")}</p>
-                )}
               </div>
-              <button onClick={() => editProduct(product._id)}>✏️ Editar</button>
+              <button onClick={() => editProduct(product)}>✏️ Editar</button>
               <button onClick={() => deleteProduct(product._id)}>🗑 Eliminar</button>
             </div>
           ))

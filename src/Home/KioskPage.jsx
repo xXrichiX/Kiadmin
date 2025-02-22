@@ -8,6 +8,7 @@ const KiosksPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [paymentType, setPaymentType] = useState("card");
   const [password, setPassword] = useState("");
+  const [editingKiosk, setEditingKiosk] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -46,7 +47,8 @@ const KiosksPage = () => {
     fetchKiosks();
   }, [navigate]);
 
-  const handleCreateKiosk = async (e) => {
+  // Función unificada para crear o actualizar un kiosko
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (!password || password.length < 8) {
@@ -54,36 +56,63 @@ const KiosksPage = () => {
       }
 
       const token = Cookies.get("authToken");
-      const response = await fetch("https://orderandout.onrender.com/api/intern/kiosks", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          paymentType,
-          password
-        })
-      });
+      if (editingKiosk) {
+        // Actualizar kiosko existente
+        const response = await fetch(`https://orderandout.onrender.com/api/intern/kiosks/${editingKiosk._id}`, {
+          method: "PUT",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            paymentType,
+            password
+          })
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || "Error al crear kiosko");
+        if (!response.ok) {
+          throw new Error(data.message || "Error al actualizar el kiosko");
+        }
+
+        setKiosks(kiosks.map(kiosk => kiosk._id === editingKiosk._id ? data : kiosk));
+      } else {
+        // Crear nuevo kiosko
+        const response = await fetch("https://orderandout.onrender.com/api/intern/kiosks", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            paymentType,
+            password
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Error al crear kiosko");
+        }
+
+        setKiosks([...kiosks, data]);
       }
-
-      setKiosks([...kiosks, data]);
-      setShowForm(false);
-      setPassword("");
-      setError("");
-
+      handleCancel(); // Limpia el formulario y sale del modo de edición/creación
     } catch (err) {
       setError(err.message);
     }
   };
 
-  const handleEditKiosk = (kioskId) => {
-    navigate(`/edit-kiosk/${kioskId}`);
+  // Configura el formulario para editar un kiosko, precargando sus datos
+  const handleEditKiosk = (kiosk) => {
+    setEditingKiosk(kiosk);
+    setPaymentType(kiosk.paymentType);
+    // Se asume que el kiosko incluye la propiedad "password"; si no, se deja vacío.
+    setPassword(kiosk.password || "");
+    setShowForm(true);
+    setError("");
   };
 
   const handleDeleteKiosk = async (kioskId) => {
@@ -107,6 +136,15 @@ const KiosksPage = () => {
     }
   };
 
+  // Limpia el formulario y resetea el modo de edición
+  const handleCancel = () => {
+    setShowForm(false);
+    setPaymentType("card");
+    setPassword("");
+    setEditingKiosk(null);
+    setError("");
+  };
+
   if (loading) return <div className="loading-message">Cargando...</div>;
 
   return (
@@ -116,14 +154,20 @@ const KiosksPage = () => {
       {error && <p className="error-message">{error}</p>}
       
       <button 
-        onClick={() => setShowForm(true)}
+        onClick={() => {
+          setShowForm(true);
+          setEditingKiosk(null);
+          setPaymentType("card");
+          setPassword("");
+          setError("");
+        }}
         className="create-kiosk-btn"
       >
         Crear Nuevo Kiosko
       </button>
 
       {showForm && (
-        <form onSubmit={handleCreateKiosk} className="kiosk-form">
+        <form onSubmit={handleSubmit} className="kiosk-form">
           <label>Tipo de Pago:</label>
           <select
             value={paymentType}
@@ -146,10 +190,12 @@ const KiosksPage = () => {
             className="text-input"
           />
 
-          <button type="submit" className="submit-btn">Crear Kiosko</button>
+          <button type="submit" className="submit-btn">
+            {editingKiosk ? "Actualizar Kiosko" : "Crear Kiosko"}
+          </button>
           <button 
             type="button" 
-            onClick={() => setShowForm(false)} 
+            onClick={handleCancel} 
             className="cancel-btn"
           >
             Cancelar
@@ -165,7 +211,7 @@ const KiosksPage = () => {
               <p className="kiosk-id">ID: {kiosk._id}</p>
               <p className="kiosk-date">Creado: {new Date(kiosk.createdAt).toLocaleDateString()}</p>
               <button 
-                onClick={() => handleEditKiosk(kiosk._id)} 
+                onClick={() => handleEditKiosk(kiosk)} 
                 className="edit-kiosk-btn"
               >
                 ✏️ Editar
