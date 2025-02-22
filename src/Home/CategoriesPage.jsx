@@ -5,7 +5,10 @@ import "../styles/CategoriesPage.css";
 
 const CategoriesPage = () => {
   const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
@@ -13,7 +16,7 @@ const CategoriesPage = () => {
   const navigate = useNavigate(); 
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchData = async () => {
       try {
         const token = Cookies.get("authToken");
         if (!token) {
@@ -21,7 +24,7 @@ const CategoriesPage = () => {
           return;
         }
 
-        const response = await fetch("https://orderandout.onrender.com/api/intern/categories/mine", {
+        const categoriesResponse = await fetch("https://orderandout.onrender.com/api/intern/categories/mine", {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -29,13 +32,19 @@ const CategoriesPage = () => {
           }
         });
 
-        const data = await response.json();
-        
-        if (response.ok) {
-          setCategories(data);
-        } else {
-          throw new Error(data.message || "Error al obtener categorías");
-        }
+        const productsResponse = await fetch("https://orderandout.onrender.com/api/intern/products/mine", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        });
+
+        const categoriesData = await categoriesResponse.json();
+        const productsData = await productsResponse.json();
+
+        setCategories(categoriesData);
+        setProducts(productsData);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -43,99 +52,145 @@ const CategoriesPage = () => {
       }
     };
 
-    fetchCategories();
+    fetchData();
   }, [navigate]);
 
-  const handleCreateCategory = async (e) => {
-    e.preventDefault();
-    try {
-      if (!name) {
-        throw new Error("El nombre es obligatorio");
-      }
+  const handleCategoryClick = (categoryId) => {
+    setSelectedCategory(categoryId);
+  };
 
+  const handleSaveCategory = async () => {
+    try {
       const token = Cookies.get("authToken");
-      const response = await fetch("https://orderandout.onrender.com/api/intern/categories", {
-        method: "POST",
+      const url = editingCategory 
+        ? `https://orderandout.onrender.com/api/intern/categories/${editingCategory}` 
+        : "https://orderandout.onrender.com/api/intern/categories";
+      const method = editingCategory ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          name,
-          description
-        })
+        body: JSON.stringify({ name, description })
       });
+      const newCategory = await response.json();
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Error al crear categoría");
+      if (editingCategory) {
+        setCategories(categories.map(category => category._id === editingCategory ? newCategory : category));
+      } else {
+        setCategories([...categories, newCategory]);
       }
 
-      // Actualizar lista de categorías
-      setCategories([...categories, data]);
-      setShowForm(false);
       setName("");
       setDescription("");
-      setError("");
-
+      setShowForm(false);
+      setEditingCategory(null);
     } catch (err) {
       setError(err.message);
     }
   };
+
+  const handleDeleteCategory = async (categoryId) => {
+    try {
+      const token = Cookies.get("authToken");
+      await fetch(`https://orderandout.onrender.com/api/intern/categories/${categoryId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      setCategories(categories.filter(category => category._id !== categoryId));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleEditCategory = (category) => {
+    setEditingCategory(category._id);
+    setName(category.name);
+    setDescription(category.description);
+    setShowForm(true);
+  };
+
+  const handleCancel = () => {
+    setEditingCategory(null);
+    setName("");
+    setDescription("");
+    setShowForm(false);
+  };
+
+  const filteredProducts = selectedCategory
+    ? products.filter(product => product.category === selectedCategory)
+    : [];
 
   if (loading) return <div>Cargando...</div>;
 
   return (
     <div className="categories-page">
       <h2>Gestión de Categorías</h2>
-      
       {error && <p className="error-message">{error}</p>}
-      
-      <button 
-        onClick={() => setShowForm(true)}
-        className="create-category-btn"
-      >
-        Crear Nueva Categoría
-      </button>
 
+      <button onClick={() => setShowForm(true)}>Agregar Categoría</button>
       {showForm && (
-        <form onSubmit={handleCreateCategory} className="category-form">
+        <div className="category-form">
           <input
             type="text"
             placeholder="Nombre de la categoría"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            required
           />
-          <textarea
-            placeholder="Descripción (opcional)"
+          <input
+            type="text"
+            placeholder="Descripción"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
-          <div className="form-buttons">
-            <button type="submit">Crear</button>
-            <button type="button" onClick={() => setShowForm(false)}>
-              Cancelar
-            </button>
-          </div>
-        </form>
+          <button onClick={handleSaveCategory}>{editingCategory ? "Actualizar" : "Guardar"}</button>
+          <button onClick={handleCancel}>Cancelar</button>
+        </div>
       )}
 
       <div className="categories-list">
         {categories.length > 0 ? (
-          categories.map((category) => (
-            <div key={category._id} className="category-card">
-              <h3>{category.name}</h3>
+          categories.map(category => (
+            <div 
+              key={category._id} 
+              className="category-card"
+            >
+              <h3 onClick={() => handleCategoryClick(category._id)}>{category.name}</h3>
               {category.description && <p>{category.description}</p>}
+              <button onClick={() => handleEditCategory(category)}>Editar</button>
+              <button onClick={() => handleDeleteCategory(category._id)}>Eliminar</button>
             </div>
           ))
         ) : (
           <p>No hay categorías creadas</p>
         )}
       </div>
+
+      {selectedCategory && (
+        <div className="products-list">
+          <h3>Productos de la categoría seleccionada:</h3>
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map(product => (
+              <div key={product._id} className="product-card">
+                <img src={product.image} alt={product.name} className="product-image" />
+                <h3>{product.name}</h3>
+                <p>{product.description}</p>
+                <p>💰 Costo: ${product.costPrice}</p>
+                <p>🏷 Venta: ${product.salePrice}</p>
+              </div>
+            ))
+          ) : (
+            <p>No hay productos en esta categoría</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };
 
-export default CategoriesPage; 
+export default CategoriesPage;

@@ -18,14 +18,14 @@ function Register() {
     navigate("/login");
   };
 
-  const handleSubmit = async (e) => { // 👈 Hacer la función asíncrona
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden.");
       return;
     }
-
+  
     try {
       const response = await fetch("https://orderandout.onrender.com/api/intern/admins/start-register", {
         method: "POST",
@@ -35,27 +35,38 @@ function Register() {
         body: JSON.stringify({
           firstName: name,
           lastName: lastName,
-          phone: phone.toString(), // Convertir a string
+          phone: phone.toString(),
           birthDate,
           email,
           password
         }),
       });
-
+  
       const data = await response.json();
       
       if (!response.ok) {
         throw new Error(data.message || "Error en el registro");
       }
-
+  
       // Guardar tempId en cookies
-      Cookies.set("tempId", data.tempId, { expires: 1 }); // 👈 Expira en 1 día
-      navigate("/verify-code", { state: { tempId: data.tempId } }); // 👈 Redirigir con estado
-
+      Cookies.set("tempId", data.tempId, { expires: 1 });
+  
+      // Guardar información del usuario en localStorage
+      localStorage.setItem("userProfile", JSON.stringify({
+        name,
+        lastName,
+        phone,
+        birthDate,
+        email
+      }));
+  
+      navigate("/verify-code", { state: { tempId: data.tempId } });
+  
     } catch (err) {
       setError(err.message || "Error al registrar usuario");
     }
   };
+  
 
   return (
     <div className="auth-page">

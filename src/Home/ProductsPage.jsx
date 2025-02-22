@@ -6,8 +6,11 @@ import "../styles/ProductsPage.css";
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+  const [newProduct, setNewProduct] = useState({
     name: "",
     description: "",
     image: "",
@@ -16,8 +19,7 @@ const ProductsPage = () => {
     category: "",
     ingredients: ""
   });
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,189 +31,168 @@ const ProductsPage = () => {
           return;
         }
 
-        // Obtener categorías
         const categoriesResponse = await fetch("https://orderandout.onrender.com/api/intern/categories/mine", {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
+          headers: { "Authorization": `Bearer ${token}` }
         });
         const categoriesData = await categoriesResponse.json();
         setCategories(categoriesData);
 
-        // Obtener productos
         const productsResponse = await fetch("https://orderandout.onrender.com/api/intern/products/mine", {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
+          headers: { "Authorization": `Bearer ${token}` }
         });
         const productsData = await productsResponse.json();
         setProducts(productsData);
-
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [navigate]);
 
-  const handleCreateProduct = async (e) => {
-    e.preventDefault();
+  const deleteProduct = async (productId) => {
     try {
       const token = Cookies.get("authToken");
-      const ingredientsArray = formData.ingredients.split(',').map(i => i.trim());
-      
+      await fetch(`https://orderandout.onrender.com/api/intern/products/${productId}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      setProducts(products.filter(product => product._id !== productId));
+    } catch (err) {
+      setError("Error al eliminar el producto");
+    }
+  };
+
+  const deleteCategory = async (categoryId) => {
+    try {
+      const token = Cookies.get("authToken");
+      await fetch(`https://orderandout.onrender.com/api/intern/categories/${categoryId}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      setCategories(categories.filter(category => category._id !== categoryId));
+      setProducts(products.filter(product => product.category !== categoryId));
+    } catch (err) {
+      setError("Error al eliminar la categoría");
+    }
+  };
+
+  const editProduct = (productId) => {
+    navigate(`/edit-product/${productId}`);
+  };
+
+  const createProduct = async () => {
+    try {
+      const token = Cookies.get("authToken");
       const response = await fetch("https://orderandout.onrender.com/api/intern/products", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          ...formData,
-          costPrice: parseFloat(formData.costPrice),
-          salePrice: parseFloat(formData.salePrice),
-          ingredients: ingredientsArray
-        })
+        body: JSON.stringify(newProduct)
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Error al crear producto");
-      }
-
-      setProducts([...products, data]);
-      setShowForm(false);
-      setFormData({
-        name: "",
-        description: "",
-        image: "",
-        costPrice: "",
-        salePrice: "",
-        category: "",
-        ingredients: ""
-      });
-      setError("");
-
+      const createdProduct = await response.json();
+      setProducts([...products, createdProduct]);
+      setIsCreating(false);
     } catch (err) {
-      setError(err.message);
+      setError("Error al crear el producto");
     }
   };
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewProduct((prevState) => ({
+      ...prevState,
+      [name]: value
+    }));
   };
 
-  if (loading) return <div className="loading-message">Cargando...</div>;
+  const filteredProducts = selectedCategory === "all"
+    ? products
+    : products.filter(product => product.category === selectedCategory);
 
   return (
     <div className="products-page">
       <h2 className="page-title">Gestión de Productos</h2>
-      
       {error && <p className="error-message">{error}</p>}
-      
-      <button 
-        onClick={() => setShowForm(true)}
-        className="create-product-btn"
-      >
-        Crear Nuevo Producto
-      </button>
 
-      {showForm && (
-        <form onSubmit={handleCreateProduct} className="product-form">
-          <label>Nombre del Producto:</label>
+      <label>Filtrar por Categoría:</label>
+      <select
+        value={selectedCategory}
+        onChange={(e) => setSelectedCategory(e.target.value)}
+      >
+        <option value="all">Todas</option>
+        {categories.map(category => (
+          <option key={category._id} value={category._id}>{category.name}</option>
+        ))}
+      </select>
+
+      <button onClick={() => setIsCreating(true)}>Crear Producto</button>
+
+      {isCreating && (
+        <div className="create-product-form">
+          <h3>Crear Producto</h3>
           <input
             type="text"
             name="name"
-            placeholder="Nombre del producto"
-            value={formData.name}
-            onChange={handleChange}
-            required
+            placeholder="Nombre del Producto"
+            value={newProduct.name}
+            onChange={handleInputChange}
           />
-
-          <label>Descripción:</label>
           <textarea
             name="description"
             placeholder="Descripción"
-            value={formData.description}
-            onChange={handleChange}
-            required
+            value={newProduct.description}
+            onChange={handleInputChange}
           />
-
-          <label>URL de Imagen:</label>
           <input
-            type="url"
+            type="text"
             name="image"
-            placeholder="URL de la imagen"
-            value={formData.image}
-            onChange={handleChange}
-            required
+            placeholder="URL de Imagen"
+            value={newProduct.image}
+            onChange={handleInputChange}
           />
-
-          <label>Precio de Costo:</label>
           <input
             type="number"
-            step="0.01"
             name="costPrice"
-            placeholder="Precio de costo"
-            value={formData.costPrice}
-            onChange={handleChange}
-            required
+            placeholder="Precio de Costo"
+            value={newProduct.costPrice}
+            onChange={handleInputChange}
           />
-
-          <label>Precio de Venta:</label>
           <input
             type="number"
-            step="0.01"
             name="salePrice"
-            placeholder="Precio de venta"
-            value={formData.salePrice}
-            onChange={handleChange}
-            required
+            placeholder="Precio de Venta"
+            value={newProduct.salePrice}
+            onChange={handleInputChange}
           />
-
-          <label>Categoría:</label>
           <select
             name="category"
-            value={formData.category}
-            onChange={handleChange}
-            required
+            value={newProduct.category}
+            onChange={handleInputChange}
           >
             <option value="">Selecciona una categoría</option>
             {categories.map(category => (
-              <option key={category._id} value={category._id}>
-                {category.name}
-              </option>
+              <option key={category._id} value={category._id}>{category.name}</option>
             ))}
           </select>
-
-          <label>Ingredientes (separados por comas):</label>
           <input
             type="text"
             name="ingredients"
-            placeholder="Ingredientes"
-            value={formData.ingredients}
-            onChange={handleChange}
+            placeholder="Ingredientes (separados por comas)"
+            value={newProduct.ingredients}
+            onChange={handleInputChange}
           />
-
-          <div className="form-buttons">
-            <button type="submit" className="submit-btn">Crear</button>
-            <button type="button" onClick={() => setShowForm(false)} className="cancel-btn">
-              Cancelar
-            </button>
-          </div>
-        </form>
+          <button onClick={createProduct}>Crear</button>
+          <button onClick={() => setIsCreating(false)}>Cancelar</button>
+        </div>
       )}
 
       <div className="products-list">
-        {products.length > 0 ? (
-          products.map(product => (
+        {filteredProducts.length > 0 ? (
+          filteredProducts.map(product => (
             <div key={product._id} className="product-card">
               <img src={product.image} alt={product.name} className="product-image" />
               <h3 className="product-name">{product.name}</h3>
@@ -225,10 +206,12 @@ const ProductsPage = () => {
                   <p>🥗 Ingredientes: {product.ingredients.join(", ")}</p>
                 )}
               </div>
+              <button onClick={() => editProduct(product._id)}>✏️ Editar</button>
+              <button onClick={() => deleteProduct(product._id)}>🗑 Eliminar</button>
             </div>
           ))
         ) : (
-          <p>No hay productos creados</p>
+          <p>No hay productos en esta categoría</p>
         )}
       </div>
     </div>

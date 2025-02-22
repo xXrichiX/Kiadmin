@@ -30,7 +30,7 @@ const KiosksPage = () => {
         });
 
         const data = await response.json();
-        
+
         if (response.ok) {
           setKiosks(data);
         } else {
@@ -82,6 +82,31 @@ const KiosksPage = () => {
     }
   };
 
+  const handleEditKiosk = (kioskId) => {
+    navigate(`/edit-kiosk/${kioskId}`);
+  };
+
+  const handleDeleteKiosk = async (kioskId) => {
+    try {
+      const token = Cookies.get("authToken");
+      const response = await fetch(`https://orderandout.onrender.com/api/intern/kiosks/${kioskId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al eliminar kiosko");
+      }
+
+      setKiosks(kiosks.filter(kiosk => kiosk._id !== kioskId));
+    } catch (err) {
+      setError("Error al eliminar el kiosko");
+    }
+  };
+
   if (loading) return <div className="loading-message">Cargando...</div>;
 
   return (
@@ -120,13 +145,15 @@ const KiosksPage = () => {
             minLength="8"
             className="text-input"
           />
-          
-          <div className="form-buttons">
-            <button type="submit" className="submit-btn">Crear</button>
-            <button type="button" onClick={() => setShowForm(false)} className="cancel-btn">
-              Cancelar
-            </button>
-          </div>
+
+          <button type="submit" className="submit-btn">Crear Kiosko</button>
+          <button 
+            type="button" 
+            onClick={() => setShowForm(false)} 
+            className="cancel-btn"
+          >
+            Cancelar
+          </button>
         </form>
       )}
 
@@ -137,6 +164,18 @@ const KiosksPage = () => {
               <h3 className="kiosk-title">Kiosko {kiosk.paymentType}</h3>
               <p className="kiosk-id">ID: {kiosk._id}</p>
               <p className="kiosk-date">Creado: {new Date(kiosk.createdAt).toLocaleDateString()}</p>
+              <button 
+                onClick={() => handleEditKiosk(kiosk._id)} 
+                className="edit-kiosk-btn"
+              >
+                ✏️ Editar
+              </button>
+              <button 
+                onClick={() => handleDeleteKiosk(kiosk._id)} 
+                className="delete-kiosk-btn"
+              >
+                🗑 Eliminar
+              </button>
             </div>
           ))
         ) : (

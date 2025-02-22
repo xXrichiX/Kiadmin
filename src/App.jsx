@@ -16,7 +16,7 @@ import OrdersPage from "./Home/OrdersPage";
 function App() {
   return (
     <div className="App">
-      <h1>Bienvenido a Kibbi (imagen)</h1>
+    {/*  <h1>Bienvenido a Kibbi (imagen)</h1> */}
 
       {/* Configuración de rutas */}
       <Routes>
