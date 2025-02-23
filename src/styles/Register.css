@@ -1,89 +1,149 @@
-/* src/styles/Register.css */
-.auth-page {
+/* Estilos generales */
+.register-page {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: transparent;
+  background-color: #f4f7fc;
+  font-family: 'Arial', sans-serif;
+  padding: 20px;
 }
 
-.auth-container {
-  background: rgba(255, 255, 255, 0.9);
-  padding: 40px;
-  border-radius: 10px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+.register-container {
+  display: flex;
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  max-width: 1000px;
   width: 100%;
-  max-width: 400px;
-  text-align: center;
 }
 
-.auth-form input {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  box-sizing: border-box;
-  font-size: 16px;
-}
-
-.auth-form div {
-  position: relative;
-  width: 100%;
-  margin-bottom: 15px;
-}
-
-.auth-form div span {
-  position: absolute;
-  width: 45px;
-  height: 45px;
-  top: 0;
-  left: 0;
-  border-right: 1px solid #ccc;
-  color: gray;
+.register-image {
+  flex: 1;
+  background-color: #f0f0f0;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 18px;
-  box-sizing: border-box;
 }
 
-.auth-form div input[type="number"] {
-  padding-left: 55px;
-  height: 45px;
-  font-size: 16px;
+.register-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.auth-form button {
+.register-form {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.form-content {
+  width: 100%;
+  max-width: 400px;
+}
+
+.form-title {
+  font-size: 2rem;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group input {
   width: 100%;
   padding: 12px;
-  background: #AB0831;
-  color: white;
-  border: none;
-  border-radius: 5px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
   font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.3s;
+  transition: border-color 0.3s ease;
 }
 
-.auth-form button:hover {
-  background: #0056b3;
+.input-group input:focus {
+  border-color: #AB0831;
+  outline: none;
+}
+
+.error-message {
+  color: #AB0831;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.button-container {
+  text-align: center;
+}
+
+.submit-button {
+  background-color: #AB0831;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  width: 100%;
+}
+
+.submit-button:hover {
+  background-color: #AB0831;
 }
 
 .auth-links {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  margin-top: 15px;
+  text-align: center;
+  margin-top: 20px;
 }
 
-.login-link {
-  text-decoration: none;
+.auth-links p {
+  color: #666;
+}
+
+.auth-links a {
   color: #AB0831;
-  font-size: 14px;
+  text-decoration: none;
 }
 
-.login-link:hover {
+.auth-links a:hover {
   text-decoration: underline;
+}
+
+/* Media Queries para Responsive Design */
+@media (max-width: 768px) {
+  .register-container {
+    flex-direction: column;
+  }
+
+  .register-image {
+    height: 200px;
+  }
+
+  .register-form {
+    padding: 20px;
+  }
+
+  .form-title {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-title {
+    font-size: 1.5rem;
+  }
+
+  .input-group input {
+    font-size: 0.9rem;
+  }
+
+  .submit-button {
+    padding: 10px 20px;
+  }
 }

@@ -19,7 +19,6 @@ const ResetPassword = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Validación básica para asegurar que las contraseñas coinciden
     if (newPassword !== confirmPassword) {
       setError("Las contraseñas no coinciden. Intenta de nuevo.");
       return;
@@ -27,41 +26,54 @@ const ResetPassword = () => {
 
     // Aquí puedes agregar la lógica para actualizar la contraseña en la base de datos
 
-    // Si todo está bien, redirigimos al usuario a la página de inicio de sesión (o la página deseada)
     navigate("/login");
   };
 
   return (
     <div className="reset-password-page">
       <div className="reset-password-container">
-        <h2>Restablecer Contraseña</h2>
-        <p>Ingresa tu nueva contraseña.</p>
-        <form className="reset-password-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="newPassword">Nueva Contraseña</label>
-            <input
-              type="password"
-              id="newPassword"
-              value={newPassword}
-              onChange={handleNewPasswordChange}
-              required
-            />
+        <div className="reset-password-image">
+          {/* Imagen de fondo representativa */}
+          <img
+            src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1934&q=80"
+            alt="Restaurante"
+            className="background-image"
+          />
+        </div>
+        <div className="reset-password-form">
+          <div className="form-content">
+            <h2 className="form-title">Restablecer Contraseña</h2>
+            <p className="form-description">Ingresa tu nueva contraseña.</p>
+            <form onSubmit={handleSubmit}>
+              <div className="input-group">
+                <label htmlFor="newPassword">Nueva Contraseña</label>
+                <input
+                  type="password"
+                  id="newPassword"
+                  value={newPassword}
+                  onChange={handleNewPasswordChange}
+                  required
+                />
+              </div>
+              <div className="input-group">
+                <label htmlFor="confirmPassword">Confirmar Contraseña</label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  value={confirmPassword}
+                  onChange={handleConfirmPasswordChange}
+                  required
+                />
+              </div>
+              {error && <p className="error-message">{error}</p>}
+              <div className="button-container">
+                <button type="submit" className="submit-button">
+                  Restablecer Contraseña
+                </button>
+              </div>
+            </form>
           </div>
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirmar Contraseña</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              value={confirmPassword}
-              onChange={handleConfirmPasswordChange}
-              required
-            />
-          </div>
-
-          {error && <p className="error-message">{error}</p>}
-
-          <button type="submit">Restablecer Contraseña</button>
-        </form>
+        </div>
       </div>
     </div>
   );

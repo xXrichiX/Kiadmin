@@ -18,7 +18,7 @@
 .create-restaurant-btn {
   padding: 12px 25px;
   font-size: 1.1rem;
-  background-color: #3498db;
+  background-color: #AB0831;
   color: white;
   border: none;
   cursor: pointer;
@@ -27,7 +27,7 @@
 }
 
 .create-restaurant-btn:hover {
-  background-color: #2980b9;
+  background-color: #AB0831;
 }
 
 .restaurant-form {

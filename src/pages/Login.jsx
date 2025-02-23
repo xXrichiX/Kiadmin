@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import "../styles/Login.css"; // Importa el CSS
-import "../assets/cafecito.jpg";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -21,7 +20,7 @@ function Login() {
         },
         body: JSON.stringify({
           email,
-          password
+          password,
         }),
       });
 
@@ -51,38 +50,42 @@ function Login() {
   };
 
   return (
-    <div className="l-form">
-      <div className="form-container">
-        <div className="image-container">
-          {/* Aquí va la imagen de fondo, usa una imagen  que sea representativa de un restaurante o café */}
-          <img src="/assets/cafecito.jpg" alt="Comida" className="background-image" />
-          </div>
-        <div className="form">
-          <div className="form__content">
-            <h1 className="form__title">Iniciar Sesión</h1>
-            <p className="form__welcome">Bienvenido a Kibbi</p>
+    <div className="login-page">
+      <div className="login-container">
+        <div className="login-image">
+          {/* Imagen de fondo representativa de un restaurante o café */}
+          <img
+            src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1934&q=80"
+            alt="Restaurante"
+            className="background-image"
+          />
+        </div>
+        <div className="login-form">
+          <div className="form-content">
+            <h1 className="form-title">Iniciar Sesión</h1>
+            <p className="form-welcome">Bienvenido a Kibbi</p>
             <form onSubmit={handleSubmit}>
-              <div className="form__div">
+              <div className="input-group">
                 <input
                   type="email"
-                  className="form__input"
+                  className="form-input"
                   placeholder="Correo Electrónico"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
-              <div className="form__div">
+              <div className="input-group">
                 <input
                   type={showPassword ? "text" : "password"}
-                  className="form__input"
+                  className="form-input"
                   placeholder="Contraseña"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
                 <span
-                  className="form__icon"
+                  className="password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? "🙈" : "👁️"}
@@ -91,16 +94,22 @@ function Login() {
 
               {error && <p className="error-message">{error}</p>}
 
-              <div className="form__forgot">
-                <a href="#" onClick={handleForgotPasswordRedirect}>¿Olvidaste tu contraseña?</a>
+              <div className="forgot-password">
+                <a href="#" onClick={handleForgotPasswordRedirect}>
+                  ¿Olvidaste tu contraseña?
+                </a>
               </div>
-              <div className="form__button-container">
-                <button type="submit" className="form__button">Ingresar</button>
+              <div className="button-container">
+                <button type="submit" className="submit-button">
+                  Ingresar
+                </button>
               </div>
             </form>
-            <div className="form__social">
+            <div className="register-link">
               <p>¿No tienes cuenta?</p>
-              <a href="#" onClick={handleRegisterRedirect}>Regístrate</a>
+              <a href="#" onClick={handleRegisterRedirect}>
+                Regístrate
+              </a>
             </div>
           </div>
         </div>

@@ -57,28 +57,46 @@ const VerifyCode = () => {
   return (
     <div className="verify-page">
       <div className="verify-container">
-        <h2>Verificar Código</h2>
-        <p>Introduce el código de verificación que se envió a tu correo electrónico.</p>
-        <form className="verify-form" onSubmit={handleSubmit}>
-          <div className="verification-code">
-            {verificationCode.map((digit, index) => (
-              <input
-                key={index}
-                ref={(el) => (inputsRef.current[index] = el)}
-                type="tel"
-                pattern="[0-9]*"
-                maxLength="1"
-                value={digit}
-                onChange={(e) => handleVerificationCodeChange(e, index)}
-                onKeyDown={(e) => handleKeyDown(e, index)}
-                autoFocus={index === 0}
-                required
-              />
-            ))}
+        <div className="verify-image">
+          {/* Imagen de fondo representativa */}
+          <img
+            src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1934&q=80"
+            alt="Restaurante"
+            className="background-image"
+          />
+        </div>
+        <div className="verify-form">
+          <div className="form-content">
+            <h2 className="form-title">Verificar Código</h2>
+            <p className="form-description">
+              Introduce el código de verificación que se envió a tu correo electrónico.
+            </p>
+            <form onSubmit={handleSubmit}>
+              <div className="verification-code">
+                {verificationCode.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={(el) => (inputsRef.current[index] = el)}
+                    type="tel"
+                    pattern="[0-9]*"
+                    maxLength="1"
+                    value={digit}
+                    onChange={(e) => handleVerificationCodeChange(e, index)}
+                    onKeyDown={(e) => handleKeyDown(e, index)}
+                    autoFocus={index === 0}
+                    required
+                  />
+                ))}
+              </div>
+              {error && <p className="error-message">{error}</p>}
+              <div className="button-container">
+                <button type="submit" className="submit-button">
+                  Verificar Código
+                </button>
+              </div>
+            </form>
           </div>
-          {error && <p className="error-message">{error}</p>}
-          <button type="submit">Verificar Código</button>
-        </form>
+        </div>
       </div>
     </div>
   );

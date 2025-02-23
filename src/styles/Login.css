@@ -1,181 +1,190 @@
-.l-form {
+/* Estilos generales */
+.login-page {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: #f4f7fc; /* Fondo claro y limpio */
-  flex-direction: row; /* Disposición horizontal para dividir en dos */
+  background-color: #f4f7fc;
+  font-family: 'Arial', sans-serif;
+  padding: 20px;
 }
 
-.form-container {
+.login-container {
   display: flex;
-  flex-direction: row;
-  max-width: 1200px; /* Ajuste para hacer el formulario más grande */
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  max-width: 1000px;
   width: 100%;
-  height: 100%;
 }
 
-.image-container {
+.login-image {
   flex: 1;
-  background-size: cover;
-  background-position: center;
-  height: 100%;
-  position: relative;
-}
-
-.background-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* La imagen ocupará el fondo sin distorsionarse */
-}
-
-.form {
-  background: #ffffff;
-  padding: 50px;
-  border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  width: 50%;
-  max-width: 480px;
-  text-align: center;
-  border: 1px solid #e0e0e0;
-  position: relative;
-  z-index: 2;
-}
-
-.form__content {
+  background-color: #f0f0f0;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
 }
 
-.form__title {
-  font-size: 2.2rem;
-  font-weight: bold;
-  color: #333333;
-  margin-bottom: 15px;
+.login-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.form__welcome {
-  font-size: 1.2rem;
-  color: #555555;
+.login-form {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.form-content {
+  width: 100%;
+  max-width: 400px;
+}
+
+.form-title {
+  font-size: 2rem;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.form-welcome {
+  font-size: 1rem;
+  color: #666;
+  text-align: center;
   margin-bottom: 30px;
-  font-weight: 500;
 }
 
-.form__div {
+.input-group {
+  margin-bottom: 20px;
   position: relative;
-  width: 100%;
-  margin-bottom: 25px;
 }
 
-.form__input {
+.form-input {
   width: 100%;
-  padding: 18px;
-  margin-bottom: 15px;
-  border: 1px solid #dcdcdc;
-  border-radius: 10px;
-  box-sizing: border-box;
-  font-size: 16px;
-  transition: border 0.3s ease;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
 }
 
-.form__input:focus {
+.form-input:focus {
   border-color: #AB0831;
   outline: none;
 }
 
-.form__icon {
+.password-toggle {
   position: absolute;
+  right: 10px;
   top: 50%;
-  right: 15px;
   transform: translateY(-50%);
   cursor: pointer;
-  font-size: 18px;
-  color: #AB0831;
-}
-
-.form__forgot {
-  margin-top: 15px;
-}
-
-.form__forgot a {
-  color: #AB0831;
-  font-size: 14px;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.form__forgot a:hover {
-  text-decoration: underline;
-}
-
-.form__button-container {
-  margin-top: 35px;
-}
-
-.form__button {
-  width: 100%;
-  padding: 18px;
-  background: #AB0831;
-  color: white;
-  border: none;
-  border-radius: 10px;
   font-size: 1.2rem;
-  cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
-}
-
-.form__button:hover {
-  background: #9e072a;
-  transform: scale(1.05);
-}
-
-.form__social {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  margin-top: 25px;
-}
-
-.form__social p {
-  font-size: 14px;
-  color: #555555;
-}
-
-.form__social a {
-  text-decoration: none;
-  color: #AB0831;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.form__social a:hover {
-  text-decoration: underline;
+  color: #666;
 }
 
 .error-message {
-  color: red;
-  font-size: 14px;
-  margin-bottom: 10px;
+  color: #AB0831;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.forgot-password {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.forgot-password a {
+  color: #AB0831;
+  text-decoration: none;
+}
+
+.forgot-password a:hover {
+  text-decoration: underline;
+}
+
+.button-container {
+  text-align: center;
+}
+
+.submit-button {
+  background-color: #AB0831;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  width: 100%;
+  max-width: 200px;
+}
+
+.submit-button:hover {
+  background-color: #8A0628; /* Efecto hover */
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.register-link p {
+  color: #666;
+}
+
+.register-link a {
+  color: #AB0831;
+  text-decoration: none;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
+}
+
+/* Media Queries para Responsive Design */
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+  }
+
+  .login-image {
+    height: 200px;
+  }
+
+  .login-form {
+    padding: 20px;
+  }
+
+  .form-title {
+    font-size: 1.75rem;
+  }
+
+  .submit-button {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
-  .form {
-    padding: 20px;
-    width: 90%;
+  .form-title {
+    font-size: 1.5rem;
   }
 
-  .form__title {
-    font-size: 1.6rem;
+  .form-welcome {
+    font-size: 0.9rem;
   }
 
-  .form__input {
-    padding: 14px;
-    font-size: 14px;
+  .form-input {
+    font-size: 0.9rem;
   }
 
-  .form__button {
-    font-size: 1.1rem;
+  .submit-button {
+    padding: 10px 20px;
   }
 }

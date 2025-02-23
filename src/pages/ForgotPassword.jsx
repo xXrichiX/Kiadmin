@@ -1,16 +1,15 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Importamos useNavigate
+import { useNavigate } from "react-router-dom";
 import "../styles/ForgotPassword.css";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const navigate = useNavigate(); // 👈 Agregamos useNavigate
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Simulación de envío del formulario
       const response = await fetch("https://orderandout.onrender.com/api/intern/admins/forgot-password", {
         method: "POST",
         headers: {
@@ -24,36 +23,54 @@ const ForgotPassword = () => {
         throw new Error(data.message || "Error al enviar el correo");
       }
 
-      // Guardamos un identificador temporal en cookies
       document.cookie = `tempId=${data.tempId}; path=/`;
-
-      // Mensaje de confirmación y redirección
       setMessage("Si tu correo está registrado, recibirás un enlace para restablecer tu contraseña.");
-      setTimeout(() => navigate("/verify-code"), 3000); // 👈 Redirige después de 3 segundos
-
+      setTimeout(() => navigate("/verify-code"), 3000);
     } catch (err) {
       setMessage(err.message || "Error al enviar el correo");
     }
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-container">
-        <h2>Recuperar Contraseña</h2>
-        <p>Introduce tu correo electrónico para recibir un enlace de recuperación.</p>
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <input
-            type="email"
-            placeholder="Correo Electrónico"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+    <div className="forgot-password-page">
+      <div className="forgot-password-container">
+        <div className="forgot-password-image">
+          {/* Imagen de fondo representativa */}
+          <img
+            src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1934&q=80"
+            alt="Restaurante"
+            className="background-image"
           />
-          <button type="submit">Enviar Código</button>
-        </form>
-        {message && <p className="auth-message">{message}</p>}
-        <div className="back-to-login">
-          <a href="/login">Volver al inicio de sesión</a>
+        </div>
+        <div className="forgot-password-form">
+          <div className="form-content">
+            <h2 className="form-title">Recuperar Contraseña</h2>
+            <p className="form-description">
+              Introduce tu correo electrónico para recibir un enlace de recuperación.
+            </p>
+            <form onSubmit={handleSubmit}>
+              <div className="input-group">
+                <input
+                  type="email"
+                  placeholder="Correo Electrónico"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="button-container">
+                <button type="submit" className="submit-button">
+                  Enviar Código
+                </button>
+              </div>
+            </form>
+            {message && <p className="auth-message">{message}</p>}
+            <div className="back-to-login">
+              <a href="/login" className="login-link">
+                Volver al inicio de sesión
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
