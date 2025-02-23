@@ -4,6 +4,9 @@
   font-family: 'Arial', sans-serif;
   background-color: #f4f7fc; /* Fondo claro y moderno */
   min-height: 100vh;
+  max-width: 1200px;    /* Ancho máximo para centrar el contenido */
+  margin: 0 auto;       /* Centra el contenedor en la pantalla */
+  overflow-x: hidden;   /* Evita desbordamientos horizontales */
 }
 
 .page-title {
@@ -138,6 +141,7 @@
   flex-wrap: wrap;
   gap: 20px;
   margin-top: 20px;
+  justify-content: center;  /* Centra las tarjetas horizontalmente */
 }
 
 .kiosk-card {

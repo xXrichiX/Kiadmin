@@ -1,11 +1,11 @@
 import React from "react";
-import "../styles/OrdersPage.css"; 
+import "../styles/OrdersPage.css";
 
 function OrdersPage() {
   return (
     <div className="orders-page">
+      <h2 className="page-title">Lista de Órdenes</h2>
       <div className="orders-container">
-        <h2>Lista de Órdenes</h2>
         <table className="orders-table">
           <thead>
             <tr>
@@ -26,7 +26,9 @@ function OrdersPage() {
               <td>2</td>
               <td>$20</td>
               <td>Tarjeta</td>
-              <td>Completado</td>
+              <td>
+                <span className="status completed">Completado</span>
+              </td>
             </tr>
             <tr>
               <td>12346</td>
@@ -35,7 +37,9 @@ function OrdersPage() {
               <td>3</td>
               <td>$15</td>
               <td>Paypal</td>
-              <td>En espera</td>
+              <td>
+                <span className="status pending">En espera</span>
+              </td>
             </tr>
           </tbody>
         </table>

@@ -138,6 +138,7 @@
   flex-wrap: wrap;
   gap: 20px;
   margin-top: 20px;
+  justify-content: center; /* Centra las cartas horizontalmente */
 }
 
 .product-card {

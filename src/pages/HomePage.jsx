@@ -6,9 +6,8 @@ import RestaurantManagement from "../Home/RestaurantPage"; // Asegúrate de la r
 import CategoriesPage from "../Home/CategoriesPage";
 import ProductsPage from "../Home/ProductsPage";
 import KiosksPage from "../Home/KioskPage";
-import Profile from "../Home/Profile"; 
+import Profile from "../Home/Profile";
 import OrdersPage from "../Home/OrdersPage";
-
 
 const HomePage = () => {
   const [loading, setLoading] = useState(true);
@@ -35,7 +34,7 @@ const HomePage = () => {
         });
 
         const data = await response.json();
-        
+
         if (response.status === 403) {
           Cookies.remove("authToken");
           navigate("/login");
@@ -62,12 +61,8 @@ const HomePage = () => {
 
   // Función para cerrar sesión
   const handleLogout = () => {
+    Cookies.remove("authToken");
     navigate("/login");
-  };
-
-  // Función para ir al perfil del usuario
-  const handleProfile = () => {
-    navigate("/perfil");
   };
 
   // Función para cambiar la sección activa
@@ -82,12 +77,42 @@ const HomePage = () => {
       {/* Menú Vertical */}
       <div className={`slider-menu ${isMenuOpen ? "open" : ""}`}>
         <ul>
-          <li onClick={() => changeSection("dashboard")}>Dashboard</li>
-          <li onClick={() => changeSection("categories")}>Categorías</li>
-          <li onClick={() => changeSection("kiosks")}>Kioskos</li>
-          <li onClick={() => changeSection("products")}>Productos</li>
-          <li onClick={() => changeSection("restaurant")}>Restaurante</li>
-          <li onClick={() => changeSection("orders")}>Órdenes</li>
+          <li
+            className={activeSection === "dashboard" ? "active" : ""}
+            onClick={() => changeSection("dashboard")}
+          >
+            Dashboard
+          </li>
+          <li
+            className={activeSection === "categories" ? "active" : ""}
+            onClick={() => changeSection("categories")}
+          >
+            Categorías
+          </li>
+          <li
+            className={activeSection === "kiosks" ? "active" : ""}
+            onClick={() => changeSection("kiosks")}
+          >
+            Kioskos
+          </li>
+          <li
+            className={activeSection === "products" ? "active" : ""}
+            onClick={() => changeSection("products")}
+          >
+            Productos
+          </li>
+          <li
+            className={activeSection === "restaurant" ? "active" : ""}
+            onClick={() => changeSection("restaurant")}
+          >
+            Restaurante
+          </li>
+          <li
+            className={activeSection === "orders" ? "active" : ""}
+            onClick={() => changeSection("orders")}
+          >
+            Órdenes
+          </li>
         </ul>
       </div>
 
@@ -96,12 +121,12 @@ const HomePage = () => {
         <button className="menu-toggle-button" onClick={toggleMenu}>
           {isMenuOpen ? "Cerrar Menú" : "Abrir Menú"}
         </button>
-
-        <button className="profile-button" onClick={() => setActiveSection("profile")}>
-  Perfil
-</button>
-
-        
+        <button
+          className={`profile-button ${activeSection === "profile" ? "active" : ""}`}
+          onClick={() => changeSection("profile")}
+        >
+          Perfil
+        </button>
         <button className="logout-button" onClick={handleLogout}>
           Cerrar Sesión
         </button>
@@ -111,14 +136,14 @@ const HomePage = () => {
       <div className={`content-area ${isMenuOpen ? "menu-open" : ""}`}>
         <div className="content">
           {/* Mostrar el contenido de acuerdo a la sección seleccionada */}
-          {activeSection === "home" && <h2>Bienvenido al Home 🏠</h2>}
+          {activeSection === "home" && <h2>Bienvenido al Dashboard 🏠</h2>}
           {activeSection === "dashboard" && <h2>Dashboard</h2>}
           {activeSection === "categories" && <CategoriesPage />}
           {activeSection === "kiosks" && <KiosksPage />}
           {activeSection === "products" && <ProductsPage />}
-          {activeSection === "restaurant" && <RestaurantManagement />} 
+          {activeSection === "restaurant" && <RestaurantManagement />}
           {activeSection === "orders" && <OrdersPage />}
-          {activeSection === "profile" && <Profile />} {/* 👈 Aquí agregamos Profile */}
+          {activeSection === "profile" && <Profile />}
         </div>
       </div>
     </div>
