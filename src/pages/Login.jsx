@@ -94,6 +94,7 @@ function Login() {
 
               {error && <p className="error-message">{error}</p>}
 
+
               <div className="forgot-password">
                 <a href="#" onClick={handleForgotPasswordRedirect}>
                   ¿Olvidaste tu contraseña?
