@@ -25,7 +25,7 @@ const HomePage = () => {
           return;
         }
 
-        const response = await fetch("https://orderandout.onrender.com/api/intern/restaurants/mine", {
+        const response = await fetch("https://orderandout-refactor.onrender.com/api/admins/restaurants/mine", {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -84,10 +84,10 @@ const HomePage = () => {
             Dashboard
           </li>
           <li
-            className={activeSection === "categories" ? "active" : ""}
-            onClick={() => changeSection("categories")}
+            className={activeSection === "restaurant" ? "active" : ""}
+            onClick={() => changeSection("restaurant")}
           >
-            Categorías
+            Restaurante
           </li>
           <li
             className={activeSection === "kiosks" ? "active" : ""}
@@ -96,16 +96,16 @@ const HomePage = () => {
             Kioskos
           </li>
           <li
+            className={activeSection === "categories" ? "active" : ""}
+            onClick={() => changeSection("categories")}
+          >
+            Categorías
+          </li>
+          <li
             className={activeSection === "products" ? "active" : ""}
             onClick={() => changeSection("products")}
           >
             Productos
-          </li>
-          <li
-            className={activeSection === "restaurant" ? "active" : ""}
-            onClick={() => changeSection("restaurant")}
-          >
-            Restaurante
           </li>
           <li
             className={activeSection === "orders" ? "active" : ""}

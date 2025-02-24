@@ -29,30 +29,41 @@ const VerifyCode = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("https://orderandout-refactor.onrender.com/api/admins/verify-account", {
+      const isPasswordReset = location.pathname === "/reset-password";
+      const endpoint = isPasswordReset 
+        ? "https://orderandout-refactor.onrender.com/api/admins/reset-password"
+        : "https://orderandout-refactor.onrender.com/api/admins/verify-account";
+
+      const requestBody = isPasswordReset ? {
+        email: location.state?.email,
+        code: verificationCode.join(""),
+        newPassword: location.state?.newPassword
+      } : {
+        tempId: Cookies.get("tempId"),
+        code: verificationCode.join("")
+      };
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tempId: Cookies.get("tempId"),
-          code: verificationCode.join("")
-        })
+        body: JSON.stringify(requestBody)
       });
 
       const data = await response.json();
-      
       if (!response.ok) {
         throw new Error(data.message || "Código incorrecto");
       }
 
-      Cookies.remove("tempId");
-      Cookies.set("authToken", data.token, {
-        expires: 1,
-        secure: true,
-        sameSite: "strict"
-      });
-      
-      navigate("/home");
-
+      if (data.token) {
+        Cookies.set("authToken", data.token, {
+          expires: 1,
+          secure: true,
+          sameSite: "strict",
+        });
+        navigate("/home");
+      } else {
+        navigate("/reset-password");
+      }
     } catch (err) {
       setError(err.message || "Error al verificar el código");
     }

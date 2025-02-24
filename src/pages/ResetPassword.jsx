@@ -6,6 +6,7 @@ const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [email, setEmail] = useState("");
   const navigate = useNavigate();
 
   const handleNewPasswordChange = (e) => {
@@ -16,6 +17,10 @@ const ResetPassword = () => {
     setConfirmPassword(e.target.value);
   };
 
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -24,9 +29,16 @@ const ResetPassword = () => {
       return;
     }
 
-    // Aquí puedes agregar la lógica para actualizar la contraseña en la base de datos
-
-    navigate("/login");
+    // Guardar email en localStorage para recuperarlo después
+    localStorage.setItem("resetEmail", email);
+    
+    // Navegar a VerifyCode con los parámetros necesarios
+    navigate("/verify-code", {
+      state: {
+        email: email,
+        newPassword: newPassword
+      }
+    });
   };
 
   return (
@@ -45,6 +57,16 @@ const ResetPassword = () => {
             <h2 className="form-title">Restablecer Contraseña</h2>
             <p className="form-description">Ingresa tu nueva contraseña.</p>
             <form onSubmit={handleSubmit}>
+              <div className="input-group">
+                <label htmlFor="email">Correo Electrónico</label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={handleEmailChange}
+                  required
+                />
+              </div>
               <div className="input-group">
                 <label htmlFor="newPassword">Nueva Contraseña</label>
                 <input

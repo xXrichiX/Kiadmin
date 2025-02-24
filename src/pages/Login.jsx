@@ -13,7 +13,7 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("https://orderandout.onrender.com/api/intern/admins/login/admin", {
+      const response = await fetch("https://orderandout-refactor.onrender.com/api/admins/login/admin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -27,7 +27,7 @@ function Register() {
     }
 
     try {
-      const response = await fetch("https://orderandout.onrender.com/api/intern/admins/start-register", {
+      const response = await fetch("https://orderandout-refactor.onrender.com/api/admins/start-register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -35,7 +35,7 @@ function Register() {
         body: JSON.stringify({
           firstName: name,
           lastName: lastName,
-          phone: phone.toString(),
+          phone: phone,
           birthDate,
           email,
           password,
