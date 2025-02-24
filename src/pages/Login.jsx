@@ -30,8 +30,15 @@ function Login() {
         throw new Error(data.message || "Error de autenticación");
       }
 
+      Cookies.remove("authToken");
       Cookies.remove("tempId");
-      Cookies.set("authToken", data.token, { expires: 1, secure: true, sameSite: "strict" });
+      
+      Cookies.set("authToken", data.token, { 
+        expires: 1,
+        secure: true, 
+        sameSite: "strict",
+        path: "/"
+      });
 
       localStorage.setItem("user", JSON.stringify(data.user));
 

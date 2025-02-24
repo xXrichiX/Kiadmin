@@ -26,20 +26,29 @@ const CategoriesPage = () => {
           return;
         }
 
-        const categoriesResponse = await fetch("https://orderandout.onrender.com/api/intern/categories/mine", {
+        const categoriesResponse = await fetch("https://orderandout-refactor.onrender.com/api/categories/mineCategory", {
           headers: { Authorization: `Bearer ${token}` },
         });
+        
+        if (!categoriesResponse.ok) {
+          throw new Error(`Error categorías: ${categoriesResponse.status}`);
+        }
+        
         const categoriesData = await categoriesResponse.json();
         setCategories(categoriesData);
 
         const productsResponse = await fetch("https://orderandout.onrender.com/api/intern/products/mine", {
           headers: { Authorization: `Bearer ${token}` },
         });
+
+        if (!productsResponse.ok) {
+          throw new Error(`Error productos: ${productsResponse.status}`);
+        }
+        
         const productsData = await productsResponse.json();
         setProducts(productsData);
       } catch (err) {
         setError(err.message);
-      } finally {
         setLoading(false);
       }
     };
@@ -76,14 +85,34 @@ const CategoriesPage = () => {
   const deleteCategory = async (categoryId) => {
     try {
       const token = Cookies.get("authToken");
-      await fetch(`https://orderandout.onrender.com/api/intern/categories/${categoryId}`, {
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch(`https://orderandout-refactor.onrender.com/api/categories/myCategory/${categoryId}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
       });
-      setCategories(categories.filter((category) => category._id !== categoryId));
-      setProducts(products.filter((product) => product.category !== categoryId));
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || `Error ${response.status}`);
+      }
+
+      setCategories(categories.filter(c => c._id !== categoryId));
+      setProducts(products.filter(p => p.category !== categoryId));
     } catch (err) {
-      setError("Error al eliminar la categoría");
+      setError(`Error al eliminar: ${err.message}`);
+      console.error("Detalles del error:", {
+        error: err,
+        categoryId,
+        status: response?.status
+      });
     }
   };
 
@@ -99,21 +128,32 @@ const CategoriesPage = () => {
     if (!validateCategory()) return;
     try {
       const token = Cookies.get("authToken");
-      const response = await fetch(`https://orderandout.onrender.com/api/intern/categories/${editingCategoryId}`, {
+      const response = await fetch(`https://orderandout-refactor.onrender.com/api/categories/myCategory/${editingCategoryId}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify({ name, description }),
+        body: JSON.stringify({ 
+          name, 
+          description 
+        })
       });
-      const updatedCategory = await response.json();
-      setCategories(categories.map((category) => (category._id === updatedCategory._id ? updatedCategory : category)));
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || "Error al actualizar");
+      }
+
+      setCategories(categories.map((category) => 
+        category._id === editingCategoryId ? { ...category, name, description } : category
+      ));
       setIsEditing(false);
       setName("");
       setDescription("");
     } catch (err) {
-      setError("Error al actualizar la categoría");
+      setError("Error al actualizar: " + err.message);
     }
   };
 
@@ -121,13 +161,16 @@ const CategoriesPage = () => {
     if (!validateCategory()) return;
     try {
       const token = Cookies.get("authToken");
-      const response = await fetch("https://orderandout.onrender.com/api/intern/categories", {
+      const response = await fetch("https://orderandout-refactor.onrender.com/api/categories/myCategory", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify({ name, description }),
+        body: JSON.stringify({ 
+          name, 
+          description 
+        })
       });
       const createdCategory = await response.json();
       setCategories([...categories, createdCategory]);
@@ -151,113 +194,119 @@ const CategoriesPage = () => {
 
   return (
     <div className="categories-page">
-      <h2 className="page-title">Gestión de Categorías</h2>
-      {error && <p className="error-message">{error}</p>}
-
-      <button
-        onClick={() => {
-          setIsCreating(true);
-          setName("");
-          setDescription("");
-        }}
-        className="create-category-btn"
-      >
-        Crear Nueva Categoría
-      </button>
-
-      <div className="sort-filter">
-        <label>Ordenar por:</label>
-        <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
-          <option value="default">Predeterminado</option>
-          <option value="first">Primera creada</option>
-          <option value="last">Última creada</option>
-          <option value="alphabetical">Orden alfabético</option>
-        </select>
-      </div>
-
-      {isCreating && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Crear Nueva Categoría</h3>
-            <input
-              type="text"
-              placeholder="Nombre de la categoría"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <input
-              type="text"
-              placeholder="Descripción"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-            <div className="modal-buttons">
-              <button onClick={createCategory}>Crear</button>
-              <button onClick={handleCancel}>Cancelar</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isEditing && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Editar Categoría</h3>
-            <input
-              type="text"
-              placeholder="Nombre de la categoría"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <input
-              type="text"
-              placeholder="Descripción"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-            <div className="modal-buttons">
-              <button onClick={updateCategory}>Actualizar</button>
-              <button onClick={handleCancel}>Cancelar</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="categories-list horizontal">
-        {loading ? (
+      {loading ? (
+        <div className="loading-overlay">
           <p>Cargando...</p>
-        ) : sortedCategories.length > 0 ? (
-          sortedCategories.map((category) => (
-            <div key={category._id} className="category-card">
-              <h3 onClick={() => setSelectedCategory(category._id)}>{category.name}</h3>
-              <p>{category.description}</p>
-              <button onClick={() => editCategory(category)}>✏️ Editar</button>
-              <button onClick={() => deleteCategory(category._id)}>🗑 Eliminar</button>
-            </div>
-          ))
-        ) : (
-          <p>No hay categorías creadas</p>
-        )}
-      </div>
-
-      {/* Lista de productos de la categoría seleccionada */}
-      {selectedCategory && (
-        <div className="products-list">
-          <h3>Productos de la categoría seleccionada:</h3>
-          {filteredProducts.length > 0 ? (
-            filteredProducts.map(product => (
-              <div key={product._id} className="product-card">
-                <img src={product.image} alt={product.name} className="product-image" />
-                <h3>{product.name}</h3>
-                <p>{product.description}</p>
-                <p>💰 Costo: ${product.costPrice}</p>
-                <p>🏷 Venta: ${product.salePrice}</p>
-              </div>
-            ))
-          ) : (
-            <p>No hay productos en esta categoría</p>
-          )}
         </div>
+      ) : (
+        <>
+          <h2 className="page-title">Gestión de Categorías</h2>
+          {error && <p className="error-message">{error}</p>}
+
+          <button
+            onClick={() => {
+              setIsCreating(true);
+              setName("");
+              setDescription("");
+            }}
+            className="create-category-btn"
+          >
+            Crear Nueva Categoría
+          </button>
+
+          <div className="sort-filter">
+            <label>Ordenar por:</label>
+            <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+              <option value="default">Predeterminado</option>
+              <option value="first">Primera creada</option>
+              <option value="last">Última creada</option>
+              <option value="alphabetical">Orden alfabético</option>
+            </select>
+          </div>
+
+          {isCreating && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <h3>Crear Nueva Categoría</h3>
+                <input
+                  type="text"
+                  placeholder="Nombre de la categoría"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Descripción"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+                <div className="modal-buttons">
+                  <button onClick={createCategory}>Crear</button>
+                  <button onClick={handleCancel}>Cancelar</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isEditing && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <h3>Editar Categoría</h3>
+                <input
+                  type="text"
+                  placeholder="Nombre de la categoría"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Descripción"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+                <div className="modal-buttons">
+                  <button onClick={updateCategory}>Actualizar</button>
+                  <button onClick={handleCancel}>Cancelar</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="categories-list horizontal">
+            {sortedCategories.length > 0 ? (
+              sortedCategories.map((category) => (
+                <div key={category._id} className="category-card">
+                  <h3 onClick={() => setSelectedCategory(category._id)}>{category.name}</h3>
+                  <p>{category.description}</p>
+                  <button onClick={() => editCategory(category)}>✏️ Editar</button>
+                  <button onClick={() => deleteCategory(category._id)}>🗑 Eliminar</button>
+                </div>
+              ))
+            ) : (
+              <p>No hay categorías creadas</p>
+            )}
+          </div>
+
+          {/* Lista de productos de la categoría seleccionada */}
+          {selectedCategory && (
+            <div className="products-list">
+              <h3>Productos de la categoría seleccionada:</h3>
+              {filteredProducts.length > 0 ? (
+                filteredProducts.map(product => (
+                  <div key={product._id} className="product-card">
+                    <img src={product.image} alt={product.name} className="product-image" />
+                    <h3>{product.name}</h3>
+                    <p>{product.description}</p>
+                    <p>💰 Costo: ${product.costPrice}</p>
+                    <p>🏷 Venta: ${product.salePrice}</p>
+                  </div>
+                ))
+              ) : (
+                <p>No hay productos en esta categoría</p>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

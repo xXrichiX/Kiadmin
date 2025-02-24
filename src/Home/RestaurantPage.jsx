@@ -16,7 +16,11 @@ const RestaurantManagement = () => {
   const [image, setImage] = useState("");
   const [country, setCountry] = useState("");
   const [city, setCity] = useState("");
-  const [address, setAddress] = useState("");
+  const [street, setStreet] = useState("");
+  const [number, setNumber] = useState("");
+  const [crossStreets, setCrossStreets] = useState("");
+  const [colony, setColony] = useState("");
+  const [references, setReferences] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [restaurant, setRestaurant] = useState(null);
 
@@ -25,18 +29,20 @@ const RestaurantManagement = () => {
     const checkRestaurant = async () => {
       try {
         const token = Cookies.get("authToken");
-        if (!token) {
-          navigate("/login");
-          return;
-        }
-
-        const response = await fetch("https://orderandout.onrender.com/api/intern/restaurants/mine", {
+        
+        const response = await fetch("https://orderandout-refactor.onrender.com/api/restaurants/myRestaurant", {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json"
           }
         });
+
+        if (response.status === 401 || response.status === 403) {
+          Cookies.remove("authToken");
+          navigate("/login");
+          return;
+        }
 
         const data = await response.json();
 
@@ -49,13 +55,17 @@ const RestaurantManagement = () => {
             image: data.image,
             country: data.location.country,
             city: data.location.city,
-            address: data.location.address,
+            street: data.location.address.street,
+            number: data.location.address.number,
+            crossStreets: data.location.address.crossStreets,
+            colony: data.location.address.colony,
+            references: data.location.address.references,
             postalCode: data.location.postalCode
           };
           setRestaurant(simplifiedData);
           setHasRestaurant(true);
         } else {
-          throw new Error(data.message || "Error al verificar restaurante");
+          throw new Error(data.message || "Error al obtener restaurante");
         }
       } catch (err) {
         setError(err.message);
@@ -77,7 +87,11 @@ const RestaurantManagement = () => {
       setImage(restaurant.image);
       setCountry(restaurant.country);
       setCity(restaurant.city);
-      setAddress(restaurant.address);
+      setStreet(restaurant.street);
+      setNumber(restaurant.number);
+      setCrossStreets(restaurant.crossStreets);
+      setColony(restaurant.colony);
+      setReferences(restaurant.references);
       setPostalCode(restaurant.postalCode);
     } else {
       // Limpia el formulario para crear
@@ -85,7 +99,11 @@ const RestaurantManagement = () => {
       setImage("");
       setCountry("");
       setCity("");
-      setAddress("");
+      setStreet("");
+      setNumber("");
+      setCrossStreets("");
+      setColony("");
+      setReferences("");
       setPostalCode("");
     }
     setError("");
@@ -102,15 +120,12 @@ const RestaurantManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (!name || !image || !country || !city || !address || !postalCode) {
+      if (!name || !image || !country || !city || !street || !number || !crossStreets || !colony || !references || !postalCode) {
         throw new Error("Todos los campos son obligatorios");
       }
 
       const token = Cookies.get("authToken");
-      const url = isEditing
-        ? `https://orderandout.onrender.com/api/intern/restaurants/${restaurant.id}` // Modo edición
-        : "https://orderandout.onrender.com/api/intern/restaurants/"; // Modo creación
-
+      const url = "https://orderandout-refactor.onrender.com/api/restaurants/myRestaurant";
       const method = isEditing ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -122,7 +137,18 @@ const RestaurantManagement = () => {
         body: JSON.stringify({
           name,
           image,
-          location: { country, city, address, postalCode }
+          location: { 
+            country, 
+            city, 
+            address: {
+              street,
+              number,
+              crossStreets,
+              colony,
+              references
+            },
+            postalCode 
+          }
         })
       });
 
@@ -139,7 +165,11 @@ const RestaurantManagement = () => {
         image: data.image,
         country: data.location.country,
         city: data.location.city,
-        address: data.location.address,
+        street: data.location.address.street,
+        number: data.location.address.number,
+        crossStreets: data.location.address.crossStreets,
+        colony: data.location.address.colony,
+        references: data.location.address.references,
         postalCode: data.location.postalCode
       };
       setRestaurant(simplifiedData);
@@ -190,9 +220,12 @@ const RestaurantManagement = () => {
           <button onClick={() => openModal(true)} className="edit-restaurant-btn">
             ✏️ Editar Restaurante
           </button>
+          
+          {/* Comentado temporalmente
           <button onClick={handleDeleteRestaurant} className="delete-restaurant-btn">
             🗑 Eliminar Restaurante
           </button>
+          */}
         </div>
       ) : (
         <button onClick={() => openModal(false)} className="create-restaurant-btn">
@@ -236,9 +269,37 @@ const RestaurantManagement = () => {
               />
               <input
                 type="text"
-                placeholder="Dirección"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Calle"
+                value={street}
+                onChange={(e) => setStreet(e.target.value)}
+                required
+              />
+              <input
+                type="text"
+                placeholder="Número"
+                value={number}
+                onChange={(e) => setNumber(e.target.value)}
+                required
+              />
+              <input
+                type="text"
+                placeholder="Entre calles"
+                value={crossStreets}
+                onChange={(e) => setCrossStreets(e.target.value)}
+                required
+              />
+              <input
+                type="text"
+                placeholder="Colonia"
+                value={colony}
+                onChange={(e) => setColony(e.target.value)}
+                required
+              />
+              <input
+                type="text"
+                placeholder="Referencias"
+                value={references}
+                onChange={(e) => setReferences(e.target.value)}
                 required
               />
               <input
