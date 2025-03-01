@@ -89,13 +89,35 @@ const ProductsPage = () => {
   const deleteProduct = async (productId) => {
     try {
       const token = Cookies.get("authToken");
-      await fetch(`https://orderandout.onrender.com/api/intern/products/${productId}`, {
+      const response = await fetch(`https://orderandout-refactor.onrender.com/api/products/myProduct/${productId}`, {
         method: "DELETE",
-        headers: { "Authorization": `Bearer ${token}` }
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
       });
-      setProducts(products.filter(product => product._id !== productId));
+
+      // Manejar respuesta no-JSON
+      const text = await response.text();
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (parseError) {
+        console.error("Error parseando respuesta:", parseError);
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || `Error ${response.status}: ${text}`);
+      }
+
+      setProducts(products.filter(p => p._id !== productId));
     } catch (err) {
-      setError("Error al eliminar el producto");
+      setError(`Error al eliminar producto: ${err.message}`);
+      console.error("Detalles completos:", {
+        error: err,
+        productId,
+        responseText: text || "No hay respuesta"
+      });
     }
   };
 
@@ -139,20 +161,34 @@ const ProductsPage = () => {
         },
         body: JSON.stringify({
           ...newProduct,
-          ingredients: newProduct.ingredients.split(',').map(i => i.trim()) // Convertir a array
+          ingredients: newProduct.ingredients.split(',').map(i => i.trim())
         })
       });
 
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || "Error al crear producto");
+      // Manejar respuesta no-JSON
+      const text = await response.text();
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        throw new Error(text || "Respuesta inválida del servidor");
       }
 
-      setProducts([...products, data]);
+      if (!response.ok) {
+        throw new Error(data.message || `Error ${response.status}`);
+      }
+
+      // Actualización optimista del estado
+      setProducts(prev => [...prev, data]);
       closeModal();
+      
     } catch (err) {
       setError(err.message);
+      console.error("Error al crear producto:", {
+        error: err.stack,
+        productData: newProduct,
+        responseText: text
+      });
     }
   };
 

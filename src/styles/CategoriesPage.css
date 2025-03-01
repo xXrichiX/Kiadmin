@@ -339,3 +339,10 @@
     margin: 5px 0;
   }
 }
+
+.category-id {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 5px 0;
+  word-break: break-all;
+}

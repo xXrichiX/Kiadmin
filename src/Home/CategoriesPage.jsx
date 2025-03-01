@@ -98,20 +98,32 @@ const CategoriesPage = () => {
         }
       });
 
-      const data = await response.json();
+      // Manejar respuesta no-JSON
+      const text = await response.text();
+      let errorMessage = `Error ${response.status}`;
       
-      if (!response.ok) {
-        throw new Error(data.message || `Error ${response.status}`);
+      try {
+        const data = text ? JSON.parse(text) : {};
+        errorMessage = data.message || errorMessage;
+      } catch {
+        errorMessage = text || errorMessage;
       }
 
-      setCategories(categories.filter(c => c._id !== categoryId));
-      setProducts(products.filter(p => p.category !== categoryId));
+      if (!response.ok) {
+        throw new Error(errorMessage);
+      }
+
+      // Actualización optimista
+      setCategories(prev => prev.filter(c => c._id !== categoryId));
+      setProducts(prev => prev.filter(p => p.category !== categoryId));
+
     } catch (err) {
-      setError(`Error al eliminar: ${err.message}`);
-      console.error("Detalles del error:", {
-        error: err,
-        categoryId,
-        status: response?.status
+      setError(`Error eliminando categoría ID ${categoryId}: ${err.message}`);
+      console.error("Detalles completos:", {
+        status: response?.status,
+        headers: response?.headers,
+        responseText: text,
+        error: err.stack
       });
     }
   };
@@ -276,10 +288,20 @@ const CategoriesPage = () => {
             {sortedCategories.length > 0 ? (
               sortedCategories.map((category) => (
                 <div key={category._id} className="category-card">
-                  <h3 onClick={() => setSelectedCategory(category._id)}>{category.name}</h3>
-                  <p>{category.description}</p>
-                  <button onClick={() => editCategory(category)}>✏️ Editar</button>
-                  <button onClick={() => deleteCategory(category._id)}>🗑 Eliminar</button>
+                  <h3 onClick={() => setSelectedCategory(category._id)}>
+                    {category.name}
+                  </h3>
+                  <p className="category-description">{category.description}</p>
+                  <p className="category-id">ID: {category._id}</p>
+                  <div className="category-actions">
+                    <button onClick={() => editCategory(category)}>✏️ Editar</button>
+                    <button 
+                      onClick={() => deleteCategory(category._id)}
+                      title={`ID: ${category._id}`}
+                    >
+                      🗑 Eliminar
+                    </button>
+                  </div>
                 </div>
               ))
             ) : (

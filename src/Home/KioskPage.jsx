@@ -276,7 +276,7 @@ const KiosksPage = () => {
           kiosks.map((kiosk) => (
             <div key={kiosk._id} className="kiosk-card">
               <h3 className="kiosk-title">{kiosk.name}</h3>
-              <p className="kiosk-id">ID: {kiosk._id}</p>
+              <p className="kiosk-id">Serial: {kiosk._id}</p>
               <p className="kiosk-date">Creado: {new Date(kiosk.createdAt).toLocaleDateString()}</p>
               <button 
                 onClick={() => handleEditKiosk(kiosk)} 
