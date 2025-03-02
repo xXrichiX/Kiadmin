@@ -1,0 +1,280 @@
+/* Estilos generales */
+.kiosks-page {
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f7fc;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.page-title {
+  font-size: 2rem;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.error-message {
+  color: red;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.loading-message {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* Botón para crear un nuevo kiosko */
+.create-kiosk-btn {
+  background-color: #AB0831;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.create-kiosk-btn:hover {
+  background-color: #8A0628;
+}
+
+/* Ventana modal para el formulario de creación/edición */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.modal-content h3 {
+  font-size: 1.5rem;
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+.kiosk-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.kiosk-form label {
+  font-weight: bold;
+  color: #2c3e50;
+  text-align: left;
+}
+
+.kiosk-form .select-input,
+.kiosk-form .text-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.kiosk-form .select-input:focus,
+.kiosk-form .text-input:focus {
+  border-color: #AB0831;
+  outline: none;
+}
+
+/* Estilos para el contenedor de contraseña */
+.password-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-container .text-input {
+  width: 100%;
+  padding-right: 40px; /* Espacio para el ícono */
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-85%);
+  cursor: pointer;
+  width: 20px;  /* Tamaño del ícono */
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.password-toggle img {
+  width: 100%;  /* Hace que la imagen se ajuste al contenedor */
+  height: auto;
+}
+
+.password-icon {
+  max-width: 20px;
+  max-height: 20px;
+  object-fit: contain;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.modal-buttons button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.modal-buttons .submit-btn {
+  background-color: #AB0831;
+  color: white;
+}
+
+.modal-buttons .submit-btn:hover {
+  background-color: #8A0628;
+}
+
+.modal-buttons .cancel-btn {
+  background-color: #AB0831;
+  color: white;
+}
+
+.modal-buttons .cancel-btn:hover {
+  background-color: #8A0628;
+}
+
+/* Lista de kioskos */
+.kiosks-list {
+  display: grid;
+  gap: 2rem;
+  padding: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+@media (min-width: 768px) {
+  .kiosks-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .kiosks-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kiosk-card {
+  background: white;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+
+.kiosk-card:hover {
+  transform: translateY(-3px);
+}
+
+.kiosk-title {
+  font-size: 1.5rem;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.kiosk-id {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.kiosk-date {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.edit-kiosk-btn,
+.delete-kiosk-btn {
+  background-color: #AB0831;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 5px;
+}
+
+.edit-kiosk-btn:hover,
+.delete-kiosk-btn:hover {
+  background-color: #8A0628;
+}
+
+/* Media Queries para Responsive Design */
+@media (max-width: 768px) {
+  .kiosks-list {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .kiosk-card {
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .modal-content {
+    width: 90%;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 1.75rem;
+  }
+
+  .create-kiosk-btn {
+    width: 100%;
+  }
+
+  .kiosk-card {
+    padding: 15px;
+  }
+
+  .kiosk-title {
+    font-size: 1.25rem;
+  }
+
+  .edit-kiosk-btn,
+  .delete-kiosk-btn {
+    width: 100%;
+    margin: 5px 0;
+  }
+}

@@ -1,0 +1,121 @@
+/* Estilos generales */
+.orders-page {
+  padding: 20px;
+  background-color: #f7f7f7;
+  min-height: 100vh;
+}
+
+.page-title {
+  font-size: 2rem;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Contenedor de la tabla */
+.orders-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow-x: auto; /* Para hacer la tabla responsiva */
+}
+
+/* Estilos de la tabla */
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.orders-table th,
+.orders-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #ddd;
+}
+
+.orders-table th {
+  background-color: #AB0831;
+  color: white;
+  font-weight: bold;
+}
+
+.orders-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+/* Estilos para el estatus */
+.status {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  text-align: center;
+  display: inline-block;
+}
+
+.status.completed {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.status.pending {
+  background-color: #f1c40f;
+  color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .orders-container {
+    padding: 10px;
+  }
+
+  .orders-table th,
+  .orders-table td {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .status {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+  }
+}
+
+.status-select {
+  padding: 5px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.status-select.pending {
+  background-color: #fff3cd;
+  border-color: #ffeeba;
+}
+
+.status-select.en\ preparacion {
+  background-color: #cce5ff;
+  border-color: #b8daff;
+}
+
+.status-select.completed {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+
+.status-select.pendiente\ de\ pago {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+/* Ajustar anchos de columna */
+.orders-table th:nth-child(3),
+.orders-table td:nth-child(3) {
+  width: 80px;
+  text-align: center;
+}
+
+.orders-table td:nth-child(3) div {
+  padding: 2px 0;
+}
