@@ -102,6 +102,45 @@
   outline: none;
 }
 
+<<<<<<< HEAD
+=======
+/* Estilos para el contenedor de contraseña */
+.password-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-container .text-input {
+  width: 100%;
+  padding-right: 40px; /* Espacio para el ícono */
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-85%);
+  cursor: pointer;
+  width: 20px;  /* Tamaño del ícono */
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.password-toggle img {
+  width: 100%;  /* Hace que la imagen se ajuste al contenedor */
+  height: auto;
+}
+
+.password-icon {
+  max-width: 20px;
+  max-height: 20px;
+  object-fit: contain;
+}
+
+>>>>>>> 3218539 (error 403)
 .modal-buttons {
   display: flex;
   justify-content: space-between;
@@ -241,4 +280,8 @@
     width: 100%;
     margin: 5px 0;
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 3218539 (error 403)

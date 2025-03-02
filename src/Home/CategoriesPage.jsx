@@ -16,6 +16,11 @@ const CategoriesPage = () => {
   const [loading, setLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState("default");
   const navigate = useNavigate();
+<<<<<<< HEAD
+=======
+  
+  const baseUrl = "https://orderandout-refactor.onrender.com";
+>>>>>>> 3218539 (error 403)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,7 +31,13 @@ const CategoriesPage = () => {
           return;
         }
 
+<<<<<<< HEAD
         const categoriesResponse = await fetch("https://orderandout-refactor.onrender.com/api/categories/mineCategory", {
+=======
+        // Corrección: Endpoint para obtener todas las categorías del restaurante
+        const categoriesResponse = await fetch(`${baseUrl}/api/categories/mineCategory`, {
+          method: "GET",
+>>>>>>> 3218539 (error 403)
           headers: { Authorization: `Bearer ${token}` },
         });
         
@@ -37,6 +48,10 @@ const CategoriesPage = () => {
         const categoriesData = await categoriesResponse.json();
         setCategories(categoriesData);
 
+<<<<<<< HEAD
+=======
+        // Mantener la URL original para productos como estaba
+>>>>>>> 3218539 (error 403)
         const productsResponse = await fetch("https://orderandout.onrender.com/api/intern/products/mine", {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -47,6 +62,10 @@ const CategoriesPage = () => {
         
         const productsData = await productsResponse.json();
         setProducts(productsData);
+<<<<<<< HEAD
+=======
+        setLoading(false);
+>>>>>>> 3218539 (error 403)
       } catch (err) {
         setError(err.message);
         setLoading(false);
@@ -90,12 +109,22 @@ const CategoriesPage = () => {
         return;
       }
 
+<<<<<<< HEAD
       const response = await fetch(`https://orderandout-refactor.onrender.com/api/categories/myCategory/${categoryId}`, {
+=======
+      // Corrección: Endpoint para eliminar una categoría
+      const response = await fetch(`${baseUrl}/api/categories/myCategory`, {
+>>>>>>> 3218539 (error 403)
         method: "DELETE",
         headers: { 
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
+<<<<<<< HEAD
         }
+=======
+        },
+        body: JSON.stringify({ categoryId }) // Enviar el ID en el body como se requiere
+>>>>>>> 3218539 (error 403)
       });
 
       // Manejar respuesta no-JSON
@@ -119,12 +148,16 @@ const CategoriesPage = () => {
 
     } catch (err) {
       setError(`Error eliminando categoría ID ${categoryId}: ${err.message}`);
+<<<<<<< HEAD
       console.error("Detalles completos:", {
         status: response?.status,
         headers: response?.headers,
         responseText: text,
         error: err.stack
       });
+=======
+      console.error("Detalles completos:", err);
+>>>>>>> 3218539 (error 403)
     }
   };
 
@@ -140,13 +173,23 @@ const CategoriesPage = () => {
     if (!validateCategory()) return;
     try {
       const token = Cookies.get("authToken");
+<<<<<<< HEAD
       const response = await fetch(`https://orderandout-refactor.onrender.com/api/categories/myCategory/${editingCategoryId}`, {
+=======
+      
+      // Corrección: Endpoint para actualizar una categoría
+      const response = await fetch(`${baseUrl}/api/categories/myCategory`, {
+>>>>>>> 3218539 (error 403)
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ 
+<<<<<<< HEAD
+=======
+          categoryId: editingCategoryId, // Añadir categoryId en el body
+>>>>>>> 3218539 (error 403)
           name, 
           description 
         })
@@ -173,7 +216,13 @@ const CategoriesPage = () => {
     if (!validateCategory()) return;
     try {
       const token = Cookies.get("authToken");
+<<<<<<< HEAD
       const response = await fetch("https://orderandout-refactor.onrender.com/api/categories/myCategory", {
+=======
+      
+      // Corrección: Endpoint para crear una categoría
+      const response = await fetch(`${baseUrl}/api/categories/myCategory`, {
+>>>>>>> 3218539 (error 403)
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -184,13 +233,26 @@ const CategoriesPage = () => {
           description 
         })
       });
+<<<<<<< HEAD
+=======
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al crear la categoría");
+      }
+      
+>>>>>>> 3218539 (error 403)
       const createdCategory = await response.json();
       setCategories([...categories, createdCategory]);
       setIsCreating(false);
       setName("");
       setDescription("");
     } catch (err) {
+<<<<<<< HEAD
       setError("Error al crear la categoría");
+=======
+      setError("Error al crear la categoría: " + err.message);
+>>>>>>> 3218539 (error 403)
     }
   };
 
@@ -203,6 +265,14 @@ const CategoriesPage = () => {
   };
 
   const sortedCategories = sortCategories(sortOrder);
+<<<<<<< HEAD
+=======
+  
+  // Calcular productos filtrados por categoría seleccionada
+  const filteredProducts = selectedCategory 
+    ? products.filter(product => product.category === selectedCategory)
+    : [];
+>>>>>>> 3218539 (error 403)
 
   return (
     <div className="categories-page">

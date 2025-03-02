@@ -148,6 +148,29 @@
   text-decoration: underline;
 }
 
+<<<<<<< HEAD
+=======
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  width: 20px;  /* Ajusta el tamaño del ícono */
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle img {
+  width: 100%;  /* Hace que la imagen se ajuste al contenedor */
+  height: auto;
+}
+
+
+>>>>>>> 3218539 (error 403)
 /* Media Queries para Responsive Design */
 @media (max-width: 768px) {
   .login-container {
@@ -188,3 +211,9 @@
     padding: 10px 20px;
   }
 }
+<<<<<<< HEAD
+=======
+
+
+ 
+>>>>>>> 3218539 (error 403)

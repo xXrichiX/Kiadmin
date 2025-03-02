@@ -2,10 +2,19 @@ import React, { useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import "../styles/KiosksPage.css";
+<<<<<<< HEAD
+=======
+import eyeIcon from "../assets/ojo.png";
+import invisibleIcon from "../assets/invisible.png";
+>>>>>>> 3218539 (error 403)
 
 const KiosksPage = () => {
   const [kiosks, setKiosks] = useState([]);
   const [password, setPassword] = useState("");
+<<<<<<< HEAD
+=======
+  const [showPassword, setShowPassword] = useState(false);
+>>>>>>> 3218539 (error 403)
   const [editingKiosk, setEditingKiosk] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -104,6 +113,10 @@ const KiosksPage = () => {
     setIsCreating(true);
     setNewKioskName(`Kiosko ${kiosks.length + 1}`);
     setPassword("");
+<<<<<<< HEAD
+=======
+    setShowPassword(false);
+>>>>>>> 3218539 (error 403)
     setError("");
   };
 
@@ -111,6 +124,10 @@ const KiosksPage = () => {
     setEditingKiosk(kiosk);
     setIsCreating(false);
     setPassword(kiosk.password || "");
+<<<<<<< HEAD
+=======
+    setShowPassword(false);
+>>>>>>> 3218539 (error 403)
     setError("");
   };
 
@@ -149,13 +166,21 @@ const KiosksPage = () => {
       console.error("Detalles completos:", {
         error: err,
         kioskId,
+<<<<<<< HEAD
         responseText: text || "No hay respuesta"
+=======
+        responseText: err.responseText || "No hay respuesta"
+>>>>>>> 3218539 (error 403)
       });
     }
   };
 
   const handleCancel = () => {
     setPassword("");
+<<<<<<< HEAD
+=======
+    setShowPassword(false);
+>>>>>>> 3218539 (error 403)
     setEditingKiosk(null);
     setIsCreating(false);
     setError("");
@@ -197,6 +222,7 @@ const KiosksPage = () => {
               />
 
               <label>Contraseña del Kiosko:</label>
+<<<<<<< HEAD
               <input
                 type="password"
                 placeholder="Contraseña del kiosko"
@@ -206,6 +232,29 @@ const KiosksPage = () => {
                 minLength="8"
                 className="text-input"
               />
+=======
+              <div className="password-input-container">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Contraseña del kiosko"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength="8"
+                  className="text-input"
+                />
+                <span
+                  className="password-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  <img 
+                    src={showPassword ? eyeIcon : invisibleIcon} 
+                    alt="Toggle Password" 
+                    className="password-icon" 
+                  />
+                </span>
+              </div>
+>>>>>>> 3218539 (error 403)
 
               <div className="modal-buttons">
                 <button type="submit" className="submit-btn">
@@ -213,10 +262,14 @@ const KiosksPage = () => {
                 </button>
                 <button 
                   type="button" 
+<<<<<<< HEAD
                   onClick={() => {
                     setIsCreating(false);
                     setPassword("");
                   }} 
+=======
+                  onClick={handleCancel} 
+>>>>>>> 3218539 (error 403)
                   className="cancel-btn"
                 >
                   Cancelar
@@ -244,6 +297,7 @@ const KiosksPage = () => {
               />
 
               <label>Contraseña del Kiosko:</label>
+<<<<<<< HEAD
               <input
                 type="password"
                 placeholder="Contraseña del kiosko"
@@ -253,6 +307,29 @@ const KiosksPage = () => {
                 minLength="8"
                 className="text-input"
               />
+=======
+              <div className="password-input-container">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Contraseña del kiosko"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength="8"
+                  className="text-input"
+                />
+                <span
+                  className="password-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  <img 
+                    src={showPassword ? eyeIcon : invisibleIcon} 
+                    alt="Toggle Password" 
+                    className="password-icon" 
+                  />
+                </span>
+              </div>
+>>>>>>> 3218539 (error 403)
 
               <div className="modal-buttons">
                 <button type="submit" className="submit-btn">
@@ -260,7 +337,11 @@ const KiosksPage = () => {
                 </button>
                 <button 
                   type="button" 
+<<<<<<< HEAD
                   onClick={() => setEditingKiosk(null)} 
+=======
+                  onClick={handleCancel} 
+>>>>>>> 3218539 (error 403)
                   className="cancel-btn"
                 >
                   Cancelar

@@ -2,6 +2,11 @@ import React, { useState } from "react";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import "../styles/Login.css"; // Importa el CSS
+<<<<<<< HEAD
+=======
+import eyeIcon from "../assets/ojo.png";
+import invisibleIcon from "../assets/invisible.png";
+>>>>>>> 3218539 (error 403)
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -95,13 +100,20 @@ function Login() {
                   className="password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
                 >
+<<<<<<< HEAD
                   {showPassword ? "🙈" : "👁️"}
+=======
+                  <img src={showPassword ? eyeIcon : invisibleIcon} alt="Toggle Password" className="password-icon" />
+>>>>>>> 3218539 (error 403)
                 </span>
               </div>
 
               {error && <p className="error-message">{error}</p>}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3218539 (error 403)
               <div className="forgot-password">
                 <a href="#" onClick={handleForgotPasswordRedirect}>
                   ¿Olvidaste tu contraseña?
@@ -126,4 +138,8 @@ function Login() {
   );
 }
 
+<<<<<<< HEAD
 export default Login;
+=======
+export default Login;
+>>>>>>> 3218539 (error 403)
