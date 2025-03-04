@@ -8,15 +8,17 @@ const CategoriesPage = () => {
   const [products, setProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [isEditing, setIsEditing] = useState(false); // Modal de edición
+  const [isEditing, setIsEditing] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState("default");
+  const [password, setPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
+
   const navigate = useNavigate();
-  
   const baseUrl = "https://orderandout-refactor.onrender.com";
 
   useEffect(() => {
@@ -28,30 +30,18 @@ const CategoriesPage = () => {
           return;
         }
 
-        // Corrección: Endpoint para obtener todas las categorías del restaurante
         const categoriesResponse = await fetch(`${baseUrl}/api/categories/mineCategory`, {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },
         });
-        
+
         if (!categoriesResponse.ok) {
-          throw new Error(`Error categorías: ${categoriesResponse.status}`);
+          throw new Error(`Error al obtener categorías: ${categoriesResponse.status}`);
         }
-        
+
         const categoriesData = await categoriesResponse.json();
         setCategories(categoriesData);
 
-        // Mantener la URL original para productos como estaba
-        const productsResponse = await fetch("https://orderandout.onrender.com/api/intern/products/mine", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!productsResponse.ok) {
-          throw new Error(`Error productos: ${productsResponse.status}`);
-        }
-        
-        const productsData = await productsResponse.json();
-        setProducts(productsData);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -96,35 +86,22 @@ const CategoriesPage = () => {
         return;
       }
 
-      // Corrección: Endpoint para eliminar una categoría
       const response = await fetch(`${baseUrl}/api/categories/myCategory`, {
         method: "DELETE",
-        headers: { 
+        headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ categoryId }) // Enviar el ID en el body como se requiere
+        body: JSON.stringify({ categoryId }),
       });
 
-      // Manejar respuesta no-JSON
-      const text = await response.text();
-      let errorMessage = `Error ${response.status}`;
-      
-      try {
-        const data = text ? JSON.parse(text) : {};
-        errorMessage = data.message || errorMessage;
-      } catch {
-        errorMessage = text || errorMessage;
-      }
-
       if (!response.ok) {
-        throw new Error(errorMessage);
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al eliminar la categoría");
       }
 
-      // Actualización optimista
-      setCategories(prev => prev.filter(c => c._id !== categoryId));
-      setProducts(prev => prev.filter(p => p.category !== categoryId));
-
+      setCategories((prev) => prev.filter((c) => c._id !== categoryId));
+      setProducts((prev) => prev.filter((p) => p.category !== categoryId));
     } catch (err) {
       setError(`Error eliminando categoría ID ${categoryId}: ${err.message}`);
       console.error("Detalles completos:", err);
@@ -143,30 +120,31 @@ const CategoriesPage = () => {
     if (!validateCategory()) return;
     try {
       const token = Cookies.get("authToken");
-      
-      // Corrección: Endpoint para actualizar una categoría
+
       const response = await fetch(`${baseUrl}/api/categories/myCategory`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          categoryId: editingCategoryId, // Añadir categoryId en el body
-          name, 
-          description 
-        })
+        body: JSON.stringify({
+          categoryId: editingCategoryId,
+          name,
+          description,
+        }),
       });
 
-      const data = await response.json();
-      
       if (!response.ok) {
-        throw new Error(data.message || "Error al actualizar");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al actualizar la categoría");
       }
 
-      setCategories(categories.map((category) => 
-        category._id === editingCategoryId ? { ...category, name, description } : category
-      ));
+      const updatedCategory = await response.json();
+      setCategories(
+        categories.map((category) =>
+          category._id === editingCategoryId ? updatedCategory : category
+        )
+      );
       setIsEditing(false);
       setName("");
       setDescription("");
@@ -179,25 +157,24 @@ const CategoriesPage = () => {
     if (!validateCategory()) return;
     try {
       const token = Cookies.get("authToken");
-      
-      // Corrección: Endpoint para crear una categoría
+
       const response = await fetch(`${baseUrl}/api/categories/myCategory`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          name, 
-          description 
-        })
+        body: JSON.stringify({
+          name,
+          description,
+        }),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Error al crear la categoría");
       }
-      
+
       const createdCategory = await response.json();
       setCategories([...categories, createdCategory]);
       setIsCreating(false);
@@ -217,11 +194,15 @@ const CategoriesPage = () => {
   };
 
   const sortedCategories = sortCategories(sortOrder);
-  
-  // Calcular productos filtrados por categoría seleccionada
-  const filteredProducts = selectedCategory 
-    ? products.filter(product => product.category === selectedCategory)
+
+  const filteredProducts = selectedCategory
+    ? products.filter((product) => product.category === selectedCategory)
     : [];
+
+  // Handle password visibility toggle
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
 
   return (
     <div className="categories-page">
@@ -255,10 +236,10 @@ const CategoriesPage = () => {
             </select>
           </div>
 
-          {isCreating && (
+          {(isCreating || isEditing) && (
             <div className="modal-overlay">
               <div className="modal-content">
-                <h3>Crear Nueva Categoría</h3>
+                <h3>{isEditing ? "Editar Categoría" : "Crear Nueva Categoría"}</h3>
                 <input
                   type="text"
                   placeholder="Nombre de la categoría"
@@ -272,31 +253,9 @@ const CategoriesPage = () => {
                   onChange={(e) => setDescription(e.target.value)}
                 />
                 <div className="modal-buttons">
-                  <button onClick={createCategory}>Crear</button>
-                  <button onClick={handleCancel}>Cancelar</button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {isEditing && (
-            <div className="modal-overlay">
-              <div className="modal-content">
-                <h3>Editar Categoría</h3>
-                <input
-                  type="text"
-                  placeholder="Nombre de la categoría"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Descripción"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-                <div className="modal-buttons">
-                  <button onClick={updateCategory}>Actualizar</button>
+                  <button onClick={isEditing ? updateCategory : createCategory}>
+                    {isEditing ? "Actualizar" : "Crear"}
+                  </button>
                   <button onClick={handleCancel}>Cancelar</button>
                 </div>
               </div>
@@ -314,7 +273,7 @@ const CategoriesPage = () => {
                   <p className="category-id">ID: {category._id}</p>
                   <div className="category-actions">
                     <button onClick={() => editCategory(category)}>✏️ Editar</button>
-                    <button 
+                    <button
                       onClick={() => deleteCategory(category._id)}
                       title={`ID: ${category._id}`}
                     >
@@ -328,12 +287,11 @@ const CategoriesPage = () => {
             )}
           </div>
 
-          {/* Lista de productos de la categoría seleccionada */}
           {selectedCategory && (
             <div className="products-list">
               <h3>Productos de la categoría seleccionada:</h3>
               {filteredProducts.length > 0 ? (
-                filteredProducts.map(product => (
+                filteredProducts.map((product) => (
                   <div key={product._id} className="product-card">
                     <img src={product.image} alt={product.name} className="product-image" />
                     <h3>{product.name}</h3>

@@ -8,13 +8,14 @@ import ProductsPage from "../Home/ProductsPage";
 import KiosksPage from "../Home/KioskPage";
 import Profile from "../Home/Profile";
 import OrdersPage from "../Home/OrdersPage";
+import Dashboard from "../Home/Dashboard";
 
 const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(true); // Mantiene el menú abierto por defecto
-  const [activeSection, setActiveSection] = useState("home"); // Sección activa
+  const [activeSection, setActiveSection] = useState("dashboard"); // Sección activa por defecto cambiada a "dashboard"
 
   useEffect(() => {
     const checkRestaurant = async () => {
@@ -136,8 +137,7 @@ const HomePage = () => {
       <div className={`content-area ${isMenuOpen ? "menu-open" : ""}`}>
         <div className="content">
           {/* Mostrar el contenido de acuerdo a la sección seleccionada */}
-          {activeSection === "home" && <h2>Bienvenido al Dashboard 🏠</h2>}
-          {activeSection === "dashboard" && <h2>Dashboard</h2>}
+          {activeSection === "dashboard" && <Dashboard />}
           {activeSection === "categories" && <CategoriesPage />}
           {activeSection === "kiosks" && <KiosksPage />}
           {activeSection === "products" && <ProductsPage />}

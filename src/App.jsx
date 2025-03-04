@@ -11,13 +11,13 @@ import KiosksPage from "./Home/KioskPage";
 import ProductsPage from "./Home/ProductsPage";
 import RestaurantPage from "./Home/RestaurantPage";
 import Profile from "./Home/Profile";
-import OrdersPage from "./Home/OrdersPage"; 
+import OrdersPage from "./Home/OrdersPage";
+import Dashboard from "./Home/Dashboard"; // Importamos el nuevo componente Dashboard
 
 function App() {
   return (
     <div className="App">
-    {/*  <h1>Bienvenido a Kibbi (imagen)</h1> */}
-
+      {/* <h1>Bienvenido a Kibbi (imagen)</h1> */}
       {/* Configuración de rutas */}
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -31,22 +31,23 @@ function App() {
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/restaurant" element={<RestaurantPage />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/orders" element={<OrdersPage />} /> 
+        <Route path="/orders" element={<OrdersPage />} />
+        <Route path="/dashboard" element={<Dashboard />} /> {/* Nueva ruta para el Dashboard */}
       </Routes>
-
       {/* Navegación */}
       <nav className="main-navigation">
-        <Link to="/login">Login</Link> | <Link to="/register">Registro</Link> | 
-        <Link to="/forgot-password">Recuperar Contraseña</Link> | 
-        <Link to="/verify-code">Verificar Código</Link> | 
-        <Link to="/reset-password">Restablecer Contraseña</Link> | 
+        <Link to="/login">Login</Link> | <Link to="/register">Registro</Link> |
+        <Link to="/forgot-password">Recuperar Contraseña</Link> |
+        <Link to="/verify-code">Verificar Código</Link> |
+        <Link to="/reset-password">Restablecer Contraseña</Link> |
         <Link to="/home">Home</Link> |
         <Link to="/categories">Categorías</Link> |
         <Link to="/kiosks">Kioskos</Link> |
         <Link to="/products">Productos</Link> |
         <Link to="/restaurant">Restaurante</Link> |
         <Link to="/profile">Perfil</Link> |
-        <Link to="/orders">Órdenes</Link> 
+        <Link to="/orders">Órdenes</Link> |
+        <Link to="/dashboard">Dashboard</Link> {/* Nuevo enlace para el Dashboard */}
       </nav>
     </div>
   );

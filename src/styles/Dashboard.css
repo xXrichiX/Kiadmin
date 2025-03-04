@@ -1,0 +1,248 @@
+/* Dashboard.css */
+.dashboard-container {
+    padding: 24px;
+    background-color: #f4f7fc;
+    font-family: 'Arial', sans-serif;
+    min-height: 100vh;
+  }
+  
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0;
+  }
+  
+  .period-selector {
+    display: flex;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .period-selector button {
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  
+  .period-selector button.active {
+    background-color: #AB0831;
+    color: white;
+  }
+  
+  .period-selector button:hover:not(.active) {
+    background-color: #e1e1e1;
+  }
+  
+  .stats-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  
+  .stat-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+  
+  .stat-card-content h3 {
+    font-size: 14px;
+    color: #7f8c8d;
+    margin: 0 0 8px 0;
+  }
+  
+  .stat-amount {
+    font-size: 28px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 0 0 8px 0;
+  }
+  
+  .stat-comparison {
+    font-size: 12px;
+    color: #7f8c8d;
+    margin: 0;
+  }
+  
+  .stat-comparison .positive {
+    color: #2ecc71;
+  }
+  
+  .stat-comparison .negative {
+    color: #e74c3c;
+  }
+  
+  .stat-icon {
+    font-size: 28px;
+    align-self: center;
+    background-color: rgba(171, 8, 49, 0.1);
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+  }
+  
+  .income-icon {
+    background-color: rgba(171, 8, 49, 0.1);
+  }
+  
+  .cost-icon {
+    background-color: rgba(231, 76, 60, 0.1);
+  }
+  
+  .profit-icon {
+    background-color: rgba(46, 204, 113, 0.1);
+  }
+  
+  .orders-icon {
+    background-color: rgba(52, 152, 219, 0.1);
+  }
+  
+  .dashboard-charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  
+  .chart-container {
+    background-color: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+  
+  .chart-container h2 {
+    font-size: 18px;
+    color: #2c3e50;
+    margin: 0 0 20px 0;
+  }
+  
+  .top-products-container {
+    display: flex;
+    align-items: center;
+    height: 250px;
+  }
+  
+  .pie-chart-container {
+    flex: 1;
+    height: 100%;
+  }
+  
+  .products-list {
+    flex: 1;
+    padding-left: 20px;
+  }
+  
+  .product-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .product-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    margin-right: 8px;
+  }
+  
+  .product-name {
+    flex: 1;
+    font-size: 14px;
+    color: #2c3e50;
+  }
+  
+  .product-percentage {
+    font-weight: bold;
+    color: #2c3e50;
+  }
+  
+  .dashboard-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-size: 18px;
+    color: #7f8c8d;
+  }
+  
+  .dashboard-error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-size: 18px;
+    color: #e74c3c;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 1200px) {
+    .stats-cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .dashboard-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    
+    .dashboard-charts {
+      grid-template-columns: 1fr;
+    }
+    
+    .top-products-container {
+      flex-direction: column;
+      height: auto;
+    }
+    
+    .pie-chart-container, .products-list {
+      width: 100%;
+    }
+    
+    .products-list {
+      padding-left: 0;
+      margin-top: 20px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .stats-cards {
+      grid-template-columns: 1fr;
+    }
+    
+    .period-selector {
+      width: 100%;
+    }
+    
+    .period-selector button {
+      flex: 1;
+      text-align: center;
+    }
+  }

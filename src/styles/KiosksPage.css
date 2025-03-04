@@ -113,19 +113,21 @@
   padding-right: 40px; /* Espacio para el ícono */
 }
 
-.password-toggle {
+/* Encapsulando el estilo solo dentro de .password-input-container */
+.password-input-container .password-toggle {
   position: absolute;
   right: 12px;
   top: 50%;
-  transform: translateY(-85%);
+  transform: translateY(-80%);
   cursor: pointer;
-  width: 20px;  /* Tamaño del ícono */
+  width: 20px; /* Tamaño del ícono */
   height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
 }
+
 
 .password-toggle img {
   width: 100%;  /* Hace que la imagen se ajuste al contenedor */
