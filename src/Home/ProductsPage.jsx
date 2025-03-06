@@ -14,8 +14,8 @@ const ProductsPage = () => {
   const [newProduct, setNewProduct] = useState(getEmptyProduct());
 
   const navigate = useNavigate();
+  const baseUrl = "https://orderandout-refactor.onrender.com";
 
-  // Función para devolver un producto vacío
   function getEmptyProduct() {
     return {
       name: "",
@@ -28,7 +28,6 @@ const ProductsPage = () => {
     };
   }
 
-  // Validación: verifica que los campos requeridos no estén vacíos
   const validateProduct = () => {
     if (
       !newProduct.name.trim() ||
@@ -55,7 +54,7 @@ const ProductsPage = () => {
         }
 
         // Obtener categorías
-        const categoriesResponse = await fetch("https://orderandout-refactor.onrender.com/api/categories/mineCategory", {
+        const categoriesResponse = await fetch(`${baseUrl}/api/categories/mineCategory`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
         
@@ -66,7 +65,7 @@ const ProductsPage = () => {
         setCategories(categoriesData);
 
         // Obtener productos
-        const productsResponse = await fetch("https://orderandout-refactor.onrender.com/api/products/mineProducts", {
+        const productsResponse = await fetch(`${baseUrl}/api/products/mineProducts`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
         
@@ -86,10 +85,61 @@ const ProductsPage = () => {
     fetchData();
   }, [navigate]);
 
+  // New function to fetch products by category
+  const fetchProductsByCategory = async (categoryId) => {
+    try {
+      const token = Cookies.get("authToken");
+      const response = await fetch(`${baseUrl}/api/products/${categoryId}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al obtener productos por categoría: ${response.status}`);
+      }
+
+      const productsData = await response.json();
+      setProducts(productsData);
+    } catch (err) {
+      setError(`Error al filtrar productos: ${err.message}`);
+      console.error("Error al filtrar productos:", err);
+    }
+  };
+
+  const handleCategoryChange = (categoryId) => {
+    setSelectedCategory(categoryId);
+    if (categoryId === "all") {
+      // If "all" is selected, fetch all products
+      setLoading(true);
+      const fetchData = async () => {
+        try {
+          const token = Cookies.get("authToken");
+          const productsResponse = await fetch(`${baseUrl}/api/products/mineProducts`, {
+            headers: { "Authorization": `Bearer ${token}` }
+          });
+          
+          if (!productsResponse.ok) {
+            throw new Error(`Error productos: ${productsResponse.status}`);
+          }
+          const productsData = await productsResponse.json();
+          setProducts(productsData);
+        } catch (err) {
+          setError(err.message);
+          console.error("Error en fetchData:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchData();
+    } else {
+      // Fetch products for the selected category
+      fetchProductsByCategory(categoryId);
+    }
+  };
+
   const deleteProduct = async (productId) => {
     try {
       const token = Cookies.get("authToken");
-      const response = await fetch(`https://orderandout-refactor.onrender.com/api/products/myProduct`, {
+      const response = await fetch(`${baseUrl}/api/products/myProduct`, {
         method: "DELETE",
         headers: { 
           "Authorization": `Bearer ${token}`,
@@ -103,7 +153,6 @@ const ProductsPage = () => {
         throw new Error(`Error ${response.status}: ${errorText}`);
       }
 
-      // Si la eliminación fue exitosa, actualizamos el estado
       setProducts(products.filter(p => p._id !== productId));
     } catch (err) {
       setError(`Error al eliminar producto: ${err.message}`);
@@ -116,7 +165,7 @@ const ProductsPage = () => {
 
     try {
       const token = Cookies.get("authToken");
-      const response = await fetch("https://orderandout-refactor.onrender.com/api/products/myProduct", {
+      const response = await fetch(`${baseUrl}/api/products/myProduct`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -137,7 +186,6 @@ const ProductsPage = () => {
 
       const data = await response.json();
       
-      // Actualización del estado con el nuevo producto
       setProducts(prev => [...prev, data]);
       closeModal();
       
@@ -152,7 +200,7 @@ const ProductsPage = () => {
 
     try {
       const token = Cookies.get("authToken");
-      const response = await fetch("https://orderandout-refactor.onrender.com/api/products/myProduct", {
+      const response = await fetch(`${baseUrl}/api/products/myProduct`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -174,7 +222,6 @@ const ProductsPage = () => {
 
       const updatedProduct = await response.json();
       
-      // Actualización del estado con el producto actualizado
       setProducts(prev => 
         prev.map(p => p._id === updatedProduct._id ? updatedProduct : p)
       );
@@ -188,10 +235,8 @@ const ProductsPage = () => {
 
   const openModal = (product = null) => {
     if (product) {
-      // Si recibimos un producto, preparamos los datos para edición
       const productForEdit = {
         ...product,
-        // Convertir los ingredientes a string para el input si vienen como array
         ingredients: Array.isArray(product.ingredients) 
           ? product.ingredients.join(', ') 
           : product.ingredients
@@ -230,10 +275,6 @@ const ProductsPage = () => {
     }
   };
 
-  const filteredProducts = selectedCategory === "all"
-    ? products
-    : products.filter(product => product.category === selectedCategory);
-
   return (
     <div className="products-page">
       {loading && <p className="loading-message">Cargando productos...</p>}
@@ -248,17 +289,15 @@ const ProductsPage = () => {
       {!loading && !error && (
         <>
           <h2 className="page-title">Gestión de Productos</h2>
-          {/* Botón de crear producto */}
           <button onClick={() => openModal()} className="create-product-btn">
             Crear Producto
           </button>
   
-          {/* Filtro por categoría */}
           <div className="filter-container">
             <label>Filtrar por Categoría:</label>
             <select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={(e) => handleCategoryChange(e.target.value)}
             >
               <option value="all">Todas</option>
               {categories.map(category => (
@@ -267,7 +306,6 @@ const ProductsPage = () => {
             </select>
           </div>
 
-          {/* Modal para crear/editar productos */}
           {isModalOpen && (
             <div className="modal-overlay">
               <div className="modal-content">
@@ -343,10 +381,9 @@ const ProductsPage = () => {
             </div>
           )}
 
-          {/* Lista de productos */}
           <div className="products-list">
-            {filteredProducts.length > 0 ? (
-              filteredProducts.map(product => (
+            {products.length > 0 ? (
+              products.map(product => (
                 <div key={product._id} className="product-card">
                   <img src={product.image} alt={product.name} className="product-image" />
                   <h3 className="product-name">{product.name}</h3>

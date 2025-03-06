@@ -10,6 +10,9 @@ const VerifyCode = () => {
   const location = useLocation();
   const inputsRef = useRef([]);
 
+  // Obtén la URL base desde la variable de entorno
+  const API_URL = process.env.REACT_APP_API_URL;
+
   const handleVerificationCodeChange = (e, index) => {
     const newCode = [...verificationCode];
     newCode[index] = e.target.value.replace(/\D/, "");
@@ -31,8 +34,8 @@ const VerifyCode = () => {
     try {
       const isPasswordReset = location.pathname === "/reset-password";
       const endpoint = isPasswordReset 
-        ? "https://orderandout-refactor.onrender.com/api/admins/reset-password"
-        : "https://orderandout-refactor.onrender.com/api/admins/verify-account";
+        ? `${API_URL}/api/admins/reset-password`
+        : `${API_URL}/api/admins/verify-account`;
 
       const requestBody = isPasswordReset ? {
         email: location.state?.email,
@@ -68,6 +71,7 @@ const VerifyCode = () => {
       setError(err.message || "Error al verificar el código");
     }
   };
+
 
   return (
     <div className="verify-page">

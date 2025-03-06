@@ -1,18 +1,30 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import "../styles/Register.css"; // Importa el CSS
+import "../styles/Register.css";
 
 function Register() {
-  const [name, setName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    lastName: "",
+    phone: "",
+    birthDate: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  const { name, lastName, phone, birthDate, email, password, confirmPassword } = formData;
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
 
   const handleLoginRedirect = () => {
     navigate("/login");
@@ -20,22 +32,24 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden.");
       return;
     }
 
+    const API_URL = process.env.REACT_APP_API_URL;
     try {
-      const response = await fetch("https://orderandout-refactor.onrender.com/api/admins/start-register", {
+      const response = await fetch(`${API_URL}/api/admins/start-register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           firstName: name,
-          lastName: lastName,
-          phone: phone,
+          lastName,
+          phone,
           birthDate,
           email,
           password,
@@ -48,6 +62,7 @@ function Register() {
         throw new Error(data.message || "Error en el registro");
       }
 
+      // Guardar ID temporal en cookies y perfil en localStorage
       Cookies.set("tempId", data.tempId, { expires: 1 });
       localStorage.setItem("userProfile", JSON.stringify({
         name,
@@ -67,7 +82,6 @@ function Register() {
     <div className="register-page">
       <div className="register-container">
         <div className="register-image">
-          {/* Imagen de fondo representativa de un restaurante o café */}
           <img
             src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1934&q=80"
             alt="Restaurante"
@@ -81,63 +95,70 @@ function Register() {
               <div className="input-group">
                 <input
                   type="text"
+                  name="name"
                   placeholder="Nombre"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={handleChange}
                   required
                 />
               </div>
               <div className="input-group">
                 <input
                   type="text"
+                  name="lastName"
                   placeholder="Apellido"
                   value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  onChange={handleChange}
                   required
                 />
               </div>
               <div className="input-group">
                 <input
                   type="tel"
+                  name="phone"
                   placeholder="Teléfono"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={handleChange}
                   required
                 />
               </div>
               <div className="input-group">
                 <input
                   type="date"
+                  name="birthDate"
                   placeholder="Fecha de Nacimiento"
                   value={birthDate}
-                  onChange={(e) => setBirthDate(e.target.value)}
+                  onChange={handleChange}
                   required
                 />
               </div>
               <div className="input-group">
                 <input
                   type="email"
+                  name="email"
                   placeholder="Correo Electrónico"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={handleChange}
                   required
                 />
               </div>
               <div className="input-group">
                 <input
                   type="password"
+                  name="password"
                   placeholder="Contraseña"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={handleChange}
                   required
                 />
               </div>
               <div className="input-group">
                 <input
                   type="password"
+                  name="confirmPassword"
                   placeholder="Confirmar Contraseña"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={handleChange}
                   required
                 />
               </div>

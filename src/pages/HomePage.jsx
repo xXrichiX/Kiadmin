@@ -26,7 +26,8 @@ const HomePage = () => {
           return;
         }
 
-        const response = await fetch("https://orderandout-refactor.onrender.com/api/restaurants/myRestaurant", {
+        const API_URL = process.env.REACT_APP_API_URL; 
+        const response = await fetch(`${API_URL}/api/restaurants/myRestaurant`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,

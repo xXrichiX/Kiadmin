@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import "../styles/VerifyCode.css";
 
@@ -7,8 +7,10 @@ const VerifyCode = () => {
   const [verificationCode, setVerificationCode] = useState(Array(6).fill(""));
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const location = useLocation();
   const inputsRef = useRef([]);
+
+  // Cambia la URL de la API por la variable de entorno
+  const API_URL = process.env.REACT_APP_API_URL;
 
   const handleVerificationCodeChange = (e, index) => {
     const newCode = [...verificationCode];
@@ -28,18 +30,19 @@ const VerifyCode = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      const response = await fetch("https://orderandout-refactor.onrender.com/api/admins/verify-account", {
+      const response = await fetch(`${API_URL}/api/admins/verify-account`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tempId: Cookies.get("tempId"),
-          code: verificationCode.join("")
-        })
+          code: verificationCode.join(""),
+        }),
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.message || "Código incorrecto");
       }
@@ -48,9 +51,9 @@ const VerifyCode = () => {
       Cookies.set("authToken", data.token, {
         expires: 1,
         secure: true,
-        sameSite: "strict"
+        sameSite: "strict",
       });
-      
+
       navigate("/home");
 
     } catch (err) {

@@ -21,7 +21,7 @@ const ResetPassword = () => {
     setEmail(e.target.value);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (newPassword !== confirmPassword) {
@@ -29,16 +29,39 @@ const ResetPassword = () => {
       return;
     }
 
-    // Guardar email en localStorage para recuperarlo después
-    localStorage.setItem("resetEmail", email);
-    
-    // Navegar a VerifyCode con los parámetros necesarios
-    navigate("/verify-code", {
-      state: {
-        email: email,
-        newPassword: newPassword
+    const API_URL = process.env.REACT_APP_API_URL; 
+
+    try {
+      const response = await fetch(`${API_URL}/api/users/reset-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          newPassword: newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Error al restablecer la contraseña");
       }
-    });
+
+      // Guardar email en localStorage para recuperarlo después
+      localStorage.setItem("resetEmail", email);
+      
+      // Navegar a VerifyCode con los parámetros necesarios
+      navigate("/verify-code", {
+        state: {
+          email: email,
+          newPassword: newPassword
+        }
+      });
+    } catch (err) {
+      setError(err.message || "Error al restablecer la contraseña");
+    }
   };
 
   return (

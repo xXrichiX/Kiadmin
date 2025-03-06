@@ -19,7 +19,6 @@ const CategoriesPage = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
 
   const navigate = useNavigate();
-  const baseUrl = "https://orderandout-refactor.onrender.com";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,10 +29,13 @@ const CategoriesPage = () => {
           return;
         }
 
-        const categoriesResponse = await fetch(`${baseUrl}/api/categories/mineCategory`, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const categoriesResponse = await fetch(
+          `${process.env.REACT_APP_API_URL}/api/categories/mineCategory`,
+          {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         if (!categoriesResponse.ok) {
           throw new Error(`Error al obtener categorías: ${categoriesResponse.status}`);
@@ -86,14 +88,17 @@ const CategoriesPage = () => {
         return;
       }
 
-      const response = await fetch(`${baseUrl}/api/categories/myCategory`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ categoryId }),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/categories/myCategory`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ categoryId }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -121,18 +126,21 @@ const CategoriesPage = () => {
     try {
       const token = Cookies.get("authToken");
 
-      const response = await fetch(`${baseUrl}/api/categories/myCategory`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          categoryId: editingCategoryId,
-          name,
-          description,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/categories/myCategory`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            categoryId: editingCategoryId,
+            name,
+            description,
+          }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -158,17 +166,20 @@ const CategoriesPage = () => {
     try {
       const token = Cookies.get("authToken");
 
-      const response = await fetch(`${baseUrl}/api/categories/myCategory`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          description,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/categories/myCategory`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            description,
+          }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();

@@ -10,7 +10,9 @@ const ForgotPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("https://orderandout.onrender.com/api/intern/admins/forgot-password", {
+      const API_URL = process.env.REACT_APP_API_URL; 
+
+      const response = await fetch(`${API_URL}/api/intern/admins/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
