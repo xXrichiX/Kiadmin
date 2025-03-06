@@ -11,68 +11,73 @@ import OrdersPage from "../Home/OrdersPage";
 import Dashboard from "../Home/Dashboard";
 
 const HomePage = () => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(true); // Mantiene el menú abierto por defecto
-  const [activeSection, setActiveSection] = useState("dashboard"); // Sección activa por defecto cambiada a "dashboard"
+  /////////////////// ESTADOS ///////////////////
+  const [loading, setLoading] = useState(true); // Estado para manejar la carga
+  const [error, setError] = useState(""); // Estado para manejar errores
+  const navigate = useNavigate(); // Hook para navegar entre rutas
+  const [isMenuOpen, setIsMenuOpen] = useState(true); // Estado para controlar si el menú está abierto o cerrado
+  const [activeSection, setActiveSection] = useState("dashboard"); // Estado para la sección activa (por defecto: "dashboard")
 
+  /////////////////// EFECTO PARA VERIFICAR EL RESTAURANTE ///////////////////
   useEffect(() => {
     const checkRestaurant = async () => {
       try {
-        const token = Cookies.get("authToken");
+        const token = Cookies.get("authToken"); // Obtener el token de autenticación
         if (!token) {
-          navigate("/login");
+          navigate("/login"); // Redirigir al login si no hay token
           return;
         }
 
-        const API_URL = process.env.REACT_APP_API_URL; 
+        const API_URL = import.meta.env.VITE_API_URL; // Obtener la URL de la API desde las variables de entorno
         const response = await fetch(`${API_URL}/api/restaurants/myRestaurant`, {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         });
 
         const data = await response.json();
 
+        // Si el token no es válido, redirigir al login
         if (response.status === 403) {
           Cookies.remove("authToken");
           navigate("/login");
           return;
         }
 
+        // Si la respuesta no es exitosa, lanzar un error
         if (!response.ok) {
           throw new Error(data.message || "Error al verificar restaurante");
         }
       } catch (err) {
-        setError(err.message);
+        setError(err.message); // Manejar errores
       } finally {
-        setLoading(false);
+        setLoading(false); // Finalizar la carga
       }
     };
 
-    checkRestaurant();
+    checkRestaurant(); // Llamar a la función para verificar el restaurante
   }, [navigate]);
 
-  // Función para alternar el menú
+  /////////////////// FUNCIÓN PARA ALTERNAR EL MENÚ ///////////////////
   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+    setIsMenuOpen(!isMenuOpen); // Cambiar el estado del menú (abrir/cerrar)
   };
 
-  // Función para cerrar sesión
+  /////////////////// FUNCIÓN PARA CERRAR SESIÓN ///////////////////
   const handleLogout = () => {
-    Cookies.remove("authToken");
-    navigate("/login");
+    Cookies.remove("authToken"); // Eliminar el token de autenticación
+    navigate("/login"); // Redirigir al login
   };
 
-  // Función para cambiar la sección activa
+  /////////////////// FUNCIÓN PARA CAMBIAR LA SECCIÓN ACTIVA ///////////////////
   const changeSection = (section) => {
-    setActiveSection(section);
+    setActiveSection(section); // Cambiar la sección activa
   };
 
-  if (loading) return <div>Cargando...</div>;
+  /////////////////// RENDERIZADO ///////////////////
+  if (loading) return <div>Cargando...</div>; // Mostrar mensaje de carga
 
   return (
     <div className="home-page">

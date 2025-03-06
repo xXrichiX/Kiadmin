@@ -4,96 +4,118 @@ import { useNavigate } from "react-router-dom";
 import "../styles/OrdersPage.css";
 
 function OrdersPage() {
-  const [orders, setOrders] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
+  /////////////////// ESTADOS ///////////////////
+  const [orders, setOrders] = useState([]); // Estado para almacenar las órdenes
+  const [products, setProducts] = useState([]); // Estado para almacenar los productos
+  const [loading, setLoading] = useState(true); // Estado para manejar la carga
+  const [error, setError] = useState(""); // Estado para manejar errores
+  const navigate = useNavigate(); // Hook para navegar entre rutas
+  const API_URL = import.meta.env.VITE_API_URL; // URL de la API desde variables de entorno
 
-  // Estado para traducción de estados
+  /////////////////// TRADUCCIÓN DE ESTADOS ///////////////////
+  // Mapeo de estados de órdenes a nombres en español
   const statusTranslations = {
-    pending: 'Pendiente',
-    'en preparacion': 'En preparación',
-    completed: 'Completado',
-    'pendiente de pago': 'Pendiente de pago'
+    pending: "Pendiente",
+    "en preparacion": "En preparación",
+    completed: "Completado",
+    "pendiente de pago": "Pendiente de pago",
   };
 
+  /////////////////// FUNCIONES AUXILIARES PARA FETCH ///////////////////
+  const checkToken = () => {
+    const token = Cookies.get("authToken");
+    if (!token) {
+      navigate("/login");
+      return null;
+    }
+    return token;
+  };
+
+  const fetchAPI = async (endpoint, method = "GET", body = null) => {
+    const token = checkToken();
+    if (!token) return null;
+
+    try {
+      const options = {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        ...(body && { body: JSON.stringify(body) }),
+      };
+
+      const response = await fetch(`${API_URL}${endpoint}`, options);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({
+          message: `Error del servidor: ${response.status}`,
+        }));
+        throw new Error(errorData.message || `Error: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  /////////////////// OBTENER DATOS (ÓRDENES Y PRODUCTOS) ///////////////////
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = Cookies.get("authToken");
-        if (!token) return navigate("/login");
-        
         // Obtener órdenes y productos en paralelo
-        const [ordersResponse, productsResponse] = await Promise.all([
-          fetch("https://orderandout-refactor.onrender.com/api/orders/mineOrders", {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          fetch("https://orderandout-refactor.onrender.com/api/products/mineProducts", {
-            headers: { Authorization: `Bearer ${token}` }
-          })
+        const [ordersData, productsData] = await Promise.all([
+          fetchAPI("/api/orders/mineOrders"),
+          fetchAPI("/api/products/mineProducts"),
         ]);
 
-        // Procesar respuestas
-        const ordersData = await ordersResponse.json();
-        const productsData = await productsResponse.json();
-        
-        if (!ordersResponse.ok || !productsResponse.ok) {
-          throw new Error(ordersData.message || productsData.message || "Error al cargar datos");
-        }
-
-        setOrders(ordersData);
-        setProducts(productsData);
+        // Actualizar estados con los datos obtenidos
+        setOrders(Array.isArray(ordersData) ? ordersData : []);
+        setProducts(Array.isArray(productsData) ? productsData : []);
       } catch (err) {
-        setError(err.message);
+        // Manejar errores
+        setError(err.message || "Ocurrió un error al obtener los datos");
       } finally {
+        // Finalizar la carga
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchData(); // Llamar a la función para obtener datos
   }, [navigate]);
 
-  // Crear mapa de IDs a nombres de productos
+  /////////////////// MAPA DE PRODUCTOS ///////////////////
+  // Crear un mapa de productos para obtener nombres por ID
   const productMap = products.reduce((acc, product) => {
     acc[product._id] = product.name;
     return acc;
   }, {});
 
+  /////////////////// CAMBIAR ESTADO DE UNA ORDEN ///////////////////
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      const token = Cookies.get("authToken");
-      const response = await fetch("https://orderandout-refactor.onrender.com/api/orders/myOrder", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          orderId,
-          status: newStatus
-        })
+      // Enviar solicitud para actualizar el estado de la orden
+      await fetchAPI("/api/orders/myOrder", "PUT", {
+        orderId,
+        status: newStatus,
       });
 
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || "Error al actualizar estado");
-      }
-
-      // Actualizar estado local
-      setOrders(prev => prev.map(order => 
-        order._id === orderId ? { ...order, status: newStatus } : order
-      ));
-      
+      // Actualizar el estado localmente
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order._id === orderId ? { ...order, status: newStatus } : order
+        )
+      );
     } catch (err) {
-      setError(err.message);
-      console.error("Error actualizando orden:", err);
+      // Manejar errores
+      setError(err.message || "Ocurrió un error al actualizar la orden");
     }
   };
 
-  if (loading) return <div className="loading">Cargando órdenes...</div>;
-  if (error) return <div className="error">Error: {error}</div>;
+  /////////////////// RENDERIZADO CONDICIONAL ///////////////////
+  if (loading) return <div className="loading">Cargando órdenes...</div>; // Mostrar mensaje de carga
+  if (error) return <div className="error">Error: {error}</div>; // Mostrar mensaje de error
 
   return (
     <div className="orders-page">
@@ -113,32 +135,32 @@ function OrdersPage() {
             </tr>
           </thead>
           <tbody>
-            {orders.map(order => (
+            {orders.map((order) => (
               <tr key={order._id}>
                 <td>{order.numOrder}</td>
                 <td>
-                  {order.products.map(p => (
+                  {order.products.map((p) => (
                     <div key={p._id}>
                       {productMap[p.productId] || `Producto (${p.productId})`}
                     </div>
                   ))}
                 </td>
                 <td>
-                  {order.products.map(p => (
-                    <div key={p._id}>
-                      x{p.quantity}
-                    </div>
+                  {order.products.map((p) => (
+                    <div key={p._id}>x{p.quantity}</div>
                   ))}
                 </td>
-                <td>${order.totalPrice} {order.currency}</td>
+                <td>
+                  ${order.totalPrice} {order.currency}
+                </td>
                 <td>{order.paymentMethod}</td>
                 <td>
-                  <select 
+                  <select
                     value={order.status}
                     onChange={(e) => handleStatusChange(order._id, e.target.value)}
                     className={`status-select ${order.status}`}
                   >
-                    {Object.keys(statusTranslations).map(status => (
+                    {Object.keys(statusTranslations).map((status) => (
                       <option key={status} value={status}>
                         {statusTranslations[status]}
                       </option>

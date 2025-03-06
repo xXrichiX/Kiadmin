@@ -6,6 +6,7 @@ import eyeIcon from "../assets/ojo.png";
 import invisibleIcon from "../assets/invisible.png";
 
 const KiosksPage = () => {
+  /////////////////// ESTADOS ///////////////////
   const [kiosks, setKiosks] = useState([]);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -14,99 +15,163 @@ const KiosksPage = () => {
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [newKioskName, setNewKioskName] = useState("");
-  const navigate = useNavigate();
+  const [description, setDescription] = useState(""); // Nuevo estado para la descripción
 
+  const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL; // URL de la API desde variables de entorno
+
+  /////////////////// FUNCIONES AUXILIARES PARA FETCH ///////////////////
+  const checkToken = () => {
+    const token = Cookies.get("authToken");
+    if (!token) {
+      navigate("/login");
+      return null;
+    }
+    return token;
+  };
+
+  const fetchAPI = async (endpoint, method = "GET", body = null) => {
+    const token = checkToken();
+    if (!token) return null;
+
+    try {
+      const options = {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        ...(body && { body: JSON.stringify(body) }),
+      };
+
+      const response = await fetch(`${API_URL}${endpoint}`, options);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({
+          message: `Error del servidor: ${response.status}`,
+        }));
+        throw new Error(errorData.message || `Error: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  /////////////////// OBTENER DATOS (KIOSKOS) ///////////////////
   useEffect(() => {
     const fetchKiosks = async () => {
       try {
-        const token = Cookies.get("authToken");
-        if (!token) {
-          navigate("/login");
-          return;
-        }
-
-        const response = await fetch("https://orderandout-refactor.onrender.com/api/kiosks/mineKiosks", {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
+        const data = await fetchAPI("/api/kiosks/mineKiosks");
+        if (data) {
           setKiosks(data);
-        } else {
-          throw new Error(data.message || "Error al obtener kioskos");
         }
+        setLoading(false);
       } catch (err) {
-        setError(err.message);
-      } finally {
+        setError(`Error al obtener kioskos: ${err.message}`);
         setLoading(false);
       }
     };
 
     fetchKiosks();
-  }, [navigate]);
+  }, [API_URL, navigate]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  /////////////////// CREAR UN KIOSKO ///////////////////
+  const createKiosk = async () => {
+    if (!newKioskName.trim() || !password.trim() || !description.trim()) {
+      setError("Por favor, completa todos los campos requeridos.");
+      return;
+    }
+
     try {
-      const token = Cookies.get("authToken");
-      
-      if (editingKiosk) {
-        // Editar kiosko existente
-        const response = await fetch(`https://orderandout-refactor.onrender.com/api/kiosks/myKiosk/${editingKiosk._id}`, {
-          method: "PUT",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            name: editingKiosk.name,
-            password: password
-          })
-        });
+      const newKiosk = await fetchAPI("/api/kiosks/myKiosk", "POST", {
+        name: newKioskName.trim(),
+        password: password.trim(),
+        description: description.trim(), // Añadir descripción al cuerpo de la solicitud
+      });
 
-        if (!response.ok) {
-          throw new Error("Error al actualizar el kiosko");
-        }
-      } else {
-        // Crear nuevo kiosko
-        const response = await fetch("https://orderandout-refactor.onrender.com/api/kiosks/myKiosk", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            name: newKioskName,
-            password: password
-          })
-        });
+      // Añadir el nuevo kiosko al estado
+      setKiosks((prev) => [...prev, newKiosk]);
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || "Error al crear kiosko");
-        }
-      }
-
-      // Recargar lista después de editar/crear
-      const updatedKiosks = await fetchKiosks();
-      setKiosks(updatedKiosks);
+      // Limpiar formulario y estados
       handleCancel();
-      
     } catch (err) {
-      setError(err.message);
+      setError(`Error al crear el kiosko: ${err.message}`);
     }
   };
 
+  /////////////////// EDITAR UN KIOSKO ///////////////////
+  const updateKiosk = async () => {
+    if (!editingKiosk?.name.trim() || !description.trim()) {
+      setError("Por favor, completa todos los campos requeridos.");
+      return;
+    }
+
+    try {
+      const body = {
+        name: editingKiosk.name.trim(),
+        description: description.trim(),
+      };
+
+      // Solo actualizar la contraseña si se proporciona una nueva
+      if (password.trim()) {
+        body.password = password.trim();
+      }
+
+      const updatedKiosk = await fetchAPI(`/api/kiosks/myKiosk/${editingKiosk._id}`, "PUT", body);
+
+      // Actualizar el estado local con la respuesta
+      setKiosks((prev) =>
+        prev.map((kiosk) =>
+          kiosk._id === editingKiosk._id ? updatedKiosk : kiosk
+        )
+      );
+
+      // Limpiar formulario y estados
+      handleCancel();
+    } catch (err) {
+      setError(`Error al actualizar el kiosko: ${err.message}`);
+    }
+  };
+
+  /////////////////// ELIMINAR UN KIOSKO ///////////////////
+  const handleDeleteKiosk = async (kioskId) => {
+    try {
+      await fetchAPI(`/api/kiosks/myKiosk/${kioskId}`, "DELETE");
+
+      // Actualizar el estado local después de eliminar
+      setKiosks((prev) => prev.filter((kiosk) => kiosk._id !== kioskId));
+      setError(""); // Limpiar errores
+    } catch (err) {
+      setError(`Error al eliminar el kiosko: ${err.message}`);
+    }
+  };
+
+  /////////////////// MANEJAR ENVÍO DEL FORMULARIO ///////////////////
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (isCreating) {
+      if (!newKioskName.trim() || !password.trim() || !description.trim()) {
+        setError("Por favor, completa todos los campos requeridos.");
+        return;
+      }
+      await createKiosk();
+    } else if (editingKiosk) {
+      if (!editingKiosk.name.trim() || !description.trim()) {
+        setError("Por favor, completa todos los campos requeridos.");
+        return;
+      }
+      await updateKiosk();
+    }
+  };
+
+  /////////////////// ABRIR Y CANCELAR FORMULARIOS ///////////////////
   const openCreateModal = () => {
     setIsCreating(true);
     setNewKioskName(`Kiosko ${kiosks.length + 1}`);
     setPassword("");
+    setDescription("");
     setShowPassword(false);
     setError("");
   };
@@ -114,74 +179,30 @@ const KiosksPage = () => {
   const handleEditKiosk = (kiosk) => {
     setEditingKiosk(kiosk);
     setIsCreating(false);
-    setPassword(kiosk.password || "");
+    setPassword(""); // No prellenar la contraseña al editar
+    setDescription(kiosk.description || "");
     setShowPassword(false);
     setError("");
-  };
-
-  const handleDeleteKiosk = async (kioskId) => {
-    try {
-      const token = Cookies.get("authToken");
-      if (!token) {
-        navigate("/login");
-        return;
-      }
-
-      const response = await fetch(`https://orderandout-refactor.onrender.com/api/kiosks/myKiosk/${kioskId}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-
-      const text = await response.text();
-      let data = {};
-      try {
-        data = text ? JSON.parse(text) : {};
-      } catch (parseError) {
-        console.error("Error parseando respuesta:", parseError);
-      }
-
-      if (!response.ok) {
-        throw new Error(data.message || `Error ${response.status}: ${text}`);
-      }
-
-      const updatedKiosks = await fetchKiosks();
-      setKiosks(updatedKiosks);
-    } catch (err) {
-      setError(`Error al eliminar: ${err.message}`);
-      console.error("Detalles completos:", {
-        error: err,
-        kioskId,
-        responseText: err.responseText || "No hay respuesta"
-      });
-    }
   };
 
   const handleCancel = () => {
-    setPassword("");
-    setShowPassword(false);
-    setEditingKiosk(null);
     setIsCreating(false);
+    setEditingKiosk(null);
+    setNewKioskName("");
+    setPassword("");
+    setDescription("");
     setError("");
   };
 
-  const fetchKiosks = async () => {
-    const response = await fetch("https://orderandout-refactor.onrender.com/api/kiosks/mineKiosks", {
-      headers: { "Authorization": `Bearer ${Cookies.get("authToken")}` }
-    });
-    return await response.json();
-  };
-
+  /////////////////// RENDERIZADO ///////////////////
   if (loading) return <div className="loading-message">Cargando...</div>;
 
   return (
     <div className="kiosks-page">
       <h2 className="page-title">Gestión de Kioskos</h2>
-      
       {error && <p className="error-message">{error}</p>}
-      
+
+      {/* Botón para crear un nuevo kiosko */}
       <button onClick={openCreateModal} className="create-kiosk-btn">
         Crear Nuevo Kiosko
       </button>
@@ -202,6 +223,16 @@ const KiosksPage = () => {
                 className="text-input"
               />
 
+              <label>Descripción del Kiosko:</label>
+              <input
+                type="text"
+                placeholder="Descripción del kiosko"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+                className="text-input"
+              />
+
               <label>Contraseña del Kiosko:</label>
               <div className="password-input-container">
                 <input
@@ -217,10 +248,10 @@ const KiosksPage = () => {
                   className="password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  <img 
-                    src={showPassword ? eyeIcon : invisibleIcon} 
-                    alt="Toggle Password" 
-                    className="password-icon" 
+                  <img
+                    src={showPassword ? eyeIcon : invisibleIcon}
+                    alt="Toggle Password"
+                    className="password-icon"
                   />
                 </span>
               </div>
@@ -229,9 +260,9 @@ const KiosksPage = () => {
                 <button type="submit" className="submit-btn">
                   Crear Kiosko
                 </button>
-                <button 
-                  type="button" 
-                  onClick={handleCancel} 
+                <button
+                  type="button"
+                  onClick={handleCancel}
                   className="cancel-btn"
                 >
                   Cancelar
@@ -253,7 +284,19 @@ const KiosksPage = () => {
                 type="text"
                 placeholder="Nombre del kiosko"
                 value={editingKiosk.name}
-                onChange={(e) => setEditingKiosk({...editingKiosk, name: e.target.value})}
+                onChange={(e) =>
+                  setEditingKiosk({ ...editingKiosk, name: e.target.value })
+                }
+                required
+                className="text-input"
+              />
+
+              <label>Descripción del Kiosko:</label>
+              <input
+                type="text"
+                placeholder="Descripción del kiosko"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 required
                 className="text-input"
               />
@@ -262,10 +305,9 @@ const KiosksPage = () => {
               <div className="password-input-container">
                 <input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Contraseña del kiosko"
+                  placeholder="Nueva contraseña"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
                   minLength="8"
                   className="text-input"
                 />
@@ -273,10 +315,10 @@ const KiosksPage = () => {
                   className="password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  <img 
-                    src={showPassword ? eyeIcon : invisibleIcon} 
-                    alt="Toggle Password" 
-                    className="password-icon" 
+                  <img
+                    src={showPassword ? eyeIcon : invisibleIcon}
+                    alt="Toggle Password"
+                    className="password-icon"
                   />
                 </span>
               </div>
@@ -285,9 +327,9 @@ const KiosksPage = () => {
                 <button type="submit" className="submit-btn">
                   Actualizar Kiosko
                 </button>
-                <button 
-                  type="button" 
-                  onClick={handleCancel} 
+                <button
+                  type="button"
+                  onClick={handleCancel}
                   className="cancel-btn"
                 >
                   Cancelar
@@ -298,21 +340,25 @@ const KiosksPage = () => {
         </div>
       )}
 
+      {/* Lista de kioskos */}
       <div className="kiosks-list">
         {kiosks.length > 0 ? (
           kiosks.map((kiosk) => (
             <div key={kiosk._id} className="kiosk-card">
               <h3 className="kiosk-title">{kiosk.name}</h3>
+              <p className="kiosk-description">{kiosk.description}</p>
               <p className="kiosk-id">Serial: {kiosk._id}</p>
-              <p className="kiosk-date">Creado: {new Date(kiosk.createdAt).toLocaleDateString()}</p>
-              <button 
-                onClick={() => handleEditKiosk(kiosk)} 
+              <p className="kiosk-date">
+                Creado: {new Date(kiosk.createdAt).toLocaleDateString()}
+              </p>
+              <button
+                onClick={() => handleEditKiosk(kiosk)}
                 className="edit-kiosk-btn"
               >
                 ✏️ Editar
               </button>
-              <button 
-                onClick={() => handleDeleteKiosk(kiosk._id)} 
+              <button
+                onClick={() => handleDeleteKiosk(kiosk._id)}
                 className="delete-kiosk-btn"
               >
                 🗑 Eliminar

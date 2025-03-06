@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import "../styles/CategoriesPage.css";
 
 const CategoriesPage = () => {
+  /////////////////// ESTADOS ///////////////////
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -15,44 +16,68 @@ const CategoriesPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState("default");
-  const [password, setPassword] = useState("");
-  const [passwordVisible, setPasswordVisible] = useState(false);
 
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL; // URL de la API desde variables de entorno
 
+  /////////////////// FUNCIONES AUXILIARES PARA FETCH ///////////////////
+  const checkToken = () => {
+    const token = Cookies.get("authToken");
+    if (!token) {
+      navigate("/login");
+      return null;
+    }
+    return token;
+  };
+
+  const fetchAPI = async (endpoint, method = "GET", body = null) => {
+    const token = checkToken();
+    if (!token) return null;
+
+    try {
+      const options = {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        ...(body && { body: JSON.stringify(body) }),
+      };
+
+      const response = await fetch(`${API_URL}${endpoint}`, options);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({
+          message: `Error del servidor: ${response.status}`,
+        }));
+        throw new Error(errorData.message || `Error: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  /////////////////// OBTENER DATOS (CATEGORÍAS) ///////////////////
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCategories = async () => {
       try {
-        const token = Cookies.get("authToken");
-        if (!token) {
-          navigate("/login");
-          return;
+        const data = await fetchAPI("/api/categories/mineCategory");
+        if (data) {
+          setCategories(data);
         }
-
-        const categoriesResponse = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/categories/mineCategory`,
-          {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        if (!categoriesResponse.ok) {
-          throw new Error(`Error al obtener categorías: ${categoriesResponse.status}`);
-        }
-
-        const categoriesData = await categoriesResponse.json();
-        setCategories(categoriesData);
-
         setLoading(false);
       } catch (err) {
-        setError(err.message);
+        setError(`Error al obtener categorías: ${err.message}`);
         setLoading(false);
       }
     };
-    fetchData();
-  }, [navigate]);
 
+    fetchCategories();
+  }, [API_URL, navigate]);
+
+  /////////////////// VALIDAR CATEGORÍA ///////////////////
   const validateCategory = () => {
     if (!name.trim() || !description.trim()) {
       setError("Por favor, completa todos los campos requeridos.");
@@ -62,6 +87,7 @@ const CategoriesPage = () => {
     return true;
   };
 
+  /////////////////// ORDENAR CATEGORÍAS ///////////////////
   const sortCategories = (order) => {
     let sortedCategories = [...categories];
     switch (order) {
@@ -80,31 +106,12 @@ const CategoriesPage = () => {
     return sortedCategories;
   };
 
+  /////////////////// ELIMINAR CATEGORÍA ///////////////////
   const deleteCategory = async (categoryId) => {
     try {
-      const token = Cookies.get("authToken");
-      if (!token) {
-        navigate("/login");
-        return;
-      }
+      await fetchAPI("/api/categories/myCategory", "DELETE", { categoryId });
 
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/categories/myCategory`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ categoryId }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Error al eliminar la categoría");
-      }
-
+      // Actualizar el estado localmente después de eliminar
       setCategories((prev) => prev.filter((c) => c._id !== categoryId));
       setProducts((prev) => prev.filter((p) => p.category !== categoryId));
     } catch (err) {
@@ -113,6 +120,7 @@ const CategoriesPage = () => {
     }
   };
 
+  /////////////////// EDITAR CATEGORÍA ///////////////////
   const editCategory = (category) => {
     setEditingCategoryId(category._id);
     setName(category.name);
@@ -121,81 +129,56 @@ const CategoriesPage = () => {
     setError("");
   };
 
+  /////////////////// ACTUALIZAR CATEGORÍA ///////////////////
   const updateCategory = async () => {
     if (!validateCategory()) return;
+
     try {
-      const token = Cookies.get("authToken");
+      const updatedCategory = await fetchAPI("/api/categories/myCategory", "PUT", {
+        categoryId: editingCategoryId,
+        name,
+        description,
+      });
 
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/categories/myCategory`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            categoryId: editingCategoryId,
-            name,
-            description,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Error al actualizar la categoría");
-      }
-
-      const updatedCategory = await response.json();
+      // Actualizar el estado localmente con la respuesta
       setCategories(
         categories.map((category) =>
           category._id === editingCategoryId ? updatedCategory : category
         )
       );
+
+      // Limpiar formulario y estados
       setIsEditing(false);
       setName("");
       setDescription("");
     } catch (err) {
-      setError("Error al actualizar: " + err.message);
+      setError(`Error al actualizar la categoría: ${err.message}`);
     }
   };
 
+  /////////////////// CREAR CATEGORÍA ///////////////////
   const createCategory = async () => {
     if (!validateCategory()) return;
+
     try {
-      const token = Cookies.get("authToken");
+      const newCategory = await fetchAPI("/api/categories/myCategory", "POST", {
+        name,
+        description,
+      });
 
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/categories/myCategory`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name,
-            description,
-          }),
-        }
-      );
+      // Añadir la nueva categoría al estado
+      setCategories([...categories, newCategory]);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Error al crear la categoría");
-      }
-
-      const createdCategory = await response.json();
-      setCategories([...categories, createdCategory]);
+      // Limpiar formulario y estados
       setIsCreating(false);
       setName("");
       setDescription("");
     } catch (err) {
-      setError("Error al crear la categoría: " + err.message);
+      setError(`Error al crear la categoría: ${err.message}`);
     }
   };
 
+  /////////////////// CANCELAR (CREACIÓN/EDICIÓN) ///////////////////
   const handleCancel = () => {
     setIsCreating(false);
     setIsEditing(false);
@@ -204,17 +187,10 @@ const CategoriesPage = () => {
     setError("");
   };
 
+  /////////////////// CATEGORÍAS ORDENADAS ///////////////////
   const sortedCategories = sortCategories(sortOrder);
 
-  const filteredProducts = selectedCategory
-    ? products.filter((product) => product.category === selectedCategory)
-    : [];
-
-  // Handle password visibility toggle
-  const togglePasswordVisibility = () => {
-    setPasswordVisible(!passwordVisible);
-  };
-
+  /////////////////// RENDERIZADO ///////////////////
   return (
     <div className="categories-page">
       {loading ? (
@@ -226,6 +202,7 @@ const CategoriesPage = () => {
           <h2 className="page-title">Gestión de Categorías</h2>
           {error && <p className="error-message">{error}</p>}
 
+          {/* Botón para crear una nueva categoría */}
           <button
             onClick={() => {
               setIsCreating(true);
@@ -237,6 +214,7 @@ const CategoriesPage = () => {
             Crear Nueva Categoría
           </button>
 
+          {/* Selector para ordenar categorías */}
           <div className="sort-filter">
             <label>Ordenar por:</label>
             <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
@@ -247,6 +225,7 @@ const CategoriesPage = () => {
             </select>
           </div>
 
+          {/* Modal para crear o editar categorías */}
           {(isCreating || isEditing) && (
             <div className="modal-overlay">
               <div className="modal-content">
@@ -273,6 +252,7 @@ const CategoriesPage = () => {
             </div>
           )}
 
+          {/* Lista de categorías */}
           <div className="categories-list horizontal">
             {sortedCategories.length > 0 ? (
               sortedCategories.map((category) => (
@@ -298,11 +278,13 @@ const CategoriesPage = () => {
             )}
           </div>
 
+          {/* Lista de productos de la categoría seleccionada */}
           {selectedCategory && (
             <div className="products-list">
               <h3>Productos de la categoría seleccionada:</h3>
-              {filteredProducts.length > 0 ? (
-                filteredProducts.map((product) => (
+              {products
+                .filter((product) => product.category === selectedCategory)
+                .map((product) => (
                   <div key={product._id} className="product-card">
                     <img src={product.image} alt={product.name} className="product-image" />
                     <h3>{product.name}</h3>
@@ -310,10 +292,7 @@ const CategoriesPage = () => {
                     <p>💰 Costo: ${product.costPrice}</p>
                     <p>🏷 Venta: ${product.salePrice}</p>
                   </div>
-                ))
-              ) : (
-                <p>No hay productos en esta categoría</p>
-              )}
+                ))}
             </div>
           )}
         </>

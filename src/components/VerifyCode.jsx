@@ -9,27 +9,47 @@ const VerifyCode = () => {
   const navigate = useNavigate();
   const inputsRef = useRef([]);
 
-  // Cambia la URL de la API por la variable de entorno
-  const API_URL = process.env.REACT_APP_API_URL;
+  // Usamos la variable de entorno de Vite para el URL de la API
+  const API_URL = import.meta.env.VITE_API_URL;
 
+  // Manejo del cambio de código de verificación
   const handleVerificationCodeChange = (e, index) => {
     const newCode = [...verificationCode];
-    newCode[index] = e.target.value.replace(/\D/, "");
+    newCode[index] = e.target.value.replace(/\D/, ""); // Solo números
+
     setVerificationCode(newCode);
 
+    // Enfocar el siguiente input si se ingresó un valor
     if (e.target.value && index < 5) {
       inputsRef.current[index + 1].focus();
     }
   };
 
+  // Manejo de tecla hacia atrás
   const handleKeyDown = (e, index) => {
     if (e.key === "Backspace" && !e.target.value && index > 0) {
       inputsRef.current[index - 1].focus();
     }
   };
 
+  // Validación del código de verificación
+  const validateCode = () => {
+    if (verificationCode.some((digit) => digit === "")) {
+      setError("Por favor, complete todo el código.");
+      return false;
+    }
+    return true;
+  };
+
+  // Manejo del envío del código de verificación
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(""); // Limpiar error antes de enviar
+
+    // Validar el código antes de enviarlo
+    if (!validateCode()) {
+      return;
+    }
 
     try {
       const response = await fetch(`${API_URL}/api/admins/verify-account`, {
@@ -37,7 +57,7 @@ const VerifyCode = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tempId: Cookies.get("tempId"),
-          code: verificationCode.join(""),
+          code: verificationCode.join(""), // Código completo
         }),
       });
 
@@ -47,6 +67,7 @@ const VerifyCode = () => {
         throw new Error(data.message || "Código incorrecto");
       }
 
+      // Eliminar el ID temporal y guardar el token de autenticación en las cookies
       Cookies.remove("tempId");
       Cookies.set("authToken", data.token, {
         expires: 1,
@@ -54,12 +75,13 @@ const VerifyCode = () => {
         sameSite: "strict",
       });
 
+      // Redirigir al usuario a la página principal
       navigate("/home");
-
     } catch (err) {
       setError(err.message || "Error al verificar el código");
     }
   };
+
 
   return (
     <div className="verify-page">
