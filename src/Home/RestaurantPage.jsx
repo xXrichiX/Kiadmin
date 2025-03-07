@@ -95,7 +95,7 @@ const RestaurantManagement = () => {
       setReferences(restaurant.references);
       setPostalCode(restaurant.postalCode);
     } else {
-      // Limpia el formulario para crear
+      // Limpia eedl formulario para crear
       setName("");
       setImage("");
       setCountry("");
