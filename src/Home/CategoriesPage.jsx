@@ -18,7 +18,8 @@ const CategoriesPage = () => {
   const [sortOrder, setSortOrder] = useState("default");
 
   const navigate = useNavigate();
-  const API_URL = import.meta.env.VITE_API_URL; // URL de la API desde variables de entorno
+  // URL base fija para garantizar que todas las solicitudes usen la URL correcta
+    const API_URL = import.meta.env.VITE_API_URL; // Obtener la URL de la API desde las variables de entorno
 
   /////////////////// FUNCIONES AUXILIARES PARA FETCH ///////////////////
   const checkToken = () => {
@@ -60,22 +61,40 @@ const CategoriesPage = () => {
   };
 
   /////////////////// OBTENER DATOS (CATEGORÍAS) ///////////////////
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await fetchAPI("/api/categories/mineCategory");
-        if (data) {
-          setCategories(data);
-        }
-        setLoading(false);
-      } catch (err) {
-        setError(`Error al obtener categorías: ${err.message}`);
-        setLoading(false);
+  const fetchAllCategories = async () => {
+    try {
+      const data = await fetchAPI("/api/categories/mineCategory");
+      if (data) {
+        setCategories(data);
       }
-    };
+      setLoading(false);
+    } catch (err) {
+      setError(`Error al obtener categorías: ${err.message}`);
+      setLoading(false);
+    }
+  };
 
-    fetchCategories();
-  }, [API_URL, navigate]);
+  useEffect(() => {
+    fetchAllCategories();
+  }, []);
+
+  /////////////////// OBTENER PRODUCTOS POR CATEGORÍA ///////////////////
+  useEffect(() => {
+    if (selectedCategory) {
+      const fetchProductsByCategory = async () => {
+        try {
+          const data = await fetchAPI(`/api/products/byCategory/${selectedCategory}`);
+          if (data) {
+            setProducts(data);
+          }
+        } catch (err) {
+          setError(`Error al obtener productos: ${err.message}`);
+        }
+      };
+
+      fetchProductsByCategory();
+    }
+  }, [selectedCategory]);
 
   /////////////////// VALIDAR CATEGORÍA ///////////////////
   const validateCategory = () => {
@@ -109,11 +128,14 @@ const CategoriesPage = () => {
   /////////////////// ELIMINAR CATEGORÍA ///////////////////
   const deleteCategory = async (categoryId) => {
     try {
-      await fetchAPI("/api/categories/myCategory", "DELETE", { categoryId });
+      // ID se pasa como parámetro en la URL
+      await fetchAPI(`/api/categories/myCategory/${categoryId}`, "DELETE");
 
       // Actualizar el estado localmente después de eliminar
       setCategories((prev) => prev.filter((c) => c._id !== categoryId));
       setProducts((prev) => prev.filter((p) => p.category !== categoryId));
+      
+      setError("");
     } catch (err) {
       setError(`Error eliminando categoría ID ${categoryId}: ${err.message}`);
       console.error("Detalles completos:", err);
@@ -134,25 +156,33 @@ const CategoriesPage = () => {
     if (!validateCategory()) return;
 
     try {
-      const updatedCategory = await fetchAPI("/api/categories/myCategory", "PUT", {
-        categoryId: editingCategoryId,
-        name,
-        description,
-      });
-
-      // Actualizar el estado localmente con la respuesta
-      setCategories(
-        categories.map((category) =>
-          category._id === editingCategoryId ? updatedCategory : category
-        )
+      // El ID se pasa como parámetro en la URL y enviamos los datos en el body
+      const updatedCategory = await fetchAPI(
+        `/api/categories/myCategory/${editingCategoryId}`, 
+        "PUT", 
+        {
+          name,
+          description
+        }
       );
 
-      // Limpiar formulario y estados
-      setIsEditing(false);
-      setName("");
-      setDescription("");
+      // Verificar si la respuesta es correcta
+      if (updatedCategory) {
+        // Refrescar todas las categorías para asegurar que tenemos los datos más actualizados
+        await fetchAllCategories();
+        
+        // Limpiar formulario y estados
+        setIsEditing(false);
+        setEditingCategoryId(null);
+        setName("");
+        setDescription("");
+        setError("");
+      } else {
+        throw new Error("No se recibió una respuesta válida del servidor");
+      }
     } catch (err) {
       setError(`Error al actualizar la categoría: ${err.message}`);
+      console.error("Error completo:", err);
     }
   };
 
@@ -166,13 +196,16 @@ const CategoriesPage = () => {
         description,
       });
 
-      // Añadir la nueva categoría al estado
-      setCategories([...categories, newCategory]);
-
-      // Limpiar formulario y estados
-      setIsCreating(false);
-      setName("");
-      setDescription("");
+      if (newCategory) {
+        // Refrescar todas las categorías
+        await fetchAllCategories();
+        
+        // Limpiar formulario y estados
+        setIsCreating(false);
+        setName("");
+        setDescription("");
+        setError("");
+      }
     } catch (err) {
       setError(`Error al crear la categoría: ${err.message}`);
     }
@@ -182,6 +215,7 @@ const CategoriesPage = () => {
   const handleCancel = () => {
     setIsCreating(false);
     setIsEditing(false);
+    setEditingCategoryId(null);
     setName("");
     setDescription("");
     setError("");
@@ -206,8 +240,11 @@ const CategoriesPage = () => {
           <button
             onClick={() => {
               setIsCreating(true);
+              setIsEditing(false);
+              setEditingCategoryId(null);
               setName("");
               setDescription("");
+              setError("");
             }}
             className="create-category-btn"
           >
@@ -282,17 +319,21 @@ const CategoriesPage = () => {
           {selectedCategory && (
             <div className="products-list">
               <h3>Productos de la categoría seleccionada:</h3>
-              {products
-                .filter((product) => product.category === selectedCategory)
-                .map((product) => (
-                  <div key={product._id} className="product-card">
-                    <img src={product.image} alt={product.name} className="product-image" />
-                    <h3>{product.name}</h3>
-                    <p>{product.description}</p>
-                    <p>💰 Costo: ${product.costPrice}</p>
-                    <p>🏷 Venta: ${product.salePrice}</p>
-                  </div>
-                ))}
+              {products.length > 0 ? (
+                products
+                  .filter((product) => product.category === selectedCategory)
+                  .map((product) => (
+                    <div key={product._id} className="product-card">
+                      <img src={product.image} alt={product.name} className="product-image" />
+                      <h3>{product.name}</h3>
+                      <p>{product.description}</p>
+                      <p>💰 Costo: ${product.costPrice}</p>
+                      <p>🏷 Venta: ${product.salePrice}</p>
+                    </div>
+                  ))
+              ) : (
+                <p>No hay productos en esta categoría</p>
+              )}
             </div>
           )}
         </>

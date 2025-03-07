@@ -15,7 +15,7 @@ const ProductsPage = () => {
   const [newProduct, setNewProduct] = useState(getEmptyProduct()); // Estado para el nuevo producto o producto editado
 
   const navigate = useNavigate(); // Hook para navegar entre rutas
-  const API_URL = import.meta.env.VITE_API_URL; // Obtener la URL de la API desde las variables de entorno
+  const API_URL = import.meta.env.VITE_API_URL || "https://orderandout.onrender.com"; // Obtener la URL de la API desde las variables de entorno
 
   /////////////////// FUNCIÓN PARA OBTENER UN PRODUCTO VACÍO ///////////////////
   function getEmptyProduct() {
@@ -92,8 +92,13 @@ const ProductsPage = () => {
   const fetchProductsByCategory = async (categoryId) => {
     try {
       const token = Cookies.get("authToken"); // Obtener el token de autenticación
-      const response = await fetch(`${API_URL}/api/products/${categoryId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      // Usar el ID de categoría en la URL
+      const response = await fetch(`${API_URL}/api/products/myCategory/${categoryId}`, {
+        method: "GET",
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
       });
 
       if (!response.ok) {
@@ -118,7 +123,11 @@ const ProductsPage = () => {
         try {
           const token = Cookies.get("authToken");
           const productsResponse = await fetch(`${API_URL}/api/products/mineProducts`, {
-            headers: { Authorization: `Bearer ${token}` },
+            method: "GET",
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
           });
 
           if (!productsResponse.ok) {
@@ -144,21 +153,23 @@ const ProductsPage = () => {
   const deleteProduct = async (productId) => {
     try {
       const token = Cookies.get("authToken"); // Obtener el token de autenticación
-      const response = await fetch(`${API_URL}/api/products/myProduct`, {
+      
+      // CORREGIDO: Aseguramos que estamos usando correctamente la URL para eliminar
+      const response = await fetch(`${API_URL}/api/products/myProduct/${productId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ productId }), // Enviar el ID del producto a eliminar
+          "Content-Type": "application/json"
+        }
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error ${response.status}: ${errorText}`);
+        const errorData = await response.json();
+        throw new Error(`Error ${response.status}: ${JSON.stringify(errorData)}`);
       }
 
-      setProducts(products.filter((p) => p._id !== productId)); // Actualizar el estado localmente
+      // Actualizar el estado localmente después de eliminar con éxito
+      setProducts(products.filter((p) => p._id !== productId));
     } catch (err) {
       setError(`Error al eliminar producto: ${err.message}`);
       console.error("Error al eliminar producto:", err);
@@ -171,23 +182,27 @@ const ProductsPage = () => {
 
     try {
       const token = Cookies.get("authToken"); // Obtener el token de autenticación
+      
+      // Preparar los datos con el formato correcto
+      const productData = {
+        ...newProduct,
+        ingredients: Array.isArray(newProduct.ingredients)
+          ? newProduct.ingredients
+          : newProduct.ingredients.split(",").map((i) => i.trim()),
+      };
+
       const response = await fetch(`${API_URL}/api/products/myProduct`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...newProduct,
-          ingredients: Array.isArray(newProduct.ingredients)
-            ? newProduct.ingredients
-            : newProduct.ingredients.split(",").map((i) => i.trim()), // Formatear ingredientes
-        }),
+        body: JSON.stringify(productData),
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error ${response.status}: ${errorText}`);
+        const errorData = await response.json();
+        throw new Error(`Error ${response.status}: ${JSON.stringify(errorData)}`);
       }
 
       const data = await response.json();
@@ -205,29 +220,36 @@ const ProductsPage = () => {
 
     try {
       const token = Cookies.get("authToken"); // Obtener el token de autenticación
-      const response = await fetch(`${API_URL}/api/products/myProduct`, {
+      const productId = editingProduct._id; // Obtener el ID del producto que se está editando
+      
+      // Preparar los datos con el formato correcto
+      const productData = {
+        ...newProduct,
+        ingredients: Array.isArray(newProduct.ingredients)
+          ? newProduct.ingredients
+          : newProduct.ingredients.split(",").map((i) => i.trim()),
+      };
+
+      // CORREGIDO: Aseguramos que estamos usando correctamente la URL para actualizar
+      const response = await fetch(`${API_URL}/api/products/myProduct/${productId}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...newProduct,
-          productId: editingProduct._id, // Enviar el ID del producto a actualizar
-          ingredients: Array.isArray(newProduct.ingredients)
-            ? newProduct.ingredients
-            : newProduct.ingredients.split(",").map((i) => i.trim()), // Formatear ingredientes
-        }),
+        body: JSON.stringify(productData),
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error ${response.status}: ${errorText}`);
+        const errorData = await response.json();
+        throw new Error(`Error ${response.status}: ${JSON.stringify(errorData)}`);
       }
 
       const updatedProduct = await response.json();
+      
+      // Actualizar el estado localmente
       setProducts((prev) =>
-        prev.map((p) => (p._id === updatedProduct._id ? updatedProduct : p)) // Actualizar el estado localmente
+        prev.map((p) => (p._id === updatedProduct._id ? updatedProduct : p))
       );
       closeModal(); // Cerrar el modal
     } catch (err) {
