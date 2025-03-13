@@ -1,0 +1,41 @@
+node_modules/
+public/
+src/
+│── assets/
+│── components/
+│   ├── VerifyCode.jsx
+│── Home/
+│   ├── CategoriesPage.jsx
+│   ├── KioskPage.jsx
+│   ├── ProductsPage.jsx
+│   ├── Profile.jsx
+│   ├── RestaurantPage.jsx
+│── pages/
+│   ├── ForgotPassword.jsx
+│   ├── HomePage.jsx (Modificado)
+│   ├── Login.jsx
+│   ├── Register.jsx
+│   ├── ResetPassword.jsx
+│── styles/
+│   ├── CategoriesPage.css
+│   ├── ForgotPassword.css
+│   ├── HomePage.css
+│   ├── KiosksPage.css
+│   ├── Login.css
+│   ├── ProductsPage.css
+│   ├── Register.css
+│   ├── ResetPassword.css
+│   ├── RestaurantPage.css
+│   ├── VerifyCode.css
+│── App.css
+│── App.jsx (Modificado)
+│── index.css
+│── main.jsx
+.gitignore
+eslint.config.js
+estructrra.txt
+index.html
+package-lock.json
+package.json
+postcss.config.cjs
+README.md
