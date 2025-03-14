@@ -198,6 +198,7 @@ const VerifyCode = () => {
                 <button type="submit" className="submit-button">
                   Verificar Código
                 </button>
+                {/* Botón de reenviar código comentado
                 <button
                   type="button"
                   className="resend-button"
@@ -205,6 +206,7 @@ const VerifyCode = () => {
                 >
                   Reenviar Código
                 </button>
+                */}
               </div>
             </form>
           </div>

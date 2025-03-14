@@ -1,54 +1,164 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import "../styles/ProductsPage.css";
 
 const ProductsPage = () => {
-  // Estados
+  /////////////////// ESTADOS ///////////////////
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [isCreating, setIsCreating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingProductId, setEditingProductId] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [newProduct, setNewProduct] = useState(getEmptyProduct());
   const [successMessage, setSuccessMessage] = useState("");
   const [imageUploading, setImageUploading] = useState(false);
+  const [sortOrder, setSortOrder] = useState("default");
+  const [currentTab, setCurrentTab] = useState("basic"); // Para la navegación por pestañas
+  
+  // Datos del formulario de producto
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    image: "",
+    costPrice: "",
+    salePrice: "",
+    category: "",
+    ingredients: "",
+    availability: true,
+    currency: "MXN"
+  });
 
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
   const CLOUD_NAME = import.meta.env.VITE_CLOUD_NAME;
   const UPLOAD_PRESET = import.meta.env.VITE_UPLOAD_PRESET;
-  
-  // Producto vacío para formulario
-  function getEmptyProduct() {
-    return {
-      name: "",
-      description: "",
-      image: "",
-      costPrice: "",
-      salePrice: "",
-      category: "",
-      ingredients: "",
-      availability: true,
-      currency: "MXN"
-    };
-  }
 
-  // Validación de producto
+  /////////////////// FUNCIONES AUXILIARES PARA FETCH ///////////////////
+  const checkToken = () => {
+    const token = Cookies.get("authToken");
+    if (!token) {
+      navigate("/login");
+      return null;
+    }
+    return token;
+  };
+
+  const fetchAPI = async (endpoint, method = "GET", body = null) => {
+    const token = checkToken();
+    if (!token) return null;
+
+    try {
+      const options = {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        ...(body && { body: JSON.stringify(body) }),
+      };
+
+      const response = await fetch(`${API_URL}${endpoint}`, options);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({
+          message: `Error del servidor: ${response.status}`,
+        }));
+        throw new Error(errorData.message || `Error: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  /////////////////// OBTENER DATOS (PRODUCTOS Y CATEGORÍAS) ///////////////////
+  const fetchAllProducts = async () => {
+    try {
+      const data = await fetchAPI("/api/products/mineProducts");
+      if (data) {
+        setProducts(data);
+      }
+      setLoading(false);
+      return data;
+    } catch (err) {
+      setError(`Error al obtener productos: ${err.message}`);
+      setLoading(false);
+      return [];
+    }
+  };
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        setLoading(true);
+        // Obtener datos en paralelo para mejor rendimiento
+        const [categoriesData, productsData] = await Promise.all([
+          fetchAPI("/api/categories/mineCategory"),
+          fetchAPI("/api/products/mineProducts")
+        ]);
+        
+        setCategories(categoriesData);
+        setProducts(productsData);
+        setLoading(false);
+      } catch (err) {
+        setError(`Error al cargar datos: ${err.message}`);
+        setLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, []);
+
+  /////////////////// FILTRAR PRODUCTOS POR CATEGORÍA ///////////////////
+  const handleCategoryChange = (categoryId) => {
+    setSelectedCategory(categoryId);
+    
+    if (categoryId === "all") {
+      fetchAllProducts();
+    } else {
+      // Filtramos localmente para mejor UX
+      setProducts(prev => prev.filter(product => product.category === categoryId));
+    }
+  };
+
+  /////////////////// ORDENAR PRODUCTOS ///////////////////
+  const sortProducts = (order) => {
+    let sortedProducts = [...products];
+    switch (order) {
+      case "price_low":
+        sortedProducts.sort((a, b) => parseFloat(a.salePrice) - parseFloat(b.salePrice));
+        break;
+      case "price_high":
+        sortedProducts.sort((a, b) => parseFloat(b.salePrice) - parseFloat(a.salePrice));
+        break;
+      case "alphabetical":
+        sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "newest":
+        sortedProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        break;
+      default:
+        break;
+    }
+    return sortedProducts;
+  };
+
+  /////////////////// VALIDAR PRODUCTO ///////////////////
   const validateProduct = () => {
     const requiredFields = [
       { field: 'name', message: 'El nombre es obligatorio' },
       { field: 'description', message: 'La descripción es obligatoria' },
-      { field: 'image', message: 'La imagen es obligatoria' },
       { field: 'costPrice', message: 'El precio de costo es obligatorio' },
       { field: 'salePrice', message: 'El precio de venta es obligatorio' },
       { field: 'category', message: 'La categoría es obligatoria' }
     ];
 
     for (const { field, message } of requiredFields) {
-      if (!newProduct[field] || (typeof newProduct[field] === 'string' && !newProduct[field].trim())) {
+      if (!formData[field] || (typeof formData[field] === 'string' && !formData[field].trim())) {
         setError(message);
         return false;
       }
@@ -58,110 +168,71 @@ const ProductsPage = () => {
     return true;
   };
 
-  // Obtener token de autenticación
-  const getToken = () => {
-    const token = Cookies.get("authToken");
-    if (!token) {
-      navigate("/login");
-      return null;
+  /////////////////// CREAR PRODUCTO ///////////////////
+  const createProduct = async () => {
+    if (!validateProduct()) return;
+
+    try {
+      // Formatear ingredientes si es necesario
+      const productData = {
+        ...formData,
+        ingredients: Array.isArray(formData.ingredients) 
+          ? formData.ingredients 
+          : formData.ingredients.split(",").map(i => i.trim()).filter(i => i !== "")
+      };
+
+      await fetchAPI("/api/products/myProduct", "POST", productData);
+      
+      setSuccessMessage("Producto creado correctamente");
+      await fetchAllProducts();
+      
+      // Limpiar formulario y estados
+      setIsCreating(false);
+      resetForm();
+      
+      // Limpiar mensaje después de un tiempo
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err) {
+      setError(`Error al crear el producto: ${err.message}`);
     }
-    return token;
   };
 
-  // Crear headers de autenticación
-  const createAuthHeaders = (token) => ({
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json"
-  });
+  /////////////////// ACTUALIZAR PRODUCTO ///////////////////
+  const updateProduct = async () => {
+    if (!validateProduct() || !editingProductId) return;
 
-  // Helper para peticiones con autenticación
-  const fetchWithAuth = useCallback(async (endpoint, options = {}) => {
-    const token = getToken();
-    if (!token) return null;
-    
     try {
-      const response = await fetch(`${API_URL}${endpoint}`, {
-        ...options,
-        headers: {
-          ...createAuthHeaders(token),
-          ...(options.headers || {})
-        }
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: "Error desconocido" }));
-        throw new Error(`Error ${response.status}: ${errorData.message || JSON.stringify(errorData)}`);
-      }
-      
-      return response.json();
-    } catch (error) {
-      console.error(`Error en fetchWithAuth (${endpoint}):`, error);
-      throw error;
-    }
-  }, [API_URL, navigate]);
+      // Formatear ingredientes
+      const productData = {
+        ...formData,
+        ingredients: Array.isArray(formData.ingredients) 
+          ? formData.ingredients 
+          : formData.ingredients.split(",").map(i => i.trim()).filter(i => i !== "")
+      };
 
-  // Obtener todos los productos
-  const fetchAllProducts = useCallback(async () => {
-    try {
-      setLoading(true);
-      const productsData = await fetchWithAuth("/api/products/mineProducts");
-      setProducts(productsData);
-      return productsData;
+      await fetchAPI(`/api/products/myProduct/${editingProductId}`, "PUT", productData);
+      
+      setSuccessMessage("Producto actualizado correctamente");
+      await fetchAllProducts();
+      
+      // Limpiar formulario y estados
+      setIsEditing(false);
+      setEditingProductId(null);
+      resetForm();
+      
+      // Limpiar mensaje después de un tiempo
+      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err) {
-      setError(`Error al obtener productos: ${err.message}`);
-      console.error("Error al obtener productos:", err);
-      return [];
-    } finally {
-      setLoading(false);
+      setError(`Error al actualizar el producto: ${err.message}`);
     }
-  }, [fetchWithAuth]);
-  
-  // Carga inicial de datos
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const token = getToken();
-        if (!token) return;
-        
-        setLoading(true);
-        
-        // Peticiones en paralelo para mejor rendimiento
-        const [categoriesData, productsData] = await Promise.all([
-          fetchWithAuth("/api/categories/mineCategory"),
-          fetchWithAuth("/api/products/mineProducts")
-        ]);
-        
-        setCategories(categoriesData);
-        setProducts(productsData);
-      } catch (err) {
-        setError(`Error al cargar datos: ${err.message}`);
-        console.error("Error en fetchInitialData:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchInitialData();
-  }, [fetchWithAuth]);
+  };
 
-  // Filtrar productos por categoría
-  const handleCategoryChange = useCallback((categoryId) => {
-    setSelectedCategory(categoryId);
-    
-    // Filtrado local para mejor UX
-    if (categoryId === "all") {
-      fetchAllProducts();
-    } else {
-      setProducts(prev => prev.filter(product => product.category === categoryId));
-    }
-  }, [fetchAllProducts]);
-
-  // Eliminar producto
+  /////////////////// ELIMINAR PRODUCTO ///////////////////
   const deleteProduct = async (productId) => {
     if (!window.confirm('¿Estás seguro de eliminar este producto?')) return;
     
     try {
-      await fetchWithAuth(`/api/products/myProduct/${productId}`, { method: "DELETE" });
+      await fetchAPI(`/api/products/myProduct/${productId}`, "DELETE");
       
       // Actualizar estado y mostrar mensaje
       setSuccessMessage("Producto eliminado correctamente");
@@ -174,64 +245,55 @@ const ProductsPage = () => {
     }
   };
 
-  // Formatear ingredientes para API
-  const formatIngredients = (ingredients) => {
-    if (Array.isArray(ingredients)) return ingredients;
-    return ingredients.split(",").map(i => i.trim()).filter(i => i !== "");
+  /////////////////// EDITAR PRODUCTO ///////////////////
+  const editProduct = (product) => {
+    setEditingProductId(product._id);
+    setFormData({
+      ...product,
+      ingredients: Array.isArray(product.ingredients)
+        ? product.ingredients.join(", ")
+        : product.ingredients
+    });
+    setIsEditing(true);
+    setIsCreating(false);
+    setError("");
+    setCurrentTab("basic");
   };
 
-  // Crear producto
-  const createProduct = async () => {
-    if (!validateProduct()) return;
-
-    try {
-      const productData = {
-        ...newProduct,
-        ingredients: formatIngredients(newProduct.ingredients)
-      };
-
-      await fetchWithAuth("/api/products/myProduct", {
-        method: "POST",
-        body: JSON.stringify(productData)
-      });
-
-      setSuccessMessage("Producto creado correctamente");
-      await fetchAllProducts();
-      closeModal();
-      
-      setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (err) {
-      setError(`Error al crear producto: ${err.message}`);
-    }
+  /////////////////// RESET FORMULARIO ///////////////////
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      description: "",
+      image: "",
+      costPrice: "",
+      salePrice: "",
+      category: "",
+      ingredients: "",
+      availability: true,
+      currency: "MXN"
+    });
   };
 
-  // Actualizar producto
-  const updateProduct = async () => {
-    if (!validateProduct() || !editingProduct) return;
-
-    try {
-      const productId = editingProduct._id;
-      const productData = {
-        ...newProduct,
-        ingredients: formatIngredients(newProduct.ingredients)
-      };
-
-      await fetchWithAuth(`/api/products/myProduct/${productId}`, {
-        method: "PUT",
-        body: JSON.stringify(productData)
-      });
-
-      setSuccessMessage("Producto actualizado correctamente");
-      await fetchAllProducts();
-      closeModal();
-      
-      setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (err) {
-      setError(`Error al actualizar producto: ${err.message}`);
-    }
+  /////////////////// CANCELAR (CREACIÓN/EDICIÓN) ///////////////////
+  const handleCancel = () => {
+    setIsCreating(false);
+    setIsEditing(false);
+    setEditingProductId(null);
+    resetForm();
+    setError("");
   };
 
-  // Subir imagen a Cloudinary
+  /////////////////// MANEJAR CAMBIOS EN INPUTS ///////////////////
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value
+    }));
+  };
+
+  /////////////////// SUBIR IMAGEN A CLOUDINARY ///////////////////
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -239,13 +301,13 @@ const ProductsPage = () => {
     try {
       setImageUploading(true);
       
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', UPLOAD_PRESET);
+      const formDataObj = new FormData();
+      formDataObj.append('file', file);
+      formDataObj.append('upload_preset', UPLOAD_PRESET);
       
       const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
         method: 'POST',
-        body: formData
+        body: formDataObj
       });
       
       if (!response.ok) {
@@ -254,8 +316,8 @@ const ProductsPage = () => {
       
       const data = await response.json();
       
-      // Actualizar el newProduct con la URL de la imagen
-      setNewProduct(prevData => ({
+      // Actualizar el formData con la URL de la imagen
+      setFormData(prevData => ({
         ...prevData,
         image: data.secure_url
       }));
@@ -267,341 +329,309 @@ const ProductsPage = () => {
     }
   };
 
-  // Abrir modal
-  const openModal = (product = null) => {
-    if (product) {
-      const productForEdit = {
-        ...product,
-        ingredients: Array.isArray(product.ingredients)
-          ? product.ingredients.join(", ")
-          : product.ingredients
-      };
-      setEditingProduct(product);
-      setNewProduct(productForEdit);
-    } else {
-      setEditingProduct(null);
-      setNewProduct(getEmptyProduct());
-    }
-    setIsModalOpen(true);
-    setError("");
-  };
-
-  // Cerrar modal
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditingProduct(null);
-    setNewProduct(getEmptyProduct());
-    setError("");
-  };
-
-  // Manejar cambios en inputs
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setNewProduct(prev => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value
-    }));
-  };
-
-  // Manejar envío del formulario
+  /////////////////// MANEJAR ENVÍO DEL FORMULARIO ///////////////////
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingProduct) {
+    if (isEditing) {
       await updateProduct();
     } else {
       await createProduct();
     }
   };
 
-  // Obtener nombre de categoría por ID
+  /////////////////// OBTENER NOMBRE DE CATEGORÍA POR ID ///////////////////
   const getCategoryName = (categoryId) => {
     const category = categories.find(c => c._id === categoryId);
     return category?.name || "Desconocida";
   };
 
+  /////////////////// PRODUCTOS ORDENADOS ///////////////////
+  const sortedProducts = sortProducts(sortOrder);
+
+  /////////////////// RENDERIZADO DE FORMULARIO POR PESTAÑAS ///////////////////
+  const renderFormContent = () => {
+    switch(currentTab) {
+      case "basic":
+        return (
+          <div className="tab-content69">
+            <div className="form-grid69">
+              <div className="form-group69">
+                <label>Nombre:</label>
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Nombre del producto"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              
+              <div className="form-group69">
+                <label>Categoría:</label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="">Selecciona una categoría</option>
+                  {categories.map((category) => (
+                    <option key={category._id} value={category._id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="form-group69 full-width69">
+                <label>Descripción:</label>
+                <textarea
+                  name="description"
+                  placeholder="Descripción del producto"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  required
+                  rows="3"
+                ></textarea>
+              </div>
+              
+              <div className="form-group69">
+                <label>Precio de costo:</label>
+                <input
+                  type="number"
+                  name="costPrice"
+                  placeholder="0.00"
+                  value={formData.costPrice}
+                  onChange={handleInputChange}
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+              
+              <div className="form-group69">
+                <label>Precio de venta:</label>
+                <input
+                  type="number"
+                  name="salePrice"
+                  placeholder="0.00"
+                  value={formData.salePrice}
+                  onChange={handleInputChange}
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+              
+              <div className="form-group69 checkbox69">
+                <label>
+                  <input
+                    type="checkbox"
+                    name="availability"
+                    checked={formData.availability}
+                    onChange={handleInputChange}
+                  />
+                  Disponible
+                </label>
+              </div>
+            </div>
+          </div>
+        );
+      case "details":
+        return (
+          <div className="tab-content69">
+            <div className="form-group69">
+              <label>Ingredientes (separados por comas):</label>
+              <input
+                type="text"
+                name="ingredients"
+                placeholder="Ingrediente1, Ingrediente2, ..."
+                value={formData.ingredients}
+                onChange={handleInputChange}
+              />
+            </div>
+            
+            <div className="form-group69">
+              <label>Imagen:</label>
+              <input
+                type="file"
+                onChange={handleImageUpload}
+                accept="image/*"
+              />
+              {imageUploading && <p>Subiendo imagen...</p>}
+              {formData.image && (
+                <div className="image-preview69">
+                  <img 
+                    src={formData.image} 
+                    alt="Vista previa" 
+                    style={{ maxWidth: '200px', maxHeight: '200px' }} 
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  /////////////////// RENDERIZADO ///////////////////
   return (
-    <div className="products-container">
-      {/* Título y Mensajes */}
-      <header className="products-header">
-        <h1 className="products-title">Gestión de Productos</h1>
-        
-        {/* Mensajes de notificación */}
-        {successMessage && (
-          <div className="notification success">
-            {successMessage}
-            <button className="close-btn" onClick={() => setSuccessMessage("")}>×</button>
-          </div>
-        )}
-        
-        {error && (
-          <div className="notification error">
-            {error}
-            <button className="close-btn" onClick={() => setError("")}>×</button>
-          </div>
-        )}
-      </header>
-      
-      {/* Barra de herramientas */}
-      {!loading && (
-        <div className="products-toolbar">
-          <button onClick={() => openModal()} className="add-product-btn">
-            <span className="btn-icon">+</span> Agregar Producto
-          </button>
-          
-          <div className="category-filter">
-            <select 
-              className="category-select"
-              value={selectedCategory}
-              onChange={(e) => handleCategoryChange(e.target.value)}
-            >
-              <option value="all">Todas las categorías</option>
-              {categories.map((category) => (
-                <option key={category._id} value={category._id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      )}
-      
-      {/* Estado de carga */}
+    <div className="products-page69">
       {loading && (
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
+        <div className="loading-container69">
+          <div className="loading-spinner69"></div>
           <p>Cargando productos...</p>
         </div>
       )}
-      
-      {/* Grid de productos */}
       {!loading && (
-        <div className="products-grid">
-          {products.length > 0 ? (
-            products.map((product) => (
-              <article key={product._id} className="product-item">
-                <div className="product-image-wrapper">
-                  <img src={product.image} alt={product.name} />
-                  <span className={`product-badge ${product.availability ? 'available' : 'unavailable'}`}>
-                    {product.availability ? 'Disponible' : 'No disponible'}
-                  </span>
+        <>
+          <h2 className="page-title69">Gestión de Productos</h2>
+          
+          {/* Mensajes */}
+          {error && <p className="error-message69">{error}</p>}
+          {successMessage && <p className="success-message69">{successMessage}</p>}
+
+          {/* Barra de herramientas */}
+          <div className="toolbar69">
+            {/* Botón para crear un nuevo producto */}
+            <button
+              onClick={() => {
+                setIsCreating(true);
+                setIsEditing(false);
+                setEditingProductId(null);
+                resetForm();
+                setError("");
+                setCurrentTab("basic");
+              }}
+              className="create-product-btn69"
+            >
+              Crear Nuevo Producto
+            </button>
+
+            {/* Filtro por categoría */}
+            <div className="category-filter69">
+              <label>Filtrar por categoría:</label>
+              <select 
+                value={selectedCategory} 
+                onChange={(e) => handleCategoryChange(e.target.value)}
+              >
+                <option value="all">Todas las categorías</option>
+                {categories.map((category) => (
+                  <option key={category._id} value={category._id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Selector para ordenar productos */}
+            <div className="sort-filter69">
+              <label>Ordenar por:</label>
+              <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+                <option value="default">Predeterminado</option>
+                <option value="price_low">Precio (menor a mayor)</option>
+                <option value="price_high">Precio (mayor a menor)</option>
+                <option value="alphabetical">Orden alfabético</option>
+                <option value="newest">Más recientes</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Modal para crear o editar productos */}
+          {(isCreating || isEditing) && (
+            <div className="modal-overlay69">
+              <div className="modal-content69 compact-modal69">
+                <h3>{isEditing ? "Editar Producto" : "Crear Nuevo Producto"}</h3>
+                
+                {/* Pestañas de navegación */}
+                <div className="tabs-container69">
+                  <div 
+                    className={`tab69 ${currentTab === "basic" ? "active69" : ""}`}
+                    onClick={() => setCurrentTab("basic")}
+                  >
+                    Información Básica
+                  </div>
+                  <div 
+                    className={`tab69 ${currentTab === "details" ? "active69" : ""}`}
+                    onClick={() => setCurrentTab("details")}
+                  >
+                    Detalles y Multimedia
+                  </div>
                 </div>
                 
-                <div className="product-info">
-                  <h2 className="product-name">{product.name}</h2>
-                  <div className="product-category">{getCategoryName(product.category)}</div>
-                  <p className="product-description">{product.description}</p>
+                <form onSubmit={handleSubmit}>
+                  {renderFormContent()}
                   
-                  <div className="product-price">
-                    <div className="price-tag">
-                      <span className="price-label">Precio</span>
-                      <span className="price-value">${Number(product.salePrice).toFixed(2)} {product.currency}</span>
-                    </div>
-                    <div className="cost-tag">
-                      <span className="cost-label">Costo</span>
-                      <span className="cost-value">${Number(product.costPrice).toFixed(2)}</span>
-                    </div>
+                  <div className="modal-buttons69">
+                    <button type="submit">{isEditing ? "Actualizar" : "Crear"}</button>
+                    <button type="button" onClick={handleCancel}>Cancelar</button>
                   </div>
-                  
-                  {product.ingredients && product.ingredients.length > 0 && (
-                    <div className="product-ingredients">
-                      <h3>Ingredientes</h3>
-                      <div className="ingredients-tags">
-                        {Array.isArray(product.ingredients) 
-                          ? product.ingredients.map((ingredient, index) => (
-                              <span key={index} className="ingredient-tag">{ingredient}</span>
-                            ))
-                          : <span className="ingredient-tag">{product.ingredients}</span>
-                        }
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="product-actions">
-                    <button onClick={() => openModal(product)} className="edit-btn">
-                      Editar
-                    </button>
-                    <button onClick={() => deleteProduct(product._id)} className="delete-btn">
-                      Eliminar
-                    </button>
-                  </div>
-                </div>
-              </article>
-            ))
-          ) : (
-            <div className="no-products">
-              <p>No hay productos disponibles en esta categoría</p>
+                </form>
+              </div>
             </div>
           )}
-        </div>
-      )}
-      
-      {/* Modal para crear/editar producto */}
-      {isModalOpen && (
-        <div className="modal-backdrop" onClick={(e) => {
-          if (e.target.className === 'modal-backdrop') closeModal();
-        }}>
-          <div className="modal">
-            <div className="modal-header">
-              <h2>{editingProduct ? "Editar Producto" : "Crear Producto"}</h2>
-              <button onClick={closeModal} className="close-modal-btn">&times;</button>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="product-form">
-              {error && <div className="form-error">{error}</div>}
-              
-              <div className="form-row">
-                <div className="form-field">
-                  <label htmlFor="name">Nombre</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    placeholder="Nombre del producto"
-                    value={newProduct.name}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div className="form-row">
-                <div className="form-field">
-                  <label htmlFor="description">Descripción</label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    placeholder="Describe tu producto..."
-                    value={newProduct.description}
-                    onChange={handleInputChange}
-                    rows="3"
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div className="form-row">
-                <div className="form-field">
-                  <label htmlFor="category">Categoría</label>
-                  <select
-                    id="category"
-                    name="category"
-                    value={newProduct.category}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="">Selecciona una categoría</option>
-                    {categories.map((category) => (
-                      <option key={category._id} value={category._id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              
-              <div className="image-row">
-                <div className="image-upload">
-                  <label>Imagen del producto</label>
-                  <div className="image-upload-button">
-                    <input
-                      type="file"
-                      id="imageUpload"
-                      name="imageUpload"
-                      onChange={handleImageUpload}
-                      accept="image/*"
-                    />
-                    <label htmlFor="imageUpload" className={imageUploading ? 'uploading' : ''}>
-                      {imageUploading ? 'Subiendo...' : 'Seleccionar imagen'}
-                    </label>
+
+          {/* Grid de productos */}
+          <div className="products-grid69">
+            {sortedProducts.length > 0 ? (
+              sortedProducts.map((product) => (
+                <div key={product._id} className="product-card69">
+                  <div className="product-image-container69">
+                    <img src={product.image} alt={product.name} />
+                    <span className={`availability-badge69 ${product.availability ? 'available69' : 'unavailable69'}`}>
+                      {product.availability ? 'Disponible' : 'No disponible'}
+                    </span>
                   </div>
                   
-                  {newProduct.image && (
-                    <div className="image-preview-container">
-                      <img src={newProduct.image} alt="Vista previa" />
+                  <div className="product-details69">
+                    <h3>{product.name}</h3>
+                    <span className="category-name69">{getCategoryName(product.category)}</span>
+                    <p className="product-description69">{product.description}</p>
+                    
+                    <div className="product-prices69">
+                      <div className="price-container69">
+                        <span className="price-label69">Costo:</span>
+                        <span className="price-value69">${Number(product.costPrice).toFixed(2)}</span>
+                      </div>
+                      <div className="price-container69">
+                        <span className="price-label69">Venta:</span>
+                        <span className="price-value69">${Number(product.salePrice).toFixed(2)} {product.currency}</span>
+                      </div>
                     </div>
-                  )}
-                </div>
-              </div>
-              
-              <div className="form-row prices-row">
-                <div className="form-field">
-                  <label htmlFor="costPrice">Precio de costo</label>
-                  <div className="price-input-wrapper">
-                    <span className="currency-symbol">$</span>
-                    <input
-                      type="number"
-                      id="costPrice"
-                      name="costPrice"
-                      placeholder="0.00"
-                      value={newProduct.costPrice}
-                      onChange={handleInputChange}
-                      min="0"
-                      step="0.01"
-                      required
-                    />
+                    
+                    {product.ingredients && product.ingredients.length > 0 && (
+                      <div className="ingredients-container69">
+                        <span className="ingredients-label69">Ingredientes:</span>
+                        <div className="ingredients-list69">
+                          {Array.isArray(product.ingredients) 
+                            ? product.ingredients.map((ingredient, index) => (
+                                <span key={index} className="ingredient-tag69">{ingredient}</span>
+                              ))
+                            : <span className="ingredient-tag69">{product.ingredients}</span>
+                          }
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="product-actions69">
+                      <button onClick={() => editProduct(product)} className="edit-btn69">
+                        Editar
+                      </button>
+                      <button onClick={() => deleteProduct(product._id)} className="delete-btn69">
+                        Eliminar
+                      </button>
+                    </div>
                   </div>
                 </div>
-                
-                <div className="form-field">
-                  <label htmlFor="salePrice">Precio de venta</label>
-                  <div className="price-input-wrapper">
-                    <span className="currency-symbol">$</span>
-                    <input
-                      type="number"
-                      id="salePrice"
-                      name="salePrice"
-                      placeholder="0.00"
-                      value={newProduct.salePrice}
-                      onChange={handleInputChange}
-                      min="0"
-                      step="0.01"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="form-row">
-                <div className="form-field">
-                  <label htmlFor="ingredients">Ingredientes (separados por comas)</label>
-                  <input
-                    type="text"
-                    id="ingredients"
-                    name="ingredients"
-                    placeholder="Ej: Harina, Azúcar, Sal"
-                    value={newProduct.ingredients}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-              
-              <div className="form-row">
-                <div className="form-field">
-                  <div className="availability-field">
-                    <label className="availability-label">
-                      <input
-                        type="checkbox"
-                        name="availability"
-                        checked={newProduct.availability}
-                        onChange={handleInputChange}
-                      />
-                      <span className="checkbox-text">Producto disponible</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="form-buttons">
-                <button type="button" onClick={closeModal} className="cancel-button">
-                  Cancelar
-                </button>
-                <button type="submit" className="submit-button">
-                  {editingProduct ? "Actualizar" : "Crear"} Producto
-                </button>
-              </div>
-            </form>
+              ))
+            ) : (
+              <p className="no-products-message69">No hay productos disponibles</p>
+            )}
           </div>
-        </div>
+        </>
       )}
     </div>
   );

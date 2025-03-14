@@ -207,29 +207,28 @@ const KiosksPage = () => {
   /////////////////// RENDERIZADO ///////////////////
 
   return (
-    <div className="kiosks-page">
-      <h2 className="page-title">Gestión de Kioskos</h2>
-      {error && <p className="error-message">{error}</p>}
+    <div className="kiosks-page25">
+      <h2 className="page-title25">Gestión de Kioskos</h2>
+      {error && <p className="error-message25">{error}</p>}
       
       {loading && (
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
+        <div className="loading-container25">
+          <div className="loading-spinner25"></div>
           <p>Cargando Kioskos...</p>
         </div>
       )}
       
-      ...
       {/* Botón para crear un nuevo kiosko */}
-      <button onClick={openCreateModal} className="create-kiosk-btn">
+      <button onClick={openCreateModal} className="create-kiosk-btn25">
         Crear Nuevo Kiosko
       </button>
 
       {/* Modal de Creación */}
       {isCreating && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="modal-overlay25">
+          <div className="modal-content25">
             <h3>Crear Nuevo Kiosko</h3>
-            <form onSubmit={handleSubmit} className="kiosk-form">
+            <form onSubmit={handleSubmit} className="kiosk-form25">
               <label>Nombre del Kiosko:</label>
               <input
                 type="text"
@@ -237,7 +236,7 @@ const KiosksPage = () => {
                 value={newKioskName}
                 onChange={(e) => setNewKioskName(e.target.value)}
                 required
-                className="text-input"
+                className="text-input25"
               />
 
               <label>Descripción del Kiosko:</label>
@@ -247,11 +246,11 @@ const KiosksPage = () => {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 required
-                className="text-input"
+                className="text-input25"
               />
 
               <label>Contraseña del Kiosko:</label>
-              <div className="password-input-container">
+              <div className="password-input-container25">
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Contraseña del kiosko"
@@ -259,28 +258,28 @@ const KiosksPage = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength="8"
-                  className="text-input"
+                  className="text-input25"
                 />
                 <span
-                  className="password-toggle"
+                  className="password-toggle25"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   <img
                     src={showPassword ? eyeIcon : invisibleIcon}
                     alt="Toggle Password"
-                    className="password-icon"
+                    className="password-icon25"
                   />
                 </span>
               </div>
 
-              <div className="modal-buttons">
-                <button type="submit" className="submit-btn">
+              <div className="modal-buttons25">
+                <button type="submit" className="submit-btn25">
                   Crear Kiosko
                 </button>
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="cancel-btn"
+                  className="cancel-btn25"
                 >
                   Cancelar
                 </button>
@@ -292,10 +291,10 @@ const KiosksPage = () => {
 
       {/* Modal de Edición */}
       {editingKiosk && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="modal-overlay25">
+          <div className="modal-content25">
             <h3>Editar Kiosko</h3>
-            <form onSubmit={handleSubmit} className="kiosk-form">
+            <form onSubmit={handleSubmit} className="kiosk-form25">
               <label>Nombre del Kiosko:</label>
               <input
                 type="text"
@@ -305,7 +304,7 @@ const KiosksPage = () => {
                   setEditingKiosk({ ...editingKiosk, name: e.target.value })
                 }
                 required
-                className="text-input"
+                className="text-input25"
               />
 
               <label>Descripción del Kiosko:</label>
@@ -315,38 +314,38 @@ const KiosksPage = () => {
                 value={description} 
                 onChange={(e) => setDescription(e.target.value)}
                 required
-                className="text-input"
+                className="text-input25"
               />
 
               <label>Contraseña del Kiosko:</label>
-              <div className="password-input-container">
+              <div className="password-input-container25">
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Nueva contraseña (opcional)"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="text-input"
+                  className="text-input25"
                 />
                 <span
-                  className="password-toggle"
+                  className="password-toggle25"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   <img
                     src={showPassword ? eyeIcon : invisibleIcon}
                     alt="Toggle Password"
-                    className="password-icon"
+                    className="password-icon25"
                   />
                 </span>
               </div>
 
-              <div className="modal-buttons">
-                <button type="submit" className="submit-btn">
+              <div className="modal-buttons25">
+                <button type="submit" className="submit-btn25">
                   Actualizar Kiosko
                 </button>
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="cancel-btn"
+                  className="cancel-btn25"
                 >
                   Cancelar
                 </button>
@@ -357,18 +356,18 @@ const KiosksPage = () => {
       )}
 
       {/* Lista de kioskos */}
-      <div className="kiosks-list">
+      <div className="kiosks-list25">
         {kiosks.length > 0 ? (
           kiosks.map((kiosk) => (
-            <div key={kiosk._id} className="kiosk-card">
-              <h3 className="kiosk-title">{kiosk.name}</h3>
-              <p className="kiosk-description">{kiosk.description}</p>
-              <p className="kiosk-id">Serial: {kiosk._id}</p>
-              <p className="kiosk-date">
+            <div key={kiosk._id} className="kiosk-card25">
+              <h3 className="kiosk-title25">{kiosk.name}</h3>
+              <p className="kiosk-description25">{kiosk.description}</p>
+              <p className="kiosk-id25">Serial: {kiosk._id}</p>
+              <p className="kiosk-date25">
                 Creado: {new Date(kiosk.createdAt).toLocaleDateString()}
               </p>
-              <div className="kiosk-status">
-                <p>Estado: <span className={`status-${kiosk.status}`}>{kiosk.status}</span></p>
+              <div className="kiosk-status25">
+                <p>Estado: <span className={`status-${kiosk.status}25`}>{kiosk.status}</span></p>
                 <p>Conexión: {kiosk.isConnected ? "Conectado" : "Desconectado"}</p>
                 {kiosk.connected_at && (
                   <p>Última conexión: {new Date(kiosk.connected_at).toLocaleString()}</p>
@@ -376,13 +375,13 @@ const KiosksPage = () => {
               </div>
               <button
                 onClick={() => handleEditKiosk(kiosk)}
-                className="edit-kiosk-btn"
+                className="edit-kiosk-btn25"
               >
                 ✏️ Editar
               </button>
               <button
                 onClick={() => handleDeleteKiosk(kiosk._id)}
-                className="delete-kiosk-btn"
+                className="delete-kiosk-btn25"
               >
                 🗑 Eliminar
               </button>
