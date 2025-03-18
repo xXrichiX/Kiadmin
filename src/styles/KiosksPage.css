@@ -1,0 +1,385 @@
+/* KiosksPage.css - Estilos mejorados con soporte responsive */
+
+/* Variables CSS para temas consistentes */
+:root {
+  --color-primary: #AB0831;
+  --color-primary-dark: #8A0628;
+  --color-text-main: #2c3e50;
+  --color-text-secondary: #6c757d;
+  --color-background: #f4f7fc;
+  --color-white: #ffffff;
+  --color-light-gray: #e9ecef;
+  --color-medium-gray: #dee2e6;
+  --color-border: #ddd;
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+  
+  --border-radius-sm: 5px;
+  --border-radius-md: 10px;
+  --border-radius-lg: 15px;
+  
+  --spacing-xs: 5px;
+  --spacing-sm: 10px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+  
+  --transition-speed: 0.3s;
+}
+
+/* Estilos base */
+.kiosks-page25 {
+  padding: var(--spacing-lg);
+  font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+  background-color: var(--color-background);
+  min-height: 100vh;
+  color: var(--color-text-main);
+}
+
+.page-title25 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+  margin-bottom: var(--spacing-md);
+  text-align: center;
+}
+
+/* Estado de carga */
+.loading-container25 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  min-height: 300px;
+}
+
+.loading-spinner25 {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid var(--color-primary);
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--spacing-md);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Mensaje de error */
+.error-message25 {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: var(--spacing-lg);
+  animation: fadeIn 0.3s ease-in-out;
+  border: 1px solid #f5c6cb;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Botón para crear kiosko */
+.create-kiosk-btn25 {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-speed) ease;
+  display: block;
+  margin: 0 auto var(--spacing-lg);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.create-kiosk-btn25:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/* Lista de kioskos */
+.kiosks-list25 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.kiosk-card25 {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s, box-shadow 0.2s;
+  padding: var(--spacing-md);
+}
+
+.kiosk-card25:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+
+.kiosk-title25 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+  margin-bottom: var(--spacing-xs);
+  line-height: 1.3;
+}
+
+.kiosk-description25 {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-md);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.kiosk-id25 {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+  word-break: break-all;
+}
+
+.kiosk-date25 {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-md);
+}
+
+.kiosk-status25 {
+  margin-bottom: var(--spacing-md);
+  font-size: 0.9rem;
+}
+
+.status-active25 {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.status-inactive25 {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.status-pending25 {
+  color: #ffc107;
+  font-weight: 600;
+}
+
+/* Botones de acción */
+.edit-kiosk-btn25, .delete-kiosk-btn25 {
+  padding: var(--spacing-xs) var(--spacing-md);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-speed);
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-right: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.edit-kiosk-btn25 {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.edit-kiosk-btn25:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.delete-kiosk-btn25 {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.delete-kiosk-btn25:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/* Modal */
+.modal-overlay25 {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.modal-content25 {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-md);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: slideIn 0.3s ease-in-out;
+  padding: var(--spacing-lg);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-content25 h3 {
+  margin: 0 0 var(--spacing-md);
+  font-size: 1.5rem;
+  color: var(--color-text-main);
+  text-align: center;
+}
+
+/* Formulario */
+.kiosk-form25 {
+  display: flex;
+  flex-direction: column;
+}
+
+.kiosk-form25 label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.text-input25 {
+  width: 100%;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  font-size: 1rem;
+  color: var(--color-text-main);
+  margin-bottom: var(--spacing-md);
+  transition: border-color var(--transition-speed);
+}
+
+.text-input25:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* Campo de contraseña con toggle */
+.password-input-container25 {
+  position: relative;
+  width: 100%;
+  margin-bottom: var(--spacing-md);
+}
+
+.password-toggle25 {
+  position: absolute;
+  right: var(--spacing-sm);
+  top: 50%;
+  transform: translateY(-65%);
+  cursor: pointer;
+}
+
+.password-icon25 {
+  width: 20px;
+  height: 20px;
+  opacity: 0.7;
+}
+
+.password-icon25:hover {
+  opacity: 1;
+}
+
+/* Botones del modal */
+.modal-buttons25 {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--spacing-md);
+}
+
+.submit-btn25, .cancel-btn25 {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--transition-speed);
+  flex: 1;
+  margin: 0 var(--spacing-xs);
+}
+
+.submit-btn25 {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+}
+
+.submit-btn25:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.cancel-btn25 {
+  background-color: var(--color-light-gray);
+  color: var(--color-text-secondary);
+  border: none;
+}
+
+.cancel-btn25:hover {
+  background-color: var(--color-medium-gray);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .kiosks-list25 {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+  
+  .modal-content25 {
+    width: 95%;
+    padding: var(--spacing-md);
+  }
+  
+  .modal-buttons25 {
+    flex-direction: column;
+  }
+  
+  .submit-btn25, .cancel-btn25 {
+    margin: var(--spacing-xs) 0;
+  }
+  
+  .submit-btn25 {
+    order: 1;
+  }
+  
+  .cancel-btn25 {
+    order: 2;
+  }
+}
+
+@media (max-width: 480px) {
+  .kiosks-page25 {
+    padding: var(--spacing-md);
+  }
+  
+  .kiosks-list25 {
+    grid-template-columns: 1fr;
+  }
+  
+  .create-kiosk-btn25 {
+    width: 100%;
+  }
+}

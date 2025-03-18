@@ -1,0 +1,491 @@
+/* Estilos generales */
+.orders-page {
+  padding: 20px;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+  font-family: 'Roboto', 'Segoe UI', sans-serif;
+  max-width: 100%;
+  overflow-x: hidden; /* Previene scroll horizontal en la página */
+}
+
+.page-title {
+  font-size: 2.2rem;
+  color: #AB0831;
+  margin-bottom: 25px;
+  text-align: center;
+  font-weight: 700;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para las tarjetas de estadísticas */
+.stats-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.stat-card {
+  background-color: white;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  flex: 1 1 calc(20% - 15px); /* Distribuye el espacio equitativamente con margen */
+  min-width: 120px; /* Tamaño mínimo */
+  text-align: center;
+  border-top: 5px solid #AB0831;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #555;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-card p {
+  margin: 15px 0 0;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #2c3e50;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stat-card.completed, .stat-card.finalizado {
+  border-top-color: #2ecc71;
+}
+
+.stat-card.completed p, .stat-card.finalizado p {
+  color: #2ecc71;
+}
+
+.stat-card.pending, .stat-card.pendiente {
+  border-top-color: #f1c40f;
+}
+
+.stat-card.pending p, .stat-card.pendiente p {
+  color: #f1c40f;
+}
+
+.stat-card.in-progress, .stat-card.preparando {
+  border-top-color: #3498db;
+}
+
+.stat-card.in-progress p, .stat-card.preparando p {
+  color: #3498db;
+}
+
+.stat-card.cancelled, .stat-card.cancelado {
+  border-top-color: #e74c3c;
+}
+
+.stat-card.cancelled p, .stat-card.cancelado p {
+  color: #e74c3c;
+}
+
+/* Panel de filtros - corrección para evitar desbordamiento */
+.filters-panel {
+  background-color: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 25px;
+  overflow: hidden; /* Añadido para evitar desbordamiento */
+}
+
+.filters-panel h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #AB0831;
+  font-size: 1.3rem;
+  font-weight: 600;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 10px;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 15px;
+  width: 100%; /* Asegura que ocupe todo el ancho disponible */
+  max-width: 100%; /* Evita desbordamiento horizontal */
+}
+
+.filter-group {
+  margin-bottom: 15px;
+  width: 100%; /* Asegura que ocupe todo el ancho de su columna */
+}
+
+.filter-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #555;
+  font-size: 0.9rem;
+  white-space: nowrap; /* Evita que las etiquetas se rompan */
+}
+
+.filter-group select,
+.filter-group input {
+  width: 100%;
+  max-width: 100%; /* Evita desbordamiento */
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  font-size: 1rem;
+  box-sizing: border-box; /* Importante para mantener el ancho dentro de los límites */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+  outline: none;
+  border-color: #AB0831;
+  box-shadow: 0 0 0 3px rgba(171, 8, 49, 0.1);
+}
+
+/* Asegurar que los selectores de fechas no se desborden */
+input[type="date"] {
+  min-width: 0;
+}
+
+/* Asegurar que el campo de búsqueda no cause desbordamiento */
+#searchTerm {
+  min-width: 0;
+  width: 100%;
+}
+
+/* Ajustes para botones de filtro */
+.filter-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap; /* Permite que los botones se envuelvan si es necesario */
+}
+
+.reset-btn {
+  padding: 10px 20px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  color: #555;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.reset-btn:hover {
+  background-color: #e0e0e0;
+}
+
+/* Contenedor de la tabla */
+.results-info {
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.orders-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+/* Estilos de la tabla */
+.orders-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+
+.orders-table th, 
+.orders-table td {
+  padding: 14px 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.orders-table th {
+  background-color: #AB0831;
+  color: white;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.orders-table th:first-child {
+  border-top-left-radius: 10px;
+}
+
+.orders-table th:last-child {
+  border-top-right-radius: 10px;
+}
+
+.orders-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.orders-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.orders-table tr.pending, .orders-table tr.pendiente {
+  background-color: rgba(241, 196, 15, 0.1);
+}
+
+.orders-table tr.completed, .orders-table tr.finalizado {
+  background-color: rgba(46, 204, 113, 0.1);
+}
+
+.orders-table tr.en-preparacion, .orders-table tr.preparando {
+  background-color: rgba(52, 152, 219, 0.1);
+}
+
+.orders-table tr.cancelled, .orders-table tr.cancelado {
+  background-color: rgba(231, 76, 60, 0.1);
+}
+
+/* Estilos para celdas de productos y notas */
+.products-cell, .notes-cell {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Estilos para detalles de productos */
+.expanded-row {
+  background-color: #f8f9fb !important;
+}
+
+.product-details-container {
+  padding: 0 !important;
+}
+
+.expanded-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.details-section h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #AB0831;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.product-details-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+
+.product-details-table th,
+.product-details-table td {
+  padding: 10px;
+  border: 1px solid #eee;
+  text-align: left;
+}
+
+.product-details-table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+  color: #333;
+}
+
+.order-notes {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 6px;
+  border-left: 4px solid #AB0831;
+}
+
+/* Estilos para el selector de estado */
+.status-select {
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  font-size: 0.9rem;
+  width: 100%;
+}
+
+.status-select.pending, .status-select.pendiente {
+  background-color: rgba(241, 196, 15, 0.2);
+  border-color: #f1c40f;
+}
+
+.status-select.completed, .status-select.finalizado {
+  background-color: rgba(46, 204, 113, 0.2);
+  border-color: #2ecc71;
+}
+
+.status-select.en-preparacion, .status-select.preparando {
+  background-color: rgba(52, 152, 219, 0.2);
+  border-color: #3498db;
+}
+
+.status-select.cancelled, .status-select.cancelado {
+  background-color: rgba(231, 76, 60, 0.2);
+  border-color: #e74c3c;
+}
+
+/* Botón para ver detalles */
+.detail-toggle-btn {
+  background-color: #AB0831;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.detail-toggle-btn:hover {
+  background-color: #8a0628;
+}
+
+/* Mensaje cuando no hay órdenes */
+.no-orders {
+  text-align: center;
+  padding: 30px !important;
+  color: #666;
+  font-style: italic;
+}
+
+/* Estilos de paginación */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.page-btn {
+  background-color: white;
+  border: 1px solid #ddd;
+  color: #333;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+  background-color: #AB0831;
+  color: white;
+  border-color: #AB0831;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-info {
+  padding: 8px 15px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: #333;
+}
+
+/* Estilos para estados de carga y error */
+.loading, .error {
+  text-align: center;
+  padding: 50px;
+  font-size: 1.2rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin: 30px 0;
+}
+
+.error {
+  color: #e74c3c;
+  border-left: 5px solid #e74c3c;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .stat-card {
+    flex: 1 1 calc(33.33% - 15px);
+    min-width: 110px;
+  }
+  
+  .stat-card p {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .orders-page {
+    padding: 15px;
+  }
+  
+  .page-title {
+    font-size: 1.8rem;
+  }
+  
+  .stats-container {
+    gap: 10px;
+  }
+  
+  .stat-card {
+    flex: 1 1 calc(50% - 10px);
+    padding: 15px;
+    min-width: 100px;
+  }
+  
+  .stat-card p {
+    font-size: 1.6rem;
+  }
+  
+  .stat-card h3 {
+    font-size: 0.9rem;
+  }
+  
+  .filters-grid {
+    grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
+  }
+  
+  .filter-group select,
+  .filter-group input {
+    font-size: 0.95rem; /* Texto ligeramente más pequeño en móviles */
+    padding: 8px 10px; /* Padding más pequeño */
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-card {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+  
+  .orders-table th, 
+  .orders-table td {
+    padding: 10px 8px;
+    font-size: 0.9rem;
+  }
+}
