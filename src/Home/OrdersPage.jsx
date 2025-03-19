@@ -8,6 +8,7 @@ function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [products, setProducts] = useState([]);
+  const [kiosks, setKiosks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [orderStats, setOrderStats] = useState({
@@ -34,6 +35,8 @@ function OrdersPage() {
     paymentMethod: "",
     searchTerm: "",
     sortBy: "dateDesc", // Ordenar por fecha descendente por defecto
+    kioskId: "", // Filtro para ID de kiosko
+    kioskType: "", // Nuevo filtro para tipo de kiosko
   });
   
   const navigate = useNavigate();
@@ -55,6 +58,9 @@ function OrdersPage() {
 
   // Métodos de pago disponibles
   const paymentMethods = ["efectivo", "tarjeta", "transferencia"];
+
+  // Tipos de kiosko (añadido para filtro)
+  const kioskTypes = ["standard", "premium", "basic"];
 
   // Opciones de ordenación
   const sortOptions = [
@@ -105,14 +111,15 @@ function OrdersPage() {
     }
   };
 
-  // Obtener datos (órdenes y productos)
+  // Obtener datos (órdenes, productos y kiosks)
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Obtener órdenes y productos en paralelo
-        const [ordersData, productsData] = await Promise.all([
+        // Obtener órdenes, productos y kiosks en paralelo
+        const [ordersData, productsData, kiosksData] = await Promise.all([
           fetchAPI("/api/orders/mineOrders"),
           fetchAPI("/api/products/mineProducts"),
+          fetchAPI("/api/kiosks/mineKiosks"),
         ]);
 
         // Verificar y actualizar estados con los datos obtenidos
@@ -127,6 +134,14 @@ function OrdersPage() {
         setOrders(processedOrders);
         setFilteredOrders(processedOrders);
         setProducts(Array.isArray(productsData) ? productsData : []);
+        
+        // Procesar los datos de kiosks para incluir el tipo
+        const processedKiosks = Array.isArray(kiosksData) ? kiosksData.map(kiosk => ({
+          ...kiosk,
+          // Si el kiosko no tiene un tipo definido, asignarle "standard" como predeterminado
+          type: kiosk.type || "standard"
+        })) : [];
+        setKiosks(processedKiosks);
         
         // Calcular estadísticas
         calculateOrderStats(processedOrders);
@@ -193,6 +208,28 @@ function OrdersPage() {
       result = result.filter(order => order.paymentMethod === filters.paymentMethod);
     }
     
+    // Filtrar por ID de kiosko
+    if (filters.kioskId) {
+      result = result.filter(order => 
+        order.kioskId === filters.kioskId || 
+        order.createdById === filters.kioskId
+      );
+    }
+    
+    // Filtrar por tipo de kiosko
+    if (filters.kioskType) {
+      // Obtener IDs de kiosks que coinciden con el tipo seleccionado
+      const kioskIdsOfType = kiosks
+        .filter(kiosk => kiosk.type === filters.kioskType)
+        .map(kiosk => kiosk._id);
+      
+      // Filtrar órdenes que corresponden a estos kiosks
+      result = result.filter(order => 
+        kioskIdsOfType.includes(order.kioskId) || 
+        kioskIdsOfType.includes(order.createdById)
+      );
+    }
+    
     // Filtrar por rango de fechas
     if (filters.dateFrom) {
       const fromDate = new Date(filters.dateFrom);
@@ -219,7 +256,7 @@ function OrdersPage() {
     
     setFilteredOrders(result);
     setCurrentPage(1); // Resetear a primera página al filtrar
-  }, [filters, orders]);
+  }, [filters, orders, kiosks]);
 
   // Cambiar estado de una orden
   const handleStatusChange = async (orderId, newStatus) => {
@@ -247,7 +284,7 @@ function OrdersPage() {
     }
   };
 
-  // Formatear precio con moneda - CORREGIDO
+  // Formatear precio con moneda
   const formatPrice = (price, currency = "MXN") => {
     // Asegurarse de que price es un número
     const numericPrice = Number(price);
@@ -286,6 +323,8 @@ function OrdersPage() {
       paymentMethod: "",
       searchTerm: "",
       sortBy: "dateDesc", // Mantener la ordenación por defecto
+      kioskId: "", // Resetear filtro de kiosko
+      kioskType: "", // Resetear filtro de tipo de kiosko
     });
   };
 
@@ -317,7 +356,7 @@ function OrdersPage() {
     }).join(', ');
   };
 
-  // Obtener vista detallada de productos - CORREGIDO
+  // Obtener vista detallada de productos
   const DetailedProducts = ({ products: orderProducts, orderCurrency = "MXN" }) => {
     return (
       <div className="detailed-products">
@@ -326,7 +365,7 @@ function OrdersPage() {
             <tr>
               <th>Producto</th>
               <th>Cantidad</th>
-              <th>Precio</th>
+              <th>Precio Unitario</th>
               <th>Subtotal</th>
             </tr>
           </thead>
@@ -339,7 +378,7 @@ function OrdersPage() {
               const productName = product.name || productInfo.name || `Producto ${index + 1}`;
               
               // Asegurarse de que el precio y la cantidad sean números válidos
-              const price = parseFloat(product.price) || 0;
+              const price = parseFloat(product.salePrice || product.price) || 0;
               const quantity = parseInt(product.quantity) || 0;
               
               // Calcular el subtotal
@@ -354,6 +393,20 @@ function OrdersPage() {
                 </tr>
               );
             })}
+            {/* Añadir fila para el total */}
+            <tr className="total-row">
+              <td colSpan="3" className="total-label">Total</td>
+              <td className="total-amount">
+                {orderProducts && formatPrice(
+                  orderProducts.reduce((sum, product) => {
+                    const price = parseFloat(product.salePrice || product.price) || 0;
+                    const quantity = parseInt(product.quantity) || 0;
+                    return sum + (price * quantity);
+                  }, 0),
+                  orderCurrency
+                )}
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -368,6 +421,18 @@ function OrdersPage() {
       : notes;
   };
 
+  // Obtener el nombre del kiosko por su ID
+  const getKioskName = (kioskId) => {
+    const kiosk = kiosks.find(k => k._id === kioskId);
+    return kiosk ? kiosk.name : kioskId;
+  };
+
+  // Obtener el tipo de kiosko por su ID
+  const getKioskType = (kioskId) => {
+    const kiosk = kiosks.find(k => k._id === kioskId);
+    return kiosk ? (kiosk.type || "standard") : "desconocido";
+  };
+
   // Lógica de paginación
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
@@ -380,7 +445,6 @@ function OrdersPage() {
   // Renderizado condicional
   if (loading) return <div className="loading">Cargando órdenes...</div>;
   if (error) return <div className="error">Error: {error}</div>;
-
 
   return (
     <div className="orders-page">
@@ -482,6 +546,42 @@ function OrdersPage() {
             </select>
           </div>
           
+          {/* Filtro para Kiosko con dropdown */}
+          <div className="filter-group">
+            <label htmlFor="kioskId">Kiosko:</label>
+            <select
+              id="kioskId"
+              name="kioskId"
+              value={filters.kioskId}
+              onChange={handleFilterChange}
+            >
+              <option value="">Todos los kioskos</option>
+              {kiosks.map(kiosk => (
+                <option key={kiosk._id} value={kiosk._id}>
+                  {kiosk.name || kiosk._id}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Nuevo filtro para Tipo de Kiosko */}
+          <div className="filter-group">
+            <label htmlFor="kioskType">Tipo de Kiosko:</label>
+            <select
+              id="kioskType"
+              name="kioskType"
+              value={filters.kioskType}
+              onChange={handleFilterChange}
+            >
+              <option value="">Todos los tipos</option>
+              {kioskTypes.map(type => (
+                <option key={type} value={type}>
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
+          
           <div className="filter-group">
             <label htmlFor="dateFrom">Desde:</label>
             <input
@@ -535,6 +635,8 @@ function OrdersPage() {
             <tr>
               <th>Número</th>
               <th>Productos</th>
+              <th>Kiosko</th>
+              <th>Tipo Kiosko</th>
               <th>Costo</th>
               <th>Venta</th>
               <th>Ganancia</th>
@@ -549,7 +651,7 @@ function OrdersPage() {
           <tbody>
             {currentOrders.length === 0 ? (
               <tr>
-                <td colSpan="11" className="no-orders">No hay órdenes disponibles con los filtros seleccionados</td>
+                <td colSpan="13" className="no-orders">No hay órdenes disponibles con los filtros seleccionados</td>
               </tr>
             ) : (
               currentOrders.map((order) => (
@@ -558,6 +660,12 @@ function OrdersPage() {
                     <td>{order.numOrder}</td>
                     <td className="products-cell">
                       {getProductSummary(order.products)}
+                    </td>
+                    <td>
+                      {order.kioskId ? getKioskName(order.kioskId) : (order.createdById ? getKioskName(order.createdById) : "-")}
+                    </td>
+                    <td>
+                      {order.kioskId ? getKioskType(order.kioskId) : (order.createdById ? getKioskType(order.createdById) : "-")}
                     </td>
                     <td>{formatPrice(order.totalCost || 0, order.currency)}</td>
                     <td>{formatPrice(order.totalSale || 0, order.currency)}</td>
@@ -595,7 +703,7 @@ function OrdersPage() {
                   </tr>
                   {expandedOrder === order._id && (
                     <tr className="expanded-row">
-                      <td colSpan="11" className="product-details-container">
+                      <td colSpan="13" className="product-details-container">
                         <div className="expanded-content">
                           <div className="details-section">
                             <h4>Productos</h4>
@@ -606,6 +714,17 @@ function OrdersPage() {
                             <div className="details-section">
                               <h4>Notas</h4>
                               <div className="order-notes">{order.notes}</div>
+                            </div>
+                          )}
+                          
+                          {(order.kioskId || order.createdById) && (
+                            <div className="details-section">
+                              <h4>Información del Kiosko</h4>
+                              <div>
+                                <p><strong>ID:</strong> {order.kioskId || order.createdById}</p>
+                                <p><strong>Nombre:</strong> {getKioskName(order.kioskId || order.createdById)}</p>
+                                <p><strong>Tipo:</strong> {getKioskType(order.kioskId || order.createdById)}</p>
+                              </div>
                             </div>
                           )}
                         </div>

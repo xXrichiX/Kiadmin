@@ -312,7 +312,7 @@
 }
 
 .delete-btn69:hover {
-  background-color: #c82333;
+  background-color: #AB0831; 
 }
 
 .no-products-message69 {
@@ -540,6 +540,7 @@
   
   .modal-buttons69 {
     flex-direction: column;
+    
   }
   
   .product-actions69 {

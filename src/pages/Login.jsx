@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
@@ -12,11 +11,14 @@ function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   // Manejar envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
     const API_URL = import.meta.env.VITE_API_URL;
 
@@ -43,8 +45,8 @@ function Login() {
       Cookies.remove("authToken");
       Cookies.set("authToken", data.token, {
         expires: 1, // 1 día
-        secure: true,
-        sameSite: "strict",
+        secure: window.location.protocol === "https:",
+        sameSite: "lax", // Cambiado a lax para mayor compatibilidad
         path: "/",
       });
 
@@ -52,19 +54,30 @@ function Login() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      navigate("/home");
+      // Usar setTimeout para retrasar la navegación al siguiente ciclo de eventos
+      setTimeout(() => {
+        navigate("/home", { replace: true });
+      }, 10);
+      
     } catch (err) {
       setError(err.message || "Error al iniciar sesión");
+      setLoading(false);
     }
   };
 
   // Manejadores de redirección
-  const handleForgotPasswordRedirect = () => {
-    navigate("/forgot-password");
+  const handleForgotPasswordRedirect = (e) => {
+    e.preventDefault();
+    setTimeout(() => {
+      navigate("/forgot-password");
+    }, 10);
   };
 
-  const handleRegisterRedirect = () => {
-    navigate("/register");
+  const handleRegisterRedirect = (e) => {
+    e.preventDefault();
+    setTimeout(() => {
+      navigate("/register");
+    }, 10);
   };
 
   return (
@@ -78,7 +91,6 @@ function Login() {
             className="background-image"
           />
         </div>
-
 
         {/* Formulario */}
         <div className="login-form">
@@ -95,6 +107,7 @@ function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={loading}
                 />
               </div>
               <div className="input-group">
@@ -105,6 +118,7 @@ function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={loading}
                 />
                 <span
                   className="password-toggle"
@@ -127,8 +141,8 @@ function Login() {
               </div>
 
               <div className="button-container">
-                <button type="submit" className="submit-button">
-                  Ingresar
+                <button type="submit" className="submit-button" disabled={loading}>
+                  {loading ? "Cargando..." : "Ingresar"}
                 </button>
               </div>
             </form>
