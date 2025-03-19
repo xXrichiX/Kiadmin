@@ -399,7 +399,7 @@
 .form-group69 input,
 .form-group69 textarea,
 .form-group69 select {
-  width: 100%;
+  width: 95%;
   padding: var(--spacing-sm);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-sm);

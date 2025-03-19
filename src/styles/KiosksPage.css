@@ -265,7 +265,7 @@
 }
 
 .text-input25 {
-  width: 100%;
+  width: 95%;
   padding: var(--spacing-sm);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-sm);

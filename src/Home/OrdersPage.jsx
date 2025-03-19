@@ -702,7 +702,7 @@ function OrdersPage() {
           <button 
             onClick={() => paginate(totalPages)} 
             disabled={currentPage === totalPages}
-            className="page-btn"
+            className="page-btn" 
           >
             &raquo;
           </button>
