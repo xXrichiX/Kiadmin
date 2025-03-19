@@ -8,7 +8,7 @@ function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [products, setProducts] = useState([]);
-  const [kiosks, setKiosks] = useState([]);
+  const [kiosks, setKiosks] = useState([]); // Nuevo estado para los kiosks
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [orderStats, setOrderStats] = useState({
@@ -36,7 +36,6 @@ function OrdersPage() {
     searchTerm: "",
     sortBy: "dateDesc", // Ordenar por fecha descendente por defecto
     kioskId: "", // Filtro para ID de kiosko
-    kioskType: "", // Nuevo filtro para tipo de kiosko
   });
   
   const navigate = useNavigate();
@@ -58,9 +57,6 @@ function OrdersPage() {
 
   // Métodos de pago disponibles
   const paymentMethods = ["efectivo", "tarjeta", "transferencia"];
-
-  // Tipos de kiosko (añadido para filtro)
-  const kioskTypes = ["standard", "premium", "basic"];
 
   // Opciones de ordenación
   const sortOptions = [
@@ -119,7 +115,7 @@ function OrdersPage() {
         const [ordersData, productsData, kiosksData] = await Promise.all([
           fetchAPI("/api/orders/mineOrders"),
           fetchAPI("/api/products/mineProducts"),
-          fetchAPI("/api/kiosks/mineKiosks"),
+          fetchAPI("/api/kiosks/mineKiosks"), // Nueva llamada para obtener kiosks
         ]);
 
         // Verificar y actualizar estados con los datos obtenidos
@@ -134,14 +130,7 @@ function OrdersPage() {
         setOrders(processedOrders);
         setFilteredOrders(processedOrders);
         setProducts(Array.isArray(productsData) ? productsData : []);
-        
-        // Procesar los datos de kiosks para incluir el tipo
-        const processedKiosks = Array.isArray(kiosksData) ? kiosksData.map(kiosk => ({
-          ...kiosk,
-          // Si el kiosko no tiene un tipo definido, asignarle "standard" como predeterminado
-          type: kiosk.type || "standard"
-        })) : [];
-        setKiosks(processedKiosks);
+        setKiosks(Array.isArray(kiosksData) ? kiosksData : []); // Guardar los kiosks
         
         // Calcular estadísticas
         calculateOrderStats(processedOrders);
@@ -216,20 +205,6 @@ function OrdersPage() {
       );
     }
     
-    // Filtrar por tipo de kiosko
-    if (filters.kioskType) {
-      // Obtener IDs de kiosks que coinciden con el tipo seleccionado
-      const kioskIdsOfType = kiosks
-        .filter(kiosk => kiosk.type === filters.kioskType)
-        .map(kiosk => kiosk._id);
-      
-      // Filtrar órdenes que corresponden a estos kiosks
-      result = result.filter(order => 
-        kioskIdsOfType.includes(order.kioskId) || 
-        kioskIdsOfType.includes(order.createdById)
-      );
-    }
-    
     // Filtrar por rango de fechas
     if (filters.dateFrom) {
       const fromDate = new Date(filters.dateFrom);
@@ -256,7 +231,7 @@ function OrdersPage() {
     
     setFilteredOrders(result);
     setCurrentPage(1); // Resetear a primera página al filtrar
-  }, [filters, orders, kiosks]);
+  }, [filters, orders]);
 
   // Cambiar estado de una orden
   const handleStatusChange = async (orderId, newStatus) => {
@@ -324,7 +299,6 @@ function OrdersPage() {
       searchTerm: "",
       sortBy: "dateDesc", // Mantener la ordenación por defecto
       kioskId: "", // Resetear filtro de kiosko
-      kioskType: "", // Resetear filtro de tipo de kiosko
     });
   };
 
@@ -393,20 +367,6 @@ function OrdersPage() {
                 </tr>
               );
             })}
-            {/* Añadir fila para el total */}
-            <tr className="total-row">
-              <td colSpan="3" className="total-label">Total</td>
-              <td className="total-amount">
-                {orderProducts && formatPrice(
-                  orderProducts.reduce((sum, product) => {
-                    const price = parseFloat(product.salePrice || product.price) || 0;
-                    const quantity = parseInt(product.quantity) || 0;
-                    return sum + (price * quantity);
-                  }, 0),
-                  orderCurrency
-                )}
-              </td>
-            </tr>
           </tbody>
         </table>
       </div>
@@ -427,12 +387,6 @@ function OrdersPage() {
     return kiosk ? kiosk.name : kioskId;
   };
 
-  // Obtener el tipo de kiosko por su ID
-  const getKioskType = (kioskId) => {
-    const kiosk = kiosks.find(k => k._id === kioskId);
-    return kiosk ? (kiosk.type || "standard") : "desconocido";
-  };
-
   // Lógica de paginación
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
@@ -445,6 +399,7 @@ function OrdersPage() {
   // Renderizado condicional
   if (loading) return <div className="loading">Cargando órdenes...</div>;
   if (error) return <div className="error">Error: {error}</div>;
+
 
   return (
     <div className="orders-page">
@@ -563,24 +518,6 @@ function OrdersPage() {
               ))}
             </select>
           </div>
-
-          {/* Nuevo filtro para Tipo de Kiosko */}
-          <div className="filter-group">
-            <label htmlFor="kioskType">Tipo de Kiosko:</label>
-            <select
-              id="kioskType"
-              name="kioskType"
-              value={filters.kioskType}
-              onChange={handleFilterChange}
-            >
-              <option value="">Todos los tipos</option>
-              {kioskTypes.map(type => (
-                <option key={type} value={type}>
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
-                </option>
-              ))}
-            </select>
-          </div>
           
           <div className="filter-group">
             <label htmlFor="dateFrom">Desde:</label>
@@ -636,7 +573,6 @@ function OrdersPage() {
               <th>Número</th>
               <th>Productos</th>
               <th>Kiosko</th>
-              <th>Tipo Kiosko</th>
               <th>Costo</th>
               <th>Venta</th>
               <th>Ganancia</th>
@@ -651,7 +587,7 @@ function OrdersPage() {
           <tbody>
             {currentOrders.length === 0 ? (
               <tr>
-                <td colSpan="13" className="no-orders">No hay órdenes disponibles con los filtros seleccionados</td>
+                <td colSpan="12" className="no-orders">No hay órdenes disponibles con los filtros seleccionados</td>
               </tr>
             ) : (
               currentOrders.map((order) => (
@@ -663,9 +599,6 @@ function OrdersPage() {
                     </td>
                     <td>
                       {order.kioskId ? getKioskName(order.kioskId) : (order.createdById ? getKioskName(order.createdById) : "-")}
-                    </td>
-                    <td>
-                      {order.kioskId ? getKioskType(order.kioskId) : (order.createdById ? getKioskType(order.createdById) : "-")}
                     </td>
                     <td>{formatPrice(order.totalCost || 0, order.currency)}</td>
                     <td>{formatPrice(order.totalSale || 0, order.currency)}</td>
@@ -703,7 +636,7 @@ function OrdersPage() {
                   </tr>
                   {expandedOrder === order._id && (
                     <tr className="expanded-row">
-                      <td colSpan="13" className="product-details-container">
+                      <td colSpan="12" className="product-details-container">
                         <div className="expanded-content">
                           <div className="details-section">
                             <h4>Productos</h4>
@@ -723,7 +656,6 @@ function OrdersPage() {
                               <div>
                                 <p><strong>ID:</strong> {order.kioskId || order.createdById}</p>
                                 <p><strong>Nombre:</strong> {getKioskName(order.kioskId || order.createdById)}</p>
-                                <p><strong>Tipo:</strong> {getKioskType(order.kioskId || order.createdById)}</p>
                               </div>
                             </div>
                           )}
