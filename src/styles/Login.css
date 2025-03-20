@@ -1,15 +1,15 @@
-/* Estilos generales */
-.login-page {
+/* ejemploooos */
+.login-page47 {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   background-color: #f4f7fc;
   font-family: 'Arial', sans-serif;
-  padding: 20px;
+  padding: 15px;
 }
 
-.login-container {
+.login-container47 {
   display: flex;
   background-color: white;
   border-radius: 15px;
@@ -17,197 +17,336 @@
   overflow: hidden;
   max-width: 1000px;
   width: 100%;
+  height: auto;
+  min-height: 550px;
 }
 
-.login-image {
+.login-image47 {
   flex: 1;
   background-color: #f0f0f0;
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+  overflow: hidden;
 }
 
-.login-image img {
+.login-image47 img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
 }
 
-.login-form {
+.login-form47 {
   flex: 1;
-  padding: 40px;
+  padding: 40px 30px;
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: white;
 }
 
-.form-content {
+.form-content47 {
   width: 100%;
   max-width: 400px;
 }
 
-.form-title {
-  font-size: 2rem;
+.form-title47 {
+  font-size: clamp(1.5rem, 5vw, 2rem);
   color: #2c3e50;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   text-align: center;
 }
 
-.form-welcome {
-  font-size: 1rem;
+.form-welcome47 {
+  font-size: clamp(0.9rem, 3vw, 1rem);
   color: #666;
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
 }
 
-.input-group {
+.input-group47 {
   margin-bottom: 20px;
   position: relative;
 }
 
-.form-input {
+.form-input47 {
   width: 100%;
-  padding: 12px;
+  padding: 12px 15px;
   border: 1px solid #ddd;
   border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
-.form-input:focus {
+.form-input47:focus {
   border-color: #AB0831;
   outline: none;
+  box-shadow: 0 0 0 2px rgba(171, 8, 49, 0.1);
 }
 
-.password-toggle {
+.password-toggle47 {
   position: absolute;
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
-  font-size: 1.2rem;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.password-icon47 {
+  width: 100%;
+  height: auto;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.password-icon47:hover {
+  opacity: 1;
+}
+
+.error-message47 {
+  color: #AB0831;
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.forgot-password47 {
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+.forgot-password47 a {
   color: #666;
-}
-
-.error-message {
-  color: #AB0831;
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.forgot-password {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.forgot-password a {
-  color: #AB0831;
   text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s ease;
 }
 
-.forgot-password a:hover {
+.forgot-password47 a:hover {
+  color: #AB0831;
   text-decoration: underline;
 }
 
-.button-container {
+.button-container47 {
   text-align: center;
+  margin: 25px 0;
 }
 
-.submit-button {
+.submit-button47 {
   background-color: #AB0831;
   color: white;
   padding: 12px 24px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+  transition: all 0.3s ease;
   width: 100%;
   max-width: 200px;
+  font-weight: 500;
+  box-shadow: 0 3px 6px rgba(171, 8, 49, 0.2);
 }
 
-.submit-button:hover {
-  background-color: #8A0628; /* Efecto hover */
+.submit-button47:hover {
+  background-color: #8A0628;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(171, 8, 49, 0.3);
 }
 
-.register-link {
+.submit-button47:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(171, 8, 49, 0.2);
+}
+
+.submit-button47:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.register-link47 {
   text-align: center;
   margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
 }
 
-.register-link p {
+.register-link47 p {
   color: #666;
+  margin: 0;
+  font-size: 0.9rem;
 }
 
-.register-link a {
+.register-link47 a {
   color: #AB0831;
   text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
 }
 
-.register-link a:hover {
+.register-link47 a:hover {
   text-decoration: underline;
 }
 
-
-.password-toggle {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  width: 20px;  /* Ajusta el tamaño del ícono */
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.password-toggle img {
-  width: 100%;  /* Hace que la imagen se ajuste al contenedor */
-  height: auto;
-}
-
-
 /* Media Queries para Responsive Design */
-@media (max-width: 768px) {
-  .login-container {
-    flex-direction: column;
-  }
 
-  .login-image {
-    height: 200px;
-  }
-
-  .login-form {
-    padding: 20px;
-  }
-
-  .form-title {
-    font-size: 1.75rem;
-  }
-
-  .submit-button {
-    width: 100%;
+/* Tablets */
+@media (max-width: 900px) {
+  .login-container47 {
+    max-width: 90%;
   }
 }
 
+/* Tablets pequeñas y móviles grandes */
+@media (max-width: 768px) {
+  .login-container47 {
+    flex-direction: column;
+    min-height: auto;
+  }
+  
+  .login-image47 {
+    height: 200px;
+    min-height: 180px;
+  }
+  
+  .login-form47 {
+    padding: 25px 20px;
+  }
+  
+  .form-content47 {
+    max-width: 100%;
+  }
+  
+  .submit-button47 {
+    max-width: 100%;
+  }
+}
+
+/* Móviles */
 @media (max-width: 480px) {
-  .form-title {
-    font-size: 1.5rem;
+  .login-page47 {
+    padding: 10px;
   }
-
-  .form-welcome {
-    font-size: 0.9rem;
+  
+  .login-container47 {
+    max-width: 100%;
+    border-radius: 10px;
   }
-
-  .form-input {
-    font-size: 0.9rem;
+  
+  .login-image47 {
+    height: 150px;
   }
-
-  .submit-button {
+  
+  .login-form47 {
+    padding: 20px 15px;
+  }
+  
+  .form-title47 {
+    margin-bottom: 10px;
+  }
+  
+  .form-welcome47 {
+    margin-bottom: 20px;
+  }
+  
+  .input-group47 {
+    margin-bottom: 15px;
+  }
+  
+  .form-input47 {
+    padding: 10px;
+  }
+  
+  .button-container47 {
+    margin: 20px 0;
+  }
+  
+  .submit-button47 {
     padding: 10px 20px;
   }
 }
 
+/* Dispositivos muy pequeños */
+@media (max-width: 350px) {
+  .login-image47 {
+    height: 120px;
+  }
+  
+  .form-title47 {
+    font-size: 1.3rem;
+  }
+  
+  .form-welcome47 {
+    font-size: 0.8rem;
+  }
+  
+  .form-input47, .submit-button47 {
+    font-size: 0.85rem;
+  }
+  
+  .forgot-password47 a, .register-link47 p, .register-link47 a {
+    font-size: 0.8rem;
+  }
+}
 
- 
+/* Pantallas muy grandes */
+@media (min-width: 1200px) {
+  .login-container47 {
+    max-width: 1100px;
+  }
+  
+  .login-form47 {
+    padding: 40px 50px;
+  }
+}
+
+/* Orientación horizontal en móviles */
+@media (max-height: 500px) and (orientation: landscape) {
+  .login-container47 {
+    flex-direction: row;
+    height: 85vh;
+    min-height: auto;
+  }
+  
+  .login-image47 {
+    height: auto;
+  }
+  
+  .login-form47 {
+    padding: 15px;
+  }
+  
+  .form-title47 {
+    margin-bottom: 10px;
+  }
+  
+  .form-welcome47 {
+    margin-bottom: 10px;
+  }
+  
+  .input-group47 {
+    margin-bottom: 10px;
+  }
+  
+  .button-container47 {
+    margin: 10px 0;
+  }
+}

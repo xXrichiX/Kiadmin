@@ -100,7 +100,7 @@ const ProductsPage = () => {
           fetchAPI("/api/categories/mineCategory"),
           fetchAPI("/api/products/mineProducts")
         ]);
-        
+            
         setCategories(categoriesData);
         setProducts(productsData);
         setLoading(false);

@@ -329,28 +329,12 @@ const RestaurantManagement = () => {
   /////////////////// CONECTAR CON STRIPE ///////////////////
   const handleStripeConnect = async () => {
     try {
-      const token = checkToken();
-      if (!token) return;
+      // Utilizar la función fetchAPI para mantener consistencia
+      const data = await fetchAPI("/api/restaurants/connectStripe");
       
-      const response = await fetch(`${API_URL}/api/restaurants/connectStripe`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        }
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({
-          message: `Error del servidor: ${response.status}`,
-        }));
-        throw new Error(errorData.message || `Error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      // Redirect to Stripe Connect URL
-      if (data.url) {
+      // Verificar si se recibió una URL de Stripe
+      if (data && data.url) {
+        // Redirigir al usuario a la URL de Stripe Connect
         window.location.href = data.url;
       } else {
         throw new Error('No se recibió URL de Stripe');
@@ -381,18 +365,23 @@ const RestaurantManagement = () => {
               
               <div className="form-group100 full-width100">
                 <label>Imagen del Restaurante:</label>
-                <input
-                  type="file"
-                  onChange={handleImageUpload}
-                  accept="image/*"
-                />
-                {imageUploading && <p>Subiendo imagen...</p>}
+                <div className="file-input-container100">
+                  <label className="file-input-label100">
+                    Seleccionar imagen
+                    <input
+                      type="file"
+                      onChange={handleImageUpload}
+                      accept="image/*"
+                      className="file-input100"
+                    />
+                  </label>
+                </div>
+                {imageUploading && <p className="uploading-message100">Subiendo imagen...</p>}
                 {formData.image && (
                   <div className="image-preview100">
                     <img 
                       src={formData.image} 
                       alt="Vista previa" 
-                      style={{ maxWidth: '200px', maxHeight: '200px' }} 
                     />
                   </div>
                 )}
@@ -597,7 +586,7 @@ const RestaurantManagement = () => {
                 >
                   Conectar con Stripe
                 </button>
-                <p className="stripe-info100">Conecta tu restaurante con Stripe para recibir pagos en línea.</p>
+                <p className="stripe-info100">Conecta tu restaurante con Stripe para recibir pagos en línea de forma segura y rápida.</p>
               </div>
 
               <div className="restaurant-card100">

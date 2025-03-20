@@ -127,13 +127,6 @@ const ResetPassword = () => {
               </div>
               {(!email || !code) && (
                 <div className="back-link">
-                  <button
-                    type="button"
-                    onClick={handleBackToForgotPassword}
-                    className="link-button"
-                  >
-                    Volver a solicitar código
-                  </button>
                 </div>
               )}
             </form>

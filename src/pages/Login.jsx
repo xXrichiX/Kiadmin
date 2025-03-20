@@ -81,28 +81,28 @@ function Login() {
   };
 
   return (
-    <div className="login-page">
-      <div className="login-container">
+    <div className="login-page47">
+      <div className="login-container47">
         {/* Imagen de fondo */}
-        <div className="login-image">
+        <div className="login-image47">
           <img
             src="https://res.cloudinary.com/dej4kxb37/image/upload/v1741658856/s4earu86aump4eooafk1.jpg"
             alt="Restaurante"
-            className="background-image"
+            className="background-image47"
           />
         </div>
 
         {/* Formulario */}
-        <div className="login-form">
-          <div className="form-content">
-            <h1 className="form-title">Iniciar Sesión</h1>
-            <p className="form-welcome">Bienvenido a Kibbi</p>
+        <div className="login-form47">
+          <div className="form-content47">
+            <h1 className="form-title47">Iniciar Sesión</h1>
+            <p className="form-welcome47">Bienvenido a Kibbi</p>
 
             <form onSubmit={handleSubmit}>
-              <div className="input-group">
+              <div className="input-group47">
                 <input
                   type="email"
-                  className="form-input"
+                  className="form-input47"
                   placeholder="Correo Electrónico"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -110,10 +110,10 @@ function Login() {
                   disabled={loading}
                 />
               </div>
-              <div className="input-group">
+              <div className="input-group47">
                 <input
                   type={showPassword ? "text" : "password"}
-                  className="form-input"
+                  className="form-input47"
                   placeholder="Contraseña"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -121,33 +121,33 @@ function Login() {
                   disabled={loading}
                 />
                 <span
-                  className="password-toggle"
+                  className="password-toggle47"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   <img
                     src={showPassword ? eyeIcon : invisibleIcon}
                     alt="Toggle Password"
-                    className="password-icon"
+                    className="password-icon47"
                   />
                 </span>
               </div>
 
-              {error && <p className="error-message">{error}</p>}
+              {error && <p className="error-message47">{error}</p>}
 
-              <div className="forgot-password">
+              <div className="forgot-password47">
                 <a href="#" onClick={handleForgotPasswordRedirect}>
                   ¿Olvidaste tu contraseña?
                 </a>
               </div>
 
-              <div className="button-container">
-                <button type="submit" className="submit-button" disabled={loading}>
+              <div className="button-container47">
+                <button type="submit" className="submit-button47" disabled={loading}>
                   {loading ? "Cargando..." : "Ingresar"}
                 </button>
               </div>
             </form>
 
-            <div className="register-link">
+            <div className="register-link47">
               <p>¿No tienes cuenta?</p>
               <a href="#" onClick={handleRegisterRedirect}>
                 Regístrate

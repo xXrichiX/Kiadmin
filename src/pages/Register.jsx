@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import "../styles/Register.css";
+import eyeIcon from "../assets/ojo.png"; // Importar ícono de ojo visible
+import invisibleIcon from "../assets/invisible.png"; // Importar ícono de ojo invisible
 
 function Register() {
   /////////////////// ESTADOS ///////////////////
@@ -17,6 +19,9 @@ function Register() {
 
   const [errors, setErrors] = useState({}); // Estado para manejar errores de validación
   const [formError, setFormError] = useState(""); // Estado para manejar errores generales del formulario
+  const [showPassword, setShowPassword] = useState(false); // Estado para mostrar/ocultar contraseña
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Estado para mostrar/ocultar confirmación de contraseña
+  const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga
   const navigate = useNavigate(); // Hook para navegar entre rutas
 
   // Desestructuración de los datos del formulario
@@ -135,9 +140,11 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError("");
+    setLoading(true);
 
     // Valida el formulario antes de enviar
     if (!validateForm()) {
+      setLoading(false);
       return;
     }
 
@@ -187,72 +194,76 @@ function Register() {
       // Maneja errores durante el registro
       setFormError(err.message || "Error al registrar usuario");
       console.error("Error de registro:", err);
+      setLoading(false);
     }
   };
 
   /////////////////// RENDERIZADO ///////////////////
   return (
-    <div className="register-page">
-      <div className="register-container">
+    <div className="register-page09">
+      <div className="register-container09">
         {/* Imagen de fondo */}
-        <div className="register-image">
+        <div className="register-image09">
           <img
             src="https://res.cloudinary.com/dej4kxb37/image/upload/v1741658856/s4earu86aump4eooafk1.jpg"
             alt="Restaurante"
-            className="background-image"
+            className="background-image09"
           />
         </div>
 
         {/* Formulario de registro */}
-        <div className="register-form">
-          <div className="form-content">
-            <h2 className="form-title">Registro</h2>
+        <div className="register-form09">
+          <div className="form-content09">
+            <h2 className="form-title09">Registro</h2>
             <form onSubmit={handleSubmit} noValidate>
               {/* Campo de nombre */}
-              <div className="input-group">
+              <div className="input-group09">
                 <input
                   type="text"
                   name="name"
                   placeholder="Nombre"
                   value={name}
                   onChange={handleChange}
-                  className={errors.name ? "input-error" : ""}
+                  className={errors.name ? "input-error09" : ""}
                   required
+                  disabled={loading}
                 />
-                {errors.name && <span className="error-text">{errors.name}</span>}
+                {errors.name && <span className="error-text09">{errors.name}</span>}
               </div>
 
               {/* Campo de apellido */}
-              <div className="input-group">
+              <div className="input-group09">
                 <input
                   type="text"
                   name="lastName"
                   placeholder="Apellido"
                   value={lastName}
                   onChange={handleChange}
-                  className={errors.lastName ? "input-error" : ""}
+                  className={errors.lastName ? "input-error09" : ""}
                   required
+                  disabled={loading}
                 />
-                {errors.lastName && <span className="error-text">{errors.lastName}</span>}
+                {errors.lastName && <span className="error-text09">{errors.lastName}</span>}
               </div>
 
               {/* Campo de teléfono */}
-              <div className="input-group">
+              <div className="input-group09">
                 <input
                   type="tel"
                   name="phone"
                   placeholder="Teléfono (XXX) XXX-XXXX"
                   value={phone}
                   onChange={handleChange}
-                  className={errors.phone ? "input-error" : ""}
+                  className={errors.phone ? "input-error09" : ""}
                   required
+                  disabled={loading}
                 />
-                {errors.phone && <span className="error-text">{errors.phone}</span>}
+                {errors.phone && <span className="error-text09">{errors.phone}</span>}
               </div>
 
               {/* Campo de fecha de nacimiento */}
-              <div className="input-group">
-                <label htmlFor="birthDate" className="date-label">
+              <div className="input-group09">
+                <label htmlFor="birthDate" className="date-label09">
                   Fecha de Nacimiento
                 </label>
                 <input
@@ -261,70 +272,94 @@ function Register() {
                   name="birthDate"
                   value={birthDate}
                   onChange={handleChange}
-                  className={errors.birthDate ? "input-error" : ""}
+                  className={errors.birthDate ? "input-error09" : ""}
                   required
+                  disabled={loading}
                 />
-                {errors.birthDate && <span className="error-text">{errors.birthDate}</span>}
+                {errors.birthDate && <span className="error-text09">{errors.birthDate}</span>}
               </div>
 
               {/* Campo de correo electrónico */}
-              <div className="input-group">
+              <div className="input-group09">
                 <input
                   type="email"
                   name="email"
                   placeholder="Correo Electrónico"
                   value={email}
                   onChange={handleChange}
-                  className={errors.email ? "input-error" : ""}
+                  className={errors.email ? "input-error09" : ""}
                   required
+                  disabled={loading}
                 />
-                {errors.email && <span className="error-text">{errors.email}</span>}
+                {errors.email && <span className="error-text09">{errors.email}</span>}
               </div>
 
               {/* Campo de contraseña */}
-              <div className="input-group">
+              <div className="input-group09">
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="Contraseña (mínimo 8 caracteres)"
                   value={password}
                   onChange={handleChange}
-                  className={errors.password ? "input-error" : ""}
+                  className={errors.password ? "input-error09" : ""}
                   required
+                  disabled={loading}
                 />
-                {errors.password && <span className="error-text">{errors.password}</span>}
+                <span
+                  className="password-toggle09"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  <img
+                    src={showPassword ? eyeIcon : invisibleIcon}
+                    alt="Toggle Password"
+                    className="password-icon09"
+                  />
+                </span>
+                {errors.password && <span className="error-text09">{errors.password}</span>}
               </div>
 
               {/* Campo de confirmación de contraseña */}
-              <div className="input-group">
+              <div className="input-group09">
                 <input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
                   placeholder="Confirmar Contraseña"
                   value={confirmPassword}
                   onChange={handleChange}
-                  className={errors.confirmPassword ? "input-error" : ""}
+                  className={errors.confirmPassword ? "input-error09" : ""}
                   required
+                  disabled={loading}
                 />
-                {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
+                <span
+                  className="password-toggle09"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  <img
+                    src={showConfirmPassword ? eyeIcon : invisibleIcon}
+                    alt="Toggle Password"
+                    className="password-icon09"
+                  />
+                </span>
+                {errors.confirmPassword && <span className="error-text09">{errors.confirmPassword}</span>}
               </div>
 
               {/* Mensaje de error general del formulario */}
-              {formError && <p className="form-error-message">{formError}</p>}
+              {formError && <p className="form-error-message09">{formError}</p>}
 
               {/* Botón para enviar el formulario */}
-              <div className="button-container">
-                <button type="submit" className="submit-button">
-                  Registrarse
+              <div className="button-container09">
+                <button type="submit" className="submit-button09" disabled={loading}>
+                  {loading ? "Procesando..." : "Registrarse"}
                 </button>
               </div>
             </form>
 
             {/* Enlace para redirigir a la página de inicio de sesión */}
-            <div className="auth-links">
+            <div className="auth-links09">
               <p>
                 ¿Ya tienes cuenta?{" "}
-                <a href="#" onClick={handleLoginRedirect} className="login-link">
+                <a href="#" onClick={handleLoginRedirect} className="login-link09">
                   Inicia Sesión
                 </a>
               </p>
