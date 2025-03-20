@@ -396,59 +396,59 @@ function Register() {
 
               {/* Campo de contraseña */}
               <div className="input-group09">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="Contraseña (mínimo 8 caracteres)"
-                  value={password}
-                  onChange={handleChange}
-                  className={errors.password ? "input-error09" : ""}
-                  required
-                  disabled={loading}
-                  maxLength={50}
-                />
-                <span
-                  className="password-toggle09"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  <img
-                    src={showPassword ? eyeIcon : invisibleIcon}
-                    alt="Toggle Password"
-                    className="password-icon09"
+                <div className="password-input-wrapper09">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Contraseña (mínimo 8 caracteres)"
+                    value={password}
+                    onChange={handleChange}
+                    className={errors.password ? "input-error09" : ""}
+                    required
+                    disabled={loading}
+                    maxLength={50}
                   />
-                </span>
+                  <span
+                    className="password-toggle09"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    <img
+                      src={showPassword ? eyeIcon : invisibleIcon}
+                      alt="Toggle Password"
+                      className="password-icon09"
+                    />
+                  </span>
+                </div>
                 {errors.password && <span className="error-text09">{errors.password}</span>}
               </div>
 
               {/* Campo de confirmación de contraseña */}
               <div className="input-group09">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  placeholder="Confirmar Contraseña"
-                  value={confirmPassword}
-                  onChange={handleChange}
-                  className={errors.confirmPassword ? "input-error09" : ""}
-                  required
-                  disabled={loading}
-                  maxLength={50}
-                />
-                <span
-                  className="password-toggle09"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  <img
-                    src={showConfirmPassword ? eyeIcon : invisibleIcon}
-                    alt="Toggle Password"
-                    className="password-icon09"
+                <div className="password-input-wrapper09">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    placeholder="Confirmar Contraseña"
+                    value={confirmPassword}
+                    onChange={handleChange}
+                    className={errors.confirmPassword ? "input-error09" : ""}
+                    required
+                    disabled={loading}
+                    maxLength={50}
                   />
-                </span>
+                  <span
+                    className="password-toggle09"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    <img
+                      src={showConfirmPassword ? eyeIcon : invisibleIcon}
+                      alt="Toggle Password"
+                      className="password-icon09"
+                    />
+                  </span>
+                </div>
                 {errors.confirmPassword && <span className="error-text09">{errors.confirmPassword}</span>}
               </div>
-
-           {/* Requisitos de la contraseña */}
-
-
 
               {/* Mensaje de error general del formulario */}
               {formError && <p className="form-error-message09">{formError}</p>}

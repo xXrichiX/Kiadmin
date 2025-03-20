@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
-import "../styles/Login.css"; // Asegúrate que exista este archivo CSS
-import eyeIcon from "../assets/ojo.png"; // Asegúrate que existan estas imágenes
+import { useNavigate, Link } from "react-router-dom";
+import "../styles/Login.css"; // Asegúrate de que este archivo exista
+import eyeIcon from "../assets/ojo.png";
 import invisibleIcon from "../assets/invisible.png";
 
 function Login() {
@@ -29,56 +29,34 @@ function Login() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.message || "Error de autenticación");
       }
 
-      // Guardar token en cookies
+      // Guardar token en cookies y localStorage
       Cookies.remove("authToken");
       Cookies.set("authToken", data.token, {
         expires: 1, // 1 día
         secure: window.location.protocol === "https:",
-        sameSite: "lax", // Cambiado a lax para mayor compatibilidad
+        sameSite: "lax",
         path: "/",
       });
-
-      // También guardamos en localStorage para compatibilidad con código existente
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // Usar setTimeout para retrasar la navegación al siguiente ciclo de eventos
+      // Redirigir a /home asegurando que funcione con HashRouter
       setTimeout(() => {
-        navigate("/home", { replace: true });
+        window.location.hash = "#/home";
       }, 10);
-      
     } catch (err) {
       setError(err.message || "Error al iniciar sesión");
       setLoading(false);
     }
   };
-
-  // Manejadores de redirección
- // En Login.js
-// Modifica tus funciones de redirección
-const handleForgotPasswordRedirect = (e) => {
-  e.preventDefault();
-  // Intenta usar navigate sin el replace: true
-  navigate("/forgot-password");
-};
-
-const handleRegisterRedirect = (e) => {
-  e.preventDefault();
-  // Intenta usar navigate sin el replace: true
-  navigate("/register");
-};
 
   return (
     <div className="login-page47">
@@ -135,9 +113,7 @@ const handleRegisterRedirect = (e) => {
               {error && <p className="error-message47">{error}</p>}
 
               <div className="forgot-password47">
-                <a href="#" onClick={handleForgotPasswordRedirect}>
-                  ¿Olvidaste tu contraseña?
-                </a>
+                <Link to="/forgot-password">¿Olvidaste tu contraseña?</Link>
               </div>
 
               <div className="button-container47">
@@ -149,9 +125,7 @@ const handleRegisterRedirect = (e) => {
 
             <div className="register-link47">
               <p>¿No tienes cuenta?</p>
-              <a href="#" onClick={handleRegisterRedirect}>
-                Regístrate
-              </a>
+              <Link to="/register">Regístrate</Link>
             </div>
           </div>
         </div>
