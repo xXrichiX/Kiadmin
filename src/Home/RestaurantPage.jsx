@@ -695,14 +695,22 @@ const RestaurantManagement = () => {
 
               {/* Stripe Connect Button */}
               <div className="stripe-connect-container100">
-                <button 
-                  onClick={handleStripeConnect}
-                  className="stripe-connect-btn100"
-                >
-                  Conectar con Stripe
-                </button>
-                <p className="stripe-info100">Conecta tu restaurante con Stripe para recibir pagos en línea.</p>
-              </div>
+  {/* 
+  <button 
+    onClick={handleStripeConnect}
+    className="stripe-connect-btn100"
+  >
+    Conectar con Stripe
+  </button>
+  */}
+
+  {/* 
+  <p className="stripe-info100">
+    Conecta tu restaurante con Stripe para recibir pagos en línea.
+  </p>
+  */}
+</div>
+
 
               <div className="restaurant-card100">
                 <div className="restaurant-image-container100">
