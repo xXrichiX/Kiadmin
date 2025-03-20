@@ -66,19 +66,16 @@ function Login() {
   };
 
   // Manejadores de redirección
-  const handleForgotPasswordRedirect = (e) => {
-    e.preventDefault();
-    setTimeout(() => {
-      navigate("/forgot-password");
-    }, 10);
-  };
+ // En Login.js
+const handleForgotPasswordRedirect = (e) => {
+  e.preventDefault();
+  navigate("/forgot-password", { replace: true });
+};
 
-  const handleRegisterRedirect = (e) => {
-    e.preventDefault();
-    setTimeout(() => {
-      navigate("/register");
-    }, 10);
-  };
+const handleRegisterRedirect = (e) => {
+  e.preventDefault();
+  navigate("/register", { replace: true });
+};
 
   return (
     <div className="login-page47">

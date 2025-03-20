@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Cookies from "js-cookie";
 import "../styles/Register.css";
 import eyeIcon from "../assets/ojo.png"; // Importar ícono de ojo visible
@@ -133,7 +133,7 @@ function Register() {
   // Función para redirigir al usuario a la página de inicio de sesión
   const handleLoginRedirect = (e) => {
     e.preventDefault();
-    navigate("/login");
+    navigate("/login", { replace: true });
   };
 
   // Función para manejar el envío del formulario
@@ -176,7 +176,13 @@ function Register() {
       const data = await response.json();
 
       // Guarda el ID temporal en cookies y el perfil en localStorage
-      Cookies.set("tempId", data.tempId, { expires: 1 });
+      Cookies.set("tempId", data.tempId, { 
+        expires: 1,
+        secure: true,
+        sameSite: "strict",
+        path: "/"
+      });
+      
       localStorage.setItem(
         "userProfile",
         JSON.stringify({
@@ -188,8 +194,8 @@ function Register() {
         })
       );
 
-      // Redirige al usuario a la página de verificación de código
-      navigate("/verify-code", { state: { tempId: data.tempId } });
+      // Redirige al usuario a la página de verificación de código INMEDIATAMENTE SIN setTimeout
+      navigate("/verify-code", { state: { tempId: data.tempId }, replace: true });
     } catch (err) {
       // Maneja errores durante el registro
       setFormError(err.message || "Error al registrar usuario");

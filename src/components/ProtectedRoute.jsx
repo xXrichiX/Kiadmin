@@ -1,24 +1,24 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Navigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
 const ProtectedRoute = ({ children }) => {
-  const navigate = useNavigate();
-  let authToken = Cookies.get('authToken');
+  const authToken = Cookies.get('authToken');
 
-  useEffect(() => {
-    if (!authToken) {
-      navigate('/login');
-    } else {
-      // Renovar el tiempo del token cada vez que el usuario entra
-      Cookies.set('authToken', authToken, { expires: 7 }); // Expira en 7 días
-    }
-  }, [authToken, navigate]);
-
+  // Si no hay token, redirige inmediatamente al login
   if (!authToken) {
-    return null;
+    return <Navigate to="/login" replace />;
   }
-
+  
+  // Si hay token, renovamos su tiempo de expiración
+  Cookies.set('authToken', authToken, { 
+    expires: 7,
+    secure: window.location.protocol === "https:",
+    sameSite: "lax",
+    path: "/"
+  });
+  
+  // Retorna los componentes hijos (contenido protegido)
   return children;
 };
 

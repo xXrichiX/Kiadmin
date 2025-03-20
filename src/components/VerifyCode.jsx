@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import Cookies from "js-cookie";
 import "../styles/VerifyCode.css";
 
@@ -7,6 +7,7 @@ const VerifyCode = () => {
   const [verificationCode, setVerificationCode] = useState(Array(6).fill(""));
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const inputsRef = useRef([]);
@@ -49,9 +50,11 @@ const VerifyCode = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(""); // Limpiar error antes de enviar
+    setIsSubmitting(true);
 
     // Validar el código antes de enviarlo
     if (!validateCode()) {
+      setIsSubmitting(false);
       return;
     }
 
@@ -63,7 +66,8 @@ const VerifyCode = () => {
           state: {
             email: location.state?.email || localStorage.getItem("resetEmail"),
             code: verificationCode.join("")
-          }
+          },
+          replace: true
         });
         return;
       }
@@ -99,8 +103,8 @@ const VerifyCode = () => {
       // Manejar la respuesta según el escenario
       if (isPasswordReset) {
         setMessage("Contraseña restablecida con éxito");
-        // Redirigir al login después de restablecer la contraseña
-        setTimeout(() => navigate("/login"), 2000);
+        // Redirigir al login INMEDIATAMENTE SIN setTimeout
+        navigate("/login", { replace: true });
       } else {
         // Para verificación de cuenta - guardamos el token si lo recibimos
         if (data.token) {
@@ -108,17 +112,19 @@ const VerifyCode = () => {
             expires: 1,
             secure: true,
             sameSite: "strict",
+            path: "/"
           });
         }
         // Limpiar el ID temporal
         Cookies.remove("tempId");
         
         setMessage("Cuenta verificada con éxito");
-        // Redirigir a la página principal
-        setTimeout(() => navigate("/home"), 2000);
+        // Redirigir a la página principal INMEDIATAMENTE SIN setTimeout
+        navigate("/home", { replace: true });
       }
     } catch (err) {
       setError(err.message || "Error al verificar el código");
+      setIsSubmitting(false);
     }
   };
 
@@ -134,12 +140,18 @@ const VerifyCode = () => {
 
       const email = location.state?.email || 
                     localStorage.getItem("resetEmail") || 
-                    Cookies.get("tempEmail");
+                    JSON.parse(localStorage.getItem("userProfile"))?.email;
+
+      const tempId = Cookies.get("tempId");
+
+      const requestBody = isPasswordReset 
+        ? { email } 
+        : { tempId };
 
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();

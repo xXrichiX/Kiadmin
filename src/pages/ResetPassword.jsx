@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import "../styles/ResetPassword.css";
 
 const ResetPassword = () => {
@@ -67,10 +67,8 @@ const ResetPassword = () => {
       // Mostrar mensaje de éxito
       setMessage("Contraseña restablecida exitosamente");
       
-      // Redirigir al login después de un breve retraso
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000);
+      // Redirigir al login INMEDIATAMENTE SIN setTimeout
+      navigate("/login", { replace: true });
     } catch (err) {
       setError(err.message || "Error al restablecer la contraseña");
     }
@@ -78,7 +76,7 @@ const ResetPassword = () => {
 
   // Si no tenemos email o código, redirigir a la página de solicitud
   const handleBackToForgotPassword = () => {
-    navigate("/forgot-password");
+    navigate("/forgot-password", { replace: true });
   };
 
   return (
@@ -127,6 +125,13 @@ const ResetPassword = () => {
               </div>
               {(!email || !code) && (
                 <div className="back-link">
+                  <button 
+                    type="button" 
+                    onClick={handleBackToForgotPassword}
+                    className="back-button"
+                  >
+                    Volver a solicitar código
+                  </button>
                 </div>
               )}
             </form>
