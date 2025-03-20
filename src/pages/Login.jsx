@@ -136,7 +136,7 @@ const handleRegisterRedirect = (e) => {
 
               <div className="forgot-password47">
                 <a href="#" onClick={handleForgotPasswordRedirect}>
-                  ¿Olvidaste tu contraseña?
+                  ¿Olvidaste tu contraseña we?
                 </a>
               </div>
 

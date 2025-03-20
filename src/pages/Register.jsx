@@ -340,7 +340,7 @@ function Register() {
             {/* Enlace para redirigir a la página de inicio de sesión */}
             <div className="auth-links09">
               <p>
-                ¿Ya tienes cuenta?{" "}
+                ¿Yaa tienes cuenta?{" "}
                 <a href="#" onClick={handleLoginRedirect} className="login-link09">
                   Inicia Sesión
                 </a>
