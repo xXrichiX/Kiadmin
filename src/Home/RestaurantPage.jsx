@@ -30,6 +30,10 @@ const RestaurantManagement = () => {
     country: "",
     city: "",
     postalCode: "",
+    coordinates: {
+      lat: 20.967370,
+      lng: -89.592580
+    },
     
     // Dirección
     street: "",
@@ -54,8 +58,39 @@ const RestaurantManagement = () => {
     return token;
   };
 
+  const refreshToken = async () => {
+    try {
+      const refreshToken = Cookies.get("refreshToken");
+      if (!refreshToken) {
+        navigate("/login");
+        return null;
+      }
+      
+      const response = await fetch(`${API_URL}/api/auth/refresh`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refreshToken }),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error al refrescar el token");
+      }
+      
+      const data = await response.json();
+      Cookies.set("authToken", data.token, { expires: 7 });
+      return data.token;
+    } catch (err) {
+      Cookies.remove("authToken");
+      Cookies.remove("refreshToken");
+      navigate("/login");
+      return null;
+    }
+  };
+
   const fetchAPI = async (endpoint, method = "GET", body = null) => {
-    const token = checkToken();
+    let token = checkToken();
     if (!token) return null;
 
     try {
@@ -68,7 +103,16 @@ const RestaurantManagement = () => {
         ...(body && { body: JSON.stringify(body) }),
       };
 
-      const response = await fetch(`${API_URL}${endpoint}`, options);
+      let response = await fetch(`${API_URL}${endpoint}`, options);
+
+      // Si el token ha expirado, intentar refrescarlo y reintentar
+      if (response.status === 401) {
+        token = await refreshToken();
+        if (!token) return null;
+        
+        options.headers.Authorization = `Bearer ${token}`;
+        response = await fetch(`${API_URL}${endpoint}`, options);
+      }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({
@@ -84,41 +128,43 @@ const RestaurantManagement = () => {
   };
 
   /////////////////// OBTENER DATOS DEL RESTAURANTE ///////////////////
-  useEffect(() => {
-    const fetchRestaurantData = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchAPI("/api/restaurants/myRestaurant");
-        
-        if (data.code === "RESTAURANT_REQUIRED") {
-          setHasRestaurant(false);
-        } else {
-          const simplifiedData = {
-            id: data._id,
-            name: data.name,
-            image: data.image,
-            country: data.location.country,
-            city: data.location.city,
-            street: data.location.address.street,
-            number: data.location.address.number,
-            crossStreets: data.location.address.crossStreets,
-            colony: data.location.address.colony,
-            references: data.location.address.references,
-            postalCode: data.location.postalCode,
-            phone: data.contact?.phone || "",
-            email: data.contact?.email || "",
-            website: data.contact?.website || ""
-          };
-          setRestaurant(simplifiedData);
-          setHasRestaurant(true);
-        }
-      } catch (err) {
-        setError(`Error al obtener datos del restaurante: ${err.message}`);
-      } finally {
-        setLoading(false);
+  const fetchRestaurantData = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchAPI("/api/restaurants/myRestaurant");
+      
+      if (data && data.code === "RESTAURANT_REQUIRED") {
+        setHasRestaurant(false);
+      } else if (data) {
+        const simplifiedData = {
+          id: data._id,
+          name: data.name,
+          image: data.image,
+          country: data.location?.country || "",
+          city: data.location?.city || "",
+          street: data.location?.address?.street || "",
+          number: data.location?.address?.number || "",
+          crossStreets: data.location?.address?.crossStreets || "",
+          colony: data.location?.address?.colony || "",
+          references: data.location?.address?.references || "",
+          postalCode: data.location?.postalCode || "",
+          coordinates: data.location?.coordinates || { lat: 20.967370, lng: -89.592580 },
+          phone: data.contact?.phone || "",
+          email: data.contact?.email || "",
+          website: data.contact?.website || ""
+        };
+        setRestaurant(simplifiedData);
+        setHasRestaurant(true);
       }
-    };
+    } catch (err) {
+      setError(`Error al obtener datos del restaurante: ${err.message}`);
+      setHasRestaurant(false);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchRestaurantData();
   }, []);
 
@@ -154,7 +200,6 @@ const RestaurantManagement = () => {
       
       const data = await response.json();
       
-      // Actualizar el formData con la URL de la imagen
       setFormData(prevData => ({
         ...prevData,
         image: data.secure_url
@@ -186,6 +231,7 @@ const RestaurantManagement = () => {
         colony: restaurant.colony || "",
         references: restaurant.references || "",
         postalCode: restaurant.postalCode || "",
+        coordinates: restaurant.coordinates || { lat: 20.967370, lng: -89.592580 },
         phone: restaurant.phone || "",
         email: restaurant.email || "",
         website: restaurant.website || ""
@@ -203,6 +249,7 @@ const RestaurantManagement = () => {
         colony: "",
         references: "",
         postalCode: "",
+        coordinates: { lat: 20.967370, lng: -89.592580 },
         phone: "",
         email: "",
         website: ""
@@ -263,7 +310,8 @@ const RestaurantManagement = () => {
             colony: formData.colony,
             references: formData.references
           },
-          postalCode: formData.postalCode
+          postalCode: formData.postalCode,
+          coordinates: formData.coordinates
         }
       };
 
@@ -279,25 +327,14 @@ const RestaurantManagement = () => {
       const method = isEditing ? "PUT" : "POST";
       const data = await fetchAPI("/api/restaurants/myRestaurant", method, requestBody);
       
-      const simplifiedData = {
-        id: data._id,
-        name: data.name,
-        image: data.image,
-        country: data.location.country,
-        city: data.location.city,
-        street: data.location.address.street,
-        number: data.location.address.number,
-        crossStreets: data.location.address.crossStreets,
-        colony: data.location.address.colony,
-        references: data.location.address.references,
-        postalCode: data.location.postalCode,
-        phone: data.contact?.phone || "",
-        email: data.contact?.email || "",
-        website: data.contact?.website || ""
-      };
+      // Si es una creación, se recibe el token actualizado
+      if (!isEditing && data.token) {
+        Cookies.set("authToken", data.token, { expires: 7 });
+      }
       
-      setRestaurant(simplifiedData);
-      setHasRestaurant(true);
+      // Actualizar todos los estados relevantes
+      await fetchRestaurantData();
+      
       setIsModalOpen(false);
       setSuccessMessage(isEditing ? "Restaurante actualizado correctamente" : "Restaurante creado correctamente");
       
@@ -329,12 +366,10 @@ const RestaurantManagement = () => {
   /////////////////// CONECTAR CON STRIPE ///////////////////
   const handleStripeConnect = async () => {
     try {
-      // Utilizar la función fetchAPI para mantener consistencia
       const data = await fetchAPI("/api/restaurants/connectStripe");
       
-      // Verificar si se recibió una URL de Stripe
       if (data && data.url) {
-        // Redirigir al usuario a la URL de Stripe Connect
+        localStorage.setItem("stripeConnectInProgress", "true");
         window.location.href = data.url;
       } else {
         throw new Error('No se recibió URL de Stripe');
@@ -343,6 +378,21 @@ const RestaurantManagement = () => {
       setError(`Error al conectar con Stripe: ${err.message}`);
     }
   };
+
+  // Verificar si venimos de un proceso de conexión Stripe
+  useEffect(() => {
+    const stripeConnectInProgress = localStorage.getItem("stripeConnectInProgress");
+    if (stripeConnectInProgress === "true") {
+      localStorage.removeItem("stripeConnectInProgress");
+      
+      if (window.location.search.includes("success=true")) {
+        setSuccessMessage("Conexión con Stripe realizada correctamente");
+        setTimeout(() => setSuccessMessage(""), 3000);
+      }
+      
+      fetchRestaurantData();
+    }
+  }, []);
 
   /////////////////// RENDERIZADO DE FORMULARIO POR PESTAÑAS ///////////////////
   const renderFormContent = () => {
@@ -568,7 +618,7 @@ const RestaurantManagement = () => {
                 >
                   Editar Restaurante
                 </button>
-                {/* Botón de eliminar comentado como en el original
+                {/* Botón de eliminar comentado por seguridad
                 <button
                   onClick={deleteRestaurant}
                   className="delete-restaurant-btn100"

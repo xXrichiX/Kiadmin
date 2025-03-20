@@ -67,14 +67,17 @@ function Login() {
 
   // Manejadores de redirección
  // En Login.js
+// Modifica tus funciones de redirección
 const handleForgotPasswordRedirect = (e) => {
   e.preventDefault();
-  navigate("/forgot-password", { replace: true });
+  // Intenta usar navigate sin el replace: true
+  navigate("/forgot-password");
 };
 
 const handleRegisterRedirect = (e) => {
   e.preventDefault();
-  navigate("/register", { replace: true });
+  // Intenta usar navigate sin el replace: true
+  navigate("/register");
 };
 
   return (

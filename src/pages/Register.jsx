@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import "../styles/Register.css";
-import eyeIcon from "../assets/ojo.png"; // Importar ícono de ojo visible
-import invisibleIcon from "../assets/invisible.png"; // Importar ícono de ojo invisible
+import eyeIcon from "../assets/ojo.png";
+import invisibleIcon from "../assets/invisible.png";
 
 function Register() {
   /////////////////// ESTADOS ///////////////////
@@ -15,26 +15,22 @@ function Register() {
     email: "",
     password: "",
     confirmPassword: "",
-  }); // Estado para almacenar los datos del formulario
+  });
 
-  const [errors, setErrors] = useState({}); // Estado para manejar errores de validación
-  const [formError, setFormError] = useState(""); // Estado para manejar errores generales del formulario
-  const [showPassword, setShowPassword] = useState(false); // Estado para mostrar/ocultar contraseña
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Estado para mostrar/ocultar confirmación de contraseña
-  const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga
-  const navigate = useNavigate(); // Hook para navegar entre rutas
+  const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  // Desestructuración de los datos del formulario
   const { name, lastName, phone, birthDate, email, password, confirmPassword } = formData;
 
   /////////////////// FUNCIONES AUXILIARES ///////////////////
-
-  // Función para formatear el número de teléfono mientras el usuario escribe
   const formatPhoneNumber = (value) => {
-    const numericValue = value.replace(/\D/g, ""); // Elimina todos los caracteres que no sean dígitos
-    const truncatedValue = numericValue.slice(0, 10); // Limita a 10 dígitos
+    const numericValue = value.replace(/\D/g, "");
+    const truncatedValue = numericValue.slice(0, 10);
 
-    // Formatea el número de teléfono según su longitud
     if (truncatedValue.length <= 3) {
       return truncatedValue;
     } else if (truncatedValue.length <= 6) {
@@ -45,12 +41,9 @@ function Register() {
   };
 
   /////////////////// MANEJADORES DE EVENTOS ///////////////////
-
-  // Función para manejar cambios en los campos del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Si el campo es "phone", formatea el número de teléfono
     if (name === "phone") {
       setFormData((prevState) => ({
         ...prevState,
@@ -63,7 +56,6 @@ function Register() {
       }));
     }
 
-    // Limpia el error del campo si existe
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -72,27 +64,22 @@ function Register() {
     }
   };
 
-  // Función para validar el formulario
   const validateForm = () => {
     const newErrors = {};
 
-    // Validación del nombre
     if (!name.trim()) {
       newErrors.name = "El nombre es obligatorio";
     }
 
-    // Validación del apellido
     if (!lastName.trim()) {
       newErrors.lastName = "El apellido es obligatorio";
     }
 
-    // Validación del teléfono
     const phoneDigits = phone.replace(/\D/g, "");
     if (!phoneDigits || phoneDigits.length !== 10) {
       newErrors.phone = "Ingrese un número de teléfono válido de 10 dígitos";
     }
 
-    // Validación de la fecha de nacimiento
     if (!birthDate) {
       newErrors.birthDate = "La fecha de nacimiento es obligatoria";
     } else {
@@ -109,49 +96,41 @@ function Register() {
       }
     }
 
-    // Validación del correo electrónico
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
       newErrors.email = "Ingrese un correo electrónico válido";
     }
 
-    // Validación de la contraseña
     if (!password || password.length < 8) {
       newErrors.password = "La contraseña debe tener al menos 8 caracteres";
     }
 
-    // Validación de la confirmación de la contraseña
     if (password !== confirmPassword) {
       newErrors.confirmPassword = "Las contraseñas no coinciden";
     }
 
-    // Establece los errores y retorna true si no hay errores
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Función para redirigir al usuario a la página de inicio de sesión
   const handleLoginRedirect = (e) => {
     e.preventDefault();
-    navigate("/login", { replace: true });
+    navigate("/login");
   };
 
-  // Función para manejar el envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError("");
     setLoading(true);
 
-    // Valida el formulario antes de enviar
     if (!validateForm()) {
       setLoading(false);
       return;
     }
 
-    const API_URL = import.meta.env.VITE_API_URL; // Obtener la URL de la API desde las variables de entorno
+    const API_URL = import.meta.env.VITE_API_URL;
 
     try {
-      // Envía los datos del formulario al servidor
       const response = await fetch(`${API_URL}/api/admins/start-register`, {
         method: "POST",
         headers: {
@@ -160,14 +139,13 @@ function Register() {
         body: JSON.stringify({
           firstName: name,
           lastName,
-          phone: phone.replace(/\D/g, ""), // Envía solo los dígitos del teléfono
+          phone: phone.replace(/\D/g, ""),
           birthDate,
           email,
           password,
         }),
       });
 
-      // Maneja la respuesta del servidor
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.message || "Error en el registro");
@@ -175,10 +153,9 @@ function Register() {
 
       const data = await response.json();
 
-      // Guarda el ID temporal en cookies y el perfil en localStorage
       Cookies.set("tempId", data.tempId, { 
         expires: 1,
-        secure: true,
+        secure: window.location.protocol === "https:",
         sameSite: "strict",
         path: "/"
       });
@@ -194,10 +171,9 @@ function Register() {
         })
       );
 
-      // Redirige al usuario a la página de verificación de código INMEDIATAMENTE SIN setTimeout
-      navigate("/verify-code", { state: { tempId: data.tempId }, replace: true });
+      // Navegar con el estado como parte de la URL para HashRouter
+      navigate("/verify-code", { state: { tempId: data.tempId } });
     } catch (err) {
-      // Maneja errores durante el registro
       setFormError(err.message || "Error al registrar usuario");
       console.error("Error de registro:", err);
       setLoading(false);
