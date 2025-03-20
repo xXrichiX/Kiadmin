@@ -229,17 +229,25 @@ const Dashboard = () => {
     try {
       const result = await fetchAPI(`/api/orders/myDashboard/paymentMethod?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`);
       if (result && result.data) {
-        // Procesar los métodos de pago
-        const processedPaymentMethods = Object.entries(result.data).map(([method, data]) => ({
-          method, // Nombre del método de pago
-          count: data.count, // Cantidad de órdenes
-          cost: data.cost, // Costo de producción
-          sale: data.sale, // Venta total
-          profit: data.profit // Ganancia total
-        }));
-
-        // Actualizar el estado con los métodos de pago procesados
-        setPaymentMethods(processedPaymentMethods);
+        // Procesar los métodos de pago para gráfico
+        const methodsData = [
+          {
+            method: "Efectivo",
+            count: result.data.cash?.count || 0,
+            cost: result.data.cash?.cost || 0,
+            sale: result.data.cash?.sale || 0,
+            profit: result.data.cash?.profit || 0
+          },
+          {
+            method: "Tarjeta",
+            count: result.data.card?.count || 0,
+            cost: result.data.card?.cost || 0,
+            sale: result.data.card?.sale || 0,
+            profit: result.data.card?.profit || 0
+          }
+        ];
+        
+        setPaymentMethods(methodsData);
       }
     } catch (err) {
       console.error("Error al cargar métodos de pago:", err);
@@ -293,10 +301,10 @@ const Dashboard = () => {
           return;
         }
 
-        // Formatear los datos para la gráfica de categorías
+        // Formatear los datos para la gráfica de categorías basado en el formato de la API
         const formattedData = result.data.map(category => ({
           name: category.name ? category.name.substring(0, 15) : "Sin categoría",
-          ventas: category.count || 0 // Solo la cantidad sin multiplicación
+          ventas: category.count || 0
         }));
 
         setCategoryData(formattedData);
@@ -366,45 +374,44 @@ const Dashboard = () => {
           />
         </div>
         <div className="period-selector12">
-  {["day", "week", "month"].map((period) => {
-    const handleClick = () => {
-      const today = new Date();
-      let startDate;
+          {["day", "week", "month"].map((period) => {
+            const handleClick = () => {
+              const today = new Date();
+              let startDate;
 
-      switch (period) {
-        case "day":
-          startDate = new Date(today.setDate(today.getDate() - 1));
-          break;
-        case "week":
-          startDate = new Date(today.setDate(today.getDate() - 7));
-          break;
-        case "month":
-          startDate = new Date(today.setMonth(today.getMonth() - 1));
-          break;
-        default:
-          startDate = today;
-      }
+              switch (period) {
+                case "day":
+                  startDate = new Date(today.setDate(today.getDate() - 1));
+                  break;
+                case "week":
+                  startDate = new Date(today.setDate(today.getDate() - 7));
+                  break;
+                case "month":
+                  startDate = new Date(today.setMonth(today.getMonth() - 1));
+                  break;
+                default:
+                  startDate = today;
+              }
 
-      setDateRange({
-        startDate: startDate.toISOString().split("T")[0],
-        endDate: new Date().toISOString().split("T")[0],
-      });
+              setDateRange({
+                startDate: startDate.toISOString().split("T")[0],
+                endDate: new Date().toISOString().split("T")[0],
+              });
 
-      setSelectedPeriod(period);
-    };
+              setSelectedPeriod(period);
+            };
 
-    return (
-      <button
-        key={period}
-        className={selectedPeriod === period ? "active12" : ""}
-        onClick={handleClick}
-      >
-        {period === "day" ? "Día" : period === "week" ? "Semana" : "Mes"}
-      </button>
-    );
-  })}
-</div>
-
+            return (
+              <button
+                key={period}
+                className={selectedPeriod === period ? "active12" : ""}
+                onClick={handleClick}
+              >
+                {period === "day" ? "Día" : period === "week" ? "Semana" : "Mes"}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="dashboard_stats_cards12">
@@ -458,7 +465,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Modificación aquí: Ahora el contenedor de Productos Más Vendidos ocupa todo el ancho */}
       <div className="top-products-section12">
         <h2>Productos Más Vendidos</h2>
         <div className="top-products-container12">
@@ -539,7 +545,7 @@ const Dashboard = () => {
               <YAxis />
               <Tooltip formatter={(value) => [`${value}`, "Cantidad"]} />
               <Legend />
-              <Bar dataKey="ventas" name="Ventas ($)" fill="#AB0831" radius={[5, 5, 0, 0]} />
+              <Bar dataKey="ventas" name="Ventas" fill="#AB0831" radius={[5, 5, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
