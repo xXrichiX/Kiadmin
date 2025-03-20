@@ -16,6 +16,7 @@ const CategoriesPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState("default");
+  const [nameError, setNameError] = useState("");
 
   const navigate = useNavigate();
   // URL base fija para garantizar que todas las solicitudes usen la URL correcta
@@ -60,6 +61,22 @@ const CategoriesPage = () => {
     }
   };
 
+  /////////////////// VALIDACIONES ///////////////////
+  const validateCategoryName = (catName) => {
+    // Verificar que el nombre no esté repetido
+    const nameExists = categories.some(
+      (category) => 
+        category.name.toLowerCase() === catName.toLowerCase() && 
+        (isEditing ? category._id !== editingCategoryId : true)
+    );
+    
+    if (nameExists) {
+      return "Ya existe una categoría con este nombre. Por favor, elija otro nombre.";
+    }
+    
+    return "";
+  };
+
   /////////////////// OBTENER DATOS (CATEGORÍAS) ///////////////////
   const fetchAllCategories = async () => {
     try {
@@ -99,31 +116,62 @@ const CategoriesPage = () => {
 
   /////////////////// VALIDAR CATEGORÍA ///////////////////
   const validateCategory = () => {
+    // Limpiar errores previos
+    setError("");
+    setNameError("");
+    
+    // Validar campos requeridos
     if (!name.trim() || !description.trim()) {
       setError("Por favor, completa todos los campos requeridos.");
       return false;
     }
-    setError("");
+    
+    // Validar nombre único
+    const nameValidationError = validateCategoryName(name);
+    if (nameValidationError) {
+      setNameError(nameValidationError);
+      return false;
+    }
+    
     return true;
   };
 
   /////////////////// ORDENAR CATEGORÍAS ///////////////////
-  const sortCategories = (order) => {
-    let sortedCategories = [...categories];
-    switch (order) {
-      case "first":
-        sortedCategories.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-        break;
-      case "last":
-        sortedCategories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        break;
-      case "alphabetical":
-        sortedCategories.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      default:
-        break;
+  const getSortedCategories = () => {
+    // Crear una copia para no modificar el array original
+    const sortedCategories = [...categories];
+    
+    // Verificar que haya categorías para ordenar
+    if (sortedCategories.length === 0) {
+      return [];
     }
-    return sortedCategories;
+    
+    switch (sortOrder) {
+      case "first":
+        // Ordenar por fecha de creación (más antiguas primero)
+        return sortedCategories.sort((a, b) => {
+          // Asegurarse de que ambos elementos tengan createdAt y sean fechas válidas
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateA - dateB;
+        });
+      case "last":
+        // Ordenar por fecha de creación (más recientes primero)
+        return sortedCategories.sort((a, b) => {
+          // Asegurarse de que ambos elementos tengan createdAt y sean fechas válidas
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
+      case "alphabetical":
+        // Ordenar alfabéticamente por nombre (case-insensitive)
+        return sortedCategories.sort((a, b) => 
+          a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+        );
+      default:
+        // No hacer nada, mantener el orden original
+        return sortedCategories;
+    }
   };
 
   /////////////////// ELIMINAR CATEGORÍA ///////////////////
@@ -135,6 +183,11 @@ const CategoriesPage = () => {
       // Actualizar el estado localmente después de eliminar
       setCategories((prev) => prev.filter((c) => c._id !== categoryId));
       setProducts((prev) => prev.filter((p) => p.category !== categoryId));
+      
+      // Si se ha borrado la categoría seleccionada, deseleccionar
+      if (selectedCategory === categoryId) {
+        setSelectedCategory(null);
+      }
       
       setError("");
     } catch (err) {
@@ -150,6 +203,7 @@ const CategoriesPage = () => {
     setDescription(category.description);
     setIsEditing(true);
     setError("");
+    setNameError("");
   };
 
   /////////////////// ACTUALIZAR CATEGORÍA ///////////////////
@@ -178,6 +232,7 @@ const CategoriesPage = () => {
         setName("");
         setDescription("");
         setError("");
+        setNameError("");
       } else {
         throw new Error("No se recibió una respuesta válida del servidor");
       }
@@ -207,10 +262,17 @@ const CategoriesPage = () => {
         setName("");
         setDescription("");
         setError("");
+        setNameError("");
       }
     } catch (err) {
       setError(`Error al crear la categoría: ${err.message}`);
     }
+  };
+
+  /////////////////// MANEJAR CAMBIOS EN LOS CAMPOS ///////////////////
+  const handleNameChange = (e) => {
+    setName(e.target.value);
+    setNameError(""); // Limpiar errores al cambiar
   };
 
   /////////////////// CANCELAR (CREACIÓN/EDICIÓN) ///////////////////
@@ -221,10 +283,11 @@ const CategoriesPage = () => {
     setName("");
     setDescription("");
     setError("");
+    setNameError("");
   };
 
-  /////////////////// CATEGORÍAS ORDENADAS ///////////////////
-  const sortedCategories = sortCategories(sortOrder);
+  // Obtener las categorías ordenadas según el criterio seleccionado
+  const sortedCategories = getSortedCategories();
 
   /////////////////// RENDERIZADO ///////////////////
   return (
@@ -249,6 +312,7 @@ const CategoriesPage = () => {
               setName("");
               setDescription("");
               setError("");
+              setNameError("");
             }}
             className="create-category-btn"
           >
@@ -258,7 +322,11 @@ const CategoriesPage = () => {
           {/* Selector para ordenar categorías */}
           <div className="sort-filter">
             <label>Ordenar por:</label>
-            <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+            <select 
+              value={sortOrder} 
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="sort-select"
+            >
               <option value="default">Predeterminado</option>
               <option value="first">Primera creada</option>
               <option value="last">Última creada</option>
@@ -275,8 +343,10 @@ const CategoriesPage = () => {
                   type="text"
                   placeholder="Nombre de la categoría"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={handleNameChange}
+                  className={nameError ? "input-error" : ""}
                 />
+                {nameError && <p className="error-message">{nameError}</p>}
                 <input
                   type="text"
                   placeholder="Descripción"
@@ -297,16 +367,28 @@ const CategoriesPage = () => {
           <div className="categories-list horizontal">
             {sortedCategories.length > 0 ? (
               sortedCategories.map((category) => (
-                <div key={category._id} className="category-card">
-                  <h3 onClick={() => setSelectedCategory(category._id)}>
-                    {category.name}
-                  </h3>
+                <div 
+                  key={category._id} 
+                  className={`category-card ${selectedCategory === category._id ? 'selected' : ''}`}
+                  onClick={() => setSelectedCategory(category._id)}
+                >
+                  <h3>{category.name}</h3>
                   <p className="category-description">{category.description}</p>
                   <p className="category-id">ID: {category._id}</p>
                   <div className="category-actions">
-                    <button onClick={() => editCategory(category)}>✏️ Editar</button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation(); // Evitar que se seleccione la categoría
+                        editCategory(category);
+                      }}
+                    >
+                      ✏️ Editar
+                    </button>
                     <button
-                      onClick={() => deleteCategory(category._id)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Evitar que se seleccione la categoría
+                        deleteCategory(category._id);
+                      }}
                       title={`ID: ${category._id}`}
                     >
                       🗑 Eliminar

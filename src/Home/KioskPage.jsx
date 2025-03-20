@@ -16,6 +16,9 @@ const KiosksPage = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [newKioskName, setNewKioskName] = useState("");
   const [description, setDescription] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [nameError, setNameError] = useState("");
+  const [descriptionError, setDescriptionError] = useState("");
 
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
@@ -59,6 +62,55 @@ const KiosksPage = () => {
     }
   };
 
+  /////////////////// VALIDACIONES ///////////////////
+  const validatePassword = (pass) => {
+    // Validar que la contraseña tenga al menos 8 caracteres, una mayúscula, una minúscula y un número
+    const hasMinLength = pass.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(pass);
+    const hasLowerCase = /[a-z]/.test(pass);
+    const hasNumber = /[0-9]/.test(pass);
+    
+    if (!hasMinLength) {
+      return "La contraseña debe tener al menos 8 caracteres.";
+    }
+    if (!hasUpperCase) {
+      return "La contraseña debe incluir al menos una letra mayúscula.";
+    }
+    if (!hasLowerCase) {
+      return "La contraseña debe incluir al menos una letra minúscula.";
+    }
+    if (!hasNumber) {
+      return "La contraseña debe incluir al menos un número.";
+    }
+    
+    return "";
+  };
+
+  const validateKioskName = (name) => {
+    if (!name.trim()) {
+      return "El nombre del kiosko es obligatorio.";
+    }
+    
+    // Verificar que el nombre no esté repetido
+    const nameExists = kiosks.some(
+      (kiosk) => kiosk.name.toLowerCase() === name.toLowerCase() && 
+                (editingKiosk ? kiosk._id !== editingKiosk._id : true)
+    );
+    
+    if (nameExists) {
+      return "Ya existe un kiosko con este nombre. Por favor, elija otro nombre.";
+    }
+    
+    return "";
+  };
+
+  const validateDescription = (desc) => {
+    if (!desc.trim()) {
+      return "La descripción es obligatoria.";
+    }
+    return "";
+  };
+
   /////////////////// OBTENER DATOS (KIOSKOS) ///////////////////
   useEffect(() => {
     const fetchKiosks = async () => {
@@ -80,8 +132,37 @@ const KiosksPage = () => {
 
   /////////////////// CREAR UN KIOSKO ///////////////////
   const createKiosk = async () => {
-    if (!newKioskName.trim() || !password.trim() || !description.trim()) {
-      setError("Por favor, completa todos los campos requeridos.");
+    // Limpiar errores previos
+    setNameError("");
+    setDescriptionError("");
+    setPasswordError("");
+    setError("");
+    
+    // Validar cada campo individualmente
+    const nameValidationError = validateKioskName(newKioskName);
+    const descriptionValidationError = validateDescription(description);
+    const passwordValidationError = validatePassword(password);
+    
+    // Establecer errores si existen
+    let hasErrors = false;
+    
+    if (nameValidationError) {
+      setNameError(nameValidationError);
+      hasErrors = true;
+    }
+    
+    if (descriptionValidationError) {
+      setDescriptionError(descriptionValidationError);
+      hasErrors = true;
+    }
+    
+    if (passwordValidationError) {
+      setPasswordError(passwordValidationError);
+      hasErrors = true;
+    }
+    
+    // Si hay errores, detener la creación
+    if (hasErrors) {
       return;
     }
 
@@ -109,8 +190,41 @@ const KiosksPage = () => {
 
   /////////////////// EDITAR UN KIOSKO ///////////////////
   const updateKiosk = async () => {
-    if (!editingKiosk?.name?.trim() || !description?.trim()) {
-      setError("Por favor, completa todos los campos requeridos.");
+    // Limpiar errores previos
+    setNameError("");
+    setDescriptionError("");
+    setPasswordError("");
+    setError("");
+    
+    // Validar nombre y descripción
+    const nameValidationError = validateKioskName(editingKiosk.name);
+    const descriptionValidationError = validateDescription(description);
+    
+    // Validar contraseña solo si se proporciona una nueva
+    let passwordValidationError = "";
+    if (password.trim()) {
+      passwordValidationError = validatePassword(password);
+    }
+    
+    // Establecer errores si existen
+    let hasErrors = false;
+    
+    if (nameValidationError) {
+      setNameError(nameValidationError);
+      hasErrors = true;
+    }
+    
+    if (descriptionValidationError) {
+      setDescriptionError(descriptionValidationError);
+      hasErrors = true;
+    }
+    
+    if (passwordValidationError) {
+      setPasswordError(passwordValidationError);
+      hasErrors = true;
+    }
+    
+    if (hasErrors) {
       return;
     }
 
@@ -122,11 +236,9 @@ const KiosksPage = () => {
         ...(password?.trim() && { password: password.trim() }) // Agrega password solo si tiene valor
       };
 
-      // Actualización: usar el nuevo endpoint para actualizar un kiosko
       const result = await fetchAPI(`/api/kiosks/myKiosk/${editingKiosk._id}`, "PUT", body);
 
       if (result) {
-        // Obtener el kiosko actualizado para asegurar que tenemos datos frescos
         const updatedKiosk = await fetchAPI(`/api/kiosks/myKiosk/${editingKiosk._id}`, "GET");
         
         // Actualizar la lista de kioskos en el estado local
@@ -161,11 +273,32 @@ const KiosksPage = () => {
   /////////////////// MANEJAR ENVÍO DEL FORMULARIO ///////////////////
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (isCreating) {
       await createKiosk();
     } else if (editingKiosk) {
       await updateKiosk();
     }
+  };
+
+  /////////////////// MANEJAR CAMBIOS EN LOS CAMPOS ///////////////////
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+    setPasswordError(""); // Limpiar errores al cambiar
+  };
+
+  const handleNameChange = (e) => {
+    if (isCreating) {
+      setNewKioskName(e.target.value);
+    } else {
+      setEditingKiosk({ ...editingKiosk, name: e.target.value });
+    }
+    setNameError(""); // Limpiar errores al cambiar
+  };
+
+  const handleDescriptionChange = (e) => {
+    setDescription(e.target.value);
+    setDescriptionError(""); // Limpiar errores al cambiar
   };
 
   /////////////////// ABRIR Y CANCELAR FORMULARIOS ///////////////////
@@ -176,6 +309,9 @@ const KiosksPage = () => {
     setDescription("");
     setShowPassword(false);
     setError("");
+    setNameError("");
+    setDescriptionError("");
+    setPasswordError("");
   };
 
   const handleEditKiosk = (kiosk) => {
@@ -193,6 +329,9 @@ const KiosksPage = () => {
     setDescription(kiosk.description || "");
     setShowPassword(false);
     setError("");
+    setNameError("");
+    setDescriptionError("");
+    setPasswordError("");
   };
 
   const handleCancel = () => {
@@ -202,6 +341,9 @@ const KiosksPage = () => {
     setPassword("");
     setDescription("");
     setError("");
+    setNameError("");
+    setDescriptionError("");
+    setPasswordError("");
   };
 
   /////////////////// RENDERIZADO ///////////////////
@@ -210,13 +352,6 @@ const KiosksPage = () => {
     <div className="kiosks-page25">
       <h2 className="page-title25">Gestión de Kioskos</h2>
       {error && <p className="error-message25">{error}</p>}
-      
-      {loading && (
-        <div className="loading-container25">
-          <div className="loading-spinner25"></div>
-          <p>Cargando Kioskos...</p>
-        </div>
-      )}
       
       {/* Botón para crear un nuevo kiosko */}
       <button onClick={openCreateModal} className="create-kiosk-btn25">
@@ -234,20 +369,22 @@ const KiosksPage = () => {
                 type="text"
                 placeholder="Nombre personalizado"
                 value={newKioskName}
-                onChange={(e) => setNewKioskName(e.target.value)}
+                onChange={handleNameChange}
                 required
-                className="text-input25"
+                className={nameError ? "text-input25 input-error25" : "text-input25"}
               />
+              {nameError && <p className="error-message25 inline-error">{nameError}</p>}
 
               <label>Descripción del Kiosko:</label>
               <input
                 type="text"
                 placeholder="Descripción del kiosko"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={handleDescriptionChange}
                 required
-                className="text-input25"
+                className={descriptionError ? "text-input25 input-error25" : "text-input25"}
               />
+              {descriptionError && <p className="error-message25 inline-error">{descriptionError}</p>}
 
               <label>Contraseña del Kiosko:</label>
               <div className="password-input-container25">
@@ -255,10 +392,9 @@ const KiosksPage = () => {
                   type={showPassword ? "text" : "password"}
                   placeholder="Contraseña del kiosko"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={handlePasswordChange}
                   required
-                  minLength="8"
-                  className="text-input25"
+                  className={passwordError ? "text-input25 input-error25" : "text-input25"}
                 />
                 <span
                   className="password-toggle25"
@@ -271,6 +407,10 @@ const KiosksPage = () => {
                   />
                 </span>
               </div>
+              {passwordError && <p className="error-message25 inline-error">{passwordError}</p>}
+              <p className="password-requirements25">
+                La contraseña debe tener al menos 8 caracteres, una letra mayúscula, una minúscula y un número.
+              </p>
 
               <div className="modal-buttons25">
                 <button type="submit" className="submit-btn25">
@@ -300,22 +440,22 @@ const KiosksPage = () => {
                 type="text"
                 placeholder="Nombre del kiosko"
                 value={editingKiosk.name}
-                onChange={(e) =>
-                  setEditingKiosk({ ...editingKiosk, name: e.target.value })
-                }
+                onChange={handleNameChange}
                 required
-                className="text-input25"
+                className={nameError ? "text-input25 input-error25" : "text-input25"}
               />
+              {nameError && <p className="error-message25 inline-error">{nameError}</p>}
 
               <label>Descripción del Kiosko:</label>
               <input
                 type="text"
                 placeholder="Descripción del kiosko"
                 value={description} 
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={handleDescriptionChange}
                 required
-                className="text-input25"
+                className={descriptionError ? "text-input25 input-error25" : "text-input25"}
               />
+              {descriptionError && <p className="error-message25 inline-error">{descriptionError}</p>}
 
               <label>Contraseña del Kiosko:</label>
               <div className="password-input-container25">
@@ -323,8 +463,8 @@ const KiosksPage = () => {
                   type={showPassword ? "text" : "password"}
                   placeholder="Nueva contraseña (opcional)"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="text-input25"
+                  onChange={handlePasswordChange}
+                  className={passwordError ? "text-input25 input-error25" : "text-input25"}
                 />
                 <span
                   className="password-toggle25"
@@ -337,6 +477,12 @@ const KiosksPage = () => {
                   />
                 </span>
               </div>
+              {passwordError && <p className="error-message25 inline-error">{passwordError}</p>}
+              {password && (
+                <p className="password-requirements25">
+                  La contraseña debe tener al menos 8 caracteres, una letra mayúscula, una minúscula y un número.
+                </p>
+              )}
 
               <div className="modal-buttons25">
                 <button type="submit" className="submit-btn25">
@@ -355,42 +501,49 @@ const KiosksPage = () => {
         </div>
       )}
 
-      {/* Lista de kioskos */}
-      <div className="kiosks-list25">
-        {kiosks.length > 0 ? (
-          kiosks.map((kiosk) => (
-            <div key={kiosk._id} className="kiosk-card25">
-              <h3 className="kiosk-title25">{kiosk.name}</h3>
-              <p className="kiosk-description25">{kiosk.description}</p>
-              <p className="kiosk-id25">Serial: {kiosk._id}</p>
-              <p className="kiosk-date25">
-                Creado: {new Date(kiosk.createdAt).toLocaleDateString()}
-              </p>
-              <div className="kiosk-status25">
-                <p>Estado: <span className={`status-${kiosk.status}25`}>{kiosk.status}</span></p>
-                <p>Conexión: {kiosk.isConnected ? "Conectado" : "Desconectado"}</p>
-                {kiosk.connected_at && (
-                  <p>Última conexión: {new Date(kiosk.connected_at).toLocaleString()}</p>
-                )}
+      {/* Sección de carga o lista de kioskos */}
+      {loading ? (
+        <div className="loading-container25">
+          <div className="loading-spinner25"></div>
+          <p>Cargando Kioskos...</p>
+        </div>
+      ) : (
+        <div className="kiosks-list25">
+          {kiosks.length > 0 ? (
+            kiosks.map((kiosk) => (
+              <div key={kiosk._id} className="kiosk-card25">
+                <h3 className="kiosk-title25">{kiosk.name}</h3>
+                <p className="kiosk-description25">{kiosk.description}</p>
+                <p className="kiosk-id25">Serial: {kiosk._id}</p>
+                <p className="kiosk-date25">
+                  Creado: {new Date(kiosk.createdAt).toLocaleDateString()}
+                </p>
+                <div className="kiosk-status25">
+                  <p>Estado: <span className={`status-${kiosk.status}25`}>{kiosk.status}</span></p>
+                  <p>Conexión: {kiosk.isConnected ? "Conectado" : "Desconectado"}</p>
+                  {kiosk.connected_at && (
+                    <p>Última conexión: {new Date(kiosk.connected_at).toLocaleString()}</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => handleEditKiosk(kiosk)}
+                  className="edit-kiosk-btn25"
+                >
+                  ✏️ Editar
+                </button>
+                <button
+                  onClick={() => handleDeleteKiosk(kiosk._id)}
+                  className="delete-kiosk-btn25"
+                >
+                  🗑 Eliminar
+                </button>
               </div>
-              <button
-                onClick={() => handleEditKiosk(kiosk)}
-                className="edit-kiosk-btn25"
-              >
-                ✏️ Editar
-              </button>
-              <button
-                onClick={() => handleDeleteKiosk(kiosk._id)}
-                className="delete-kiosk-btn25"
-              >
-                🗑 Eliminar
-              </button>
-            </div>
-          ))
-        ) : (
-          <p>No hay kioskos creados</p>
-        )}
-      </div>
+            ))
+          ) : (
+            <p>No hay kioskos creados</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

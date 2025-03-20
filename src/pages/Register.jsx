@@ -26,6 +26,121 @@ function Register() {
 
   const { name, lastName, phone, birthDate, email, password, confirmPassword } = formData;
 
+  /////////////////// VALIDACIONES ///////////////////
+  const validatePassword = (pass) => {
+    // Validar que la contraseña tenga al menos 8 caracteres, una mayúscula, una minúscula y un número
+    const hasMinLength = pass.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(pass);
+    const hasLowerCase = /[a-z]/.test(pass);
+    const hasNumber = /[0-9]/.test(pass);
+    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(pass);
+    
+    if (!hasMinLength) {
+      return "La contraseña debe tener al menos 8 caracteres.";
+    }
+    if (!hasUpperCase) {
+      return "La contraseña debe incluir al menos una letra mayúscula.";
+    }
+    if (!hasLowerCase) {
+      return "La contraseña debe incluir al menos una letra minúscula.";
+    }
+    if (!hasNumber) {
+      return "La contraseña debe incluir al menos un número.";
+    }
+    if (!hasSpecialChar) {
+      return "La contraseña debe incluir al menos un carácter especial.";
+    }
+    
+    return "";
+  };
+
+  const validateBirthDate = (date) => {
+    if (!date) {
+      return "La fecha de nacimiento es obligatoria";
+    }
+
+    const today = new Date();
+    const birthDateObj = new Date(date);
+    
+    // Verificar si la fecha es válida
+    if (isNaN(birthDateObj.getTime())) {
+      return "Fecha no válida";
+    }
+    
+    // Verificar que la fecha no sea en el futuro
+    if (birthDateObj > today) {
+      return "La fecha no puede ser en el futuro";
+    }
+    
+    // Verificar que el usuario sea mayor de edad
+    const age = today.getFullYear() - birthDateObj.getFullYear();
+    const monthDiff = today.getMonth() - birthDateObj.getMonth();
+    
+    if (age < 18 || (age === 18 && (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())))) {
+      return "Debe ser mayor de 18 años";
+    }
+    
+    // Verificar que la fecha no sea muy antigua (más de 110 años)
+    if (age > 110) {
+      return "La fecha de nacimiento no parece válida";
+    }
+    
+    return "";
+  };
+
+  const validateName = (value) => {
+    if (!value.trim()) {
+      return "Este campo es obligatorio";
+    }
+    
+    if (value.length < 2) {
+      return "Debe tener al menos 2 caracteres";
+    }
+    
+    if (value.length > 50) {
+      return "No debe exceder 50 caracteres";
+    }
+    
+    // Verificar que solo contenga letras y espacios
+    if (!/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/.test(value)) {
+      return "Solo se permiten letras y espacios";
+    }
+    
+    return "";
+  };
+
+  const validateEmail = (value) => {
+    if (!value) {
+      return "El correo electrónico es obligatorio";
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+      return "Ingrese un correo electrónico válido";
+    }
+    
+    // Verificar longitud máxima
+    if (value.length > 100) {
+      return "El correo electrónico es demasiado largo";
+    }
+    
+    return "";
+  };
+
+  const validatePhone = (value) => {
+    const phoneDigits = value.replace(/\D/g, "");
+    
+    if (!phoneDigits) {
+      return "El número de teléfono es obligatorio";
+    }
+    
+    if (phoneDigits.length !== 10) {
+      return "Ingrese un número de teléfono válido de 10 dígitos";
+    }
+    
+    return "";
+  };
+
   /////////////////// FUNCIONES AUXILIARES ///////////////////
   const formatPhoneNumber = (value) => {
     const numericValue = value.replace(/\D/g, "");
@@ -67,44 +182,43 @@ function Register() {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!name.trim()) {
-      newErrors.name = "El nombre es obligatorio";
+    // Validar nombre
+    const nameError = validateName(name);
+    if (nameError) {
+      newErrors.name = nameError;
     }
 
-    if (!lastName.trim()) {
-      newErrors.lastName = "El apellido es obligatorio";
+    // Validar apellido
+    const lastNameError = validateName(lastName);
+    if (lastNameError) {
+      newErrors.lastName = lastNameError;
     }
 
-    const phoneDigits = phone.replace(/\D/g, "");
-    if (!phoneDigits || phoneDigits.length !== 10) {
-      newErrors.phone = "Ingrese un número de teléfono válido de 10 dígitos";
+    // Validar teléfono
+    const phoneError = validatePhone(phone);
+    if (phoneError) {
+      newErrors.phone = phoneError;
     }
 
-    if (!birthDate) {
-      newErrors.birthDate = "La fecha de nacimiento es obligatoria";
-    } else {
-      const today = new Date();
-      const birthDateObj = new Date(birthDate);
-      if (isNaN(birthDateObj.getTime())) {
-        newErrors.birthDate = "Fecha no válida";
-      } else {
-        const age = today.getFullYear() - birthDateObj.getFullYear();
-        const monthDiff = today.getMonth() - birthDateObj.getMonth();
-        if (age < 18 || (age === 18 && (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())))) {
-          newErrors.birthDate = "Debe ser mayor de 18 años";
-        }
-      }
+    // Validar fecha de nacimiento
+    const birthDateError = validateBirthDate(birthDate);
+    if (birthDateError) {
+      newErrors.birthDate = birthDateError;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email || !emailRegex.test(email)) {
-      newErrors.email = "Ingrese un correo electrónico válido";
+    // Validar email
+    const emailError = validateEmail(email);
+    if (emailError) {
+      newErrors.email = emailError;
     }
 
-    if (!password || password.length < 8) {
-      newErrors.password = "La contraseña debe tener al menos 8 caracteres";
+    // Validar contraseña
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      newErrors.password = passwordError;
     }
 
+    // Validar confirmación de contraseña
     if (password !== confirmPassword) {
       newErrors.confirmPassword = "Las contraseñas no coinciden";
     }
@@ -209,6 +323,7 @@ function Register() {
                   className={errors.name ? "input-error09" : ""}
                   required
                   disabled={loading}
+                  maxLength={50}
                 />
                 {errors.name && <span className="error-text09">{errors.name}</span>}
               </div>
@@ -224,6 +339,7 @@ function Register() {
                   className={errors.lastName ? "input-error09" : ""}
                   required
                   disabled={loading}
+                  maxLength={50}
                 />
                 {errors.lastName && <span className="error-text09">{errors.lastName}</span>}
               </div>
@@ -257,6 +373,7 @@ function Register() {
                   className={errors.birthDate ? "input-error09" : ""}
                   required
                   disabled={loading}
+                  max={new Date().toISOString().split("T")[0]}
                 />
                 {errors.birthDate && <span className="error-text09">{errors.birthDate}</span>}
               </div>
@@ -272,6 +389,7 @@ function Register() {
                   className={errors.email ? "input-error09" : ""}
                   required
                   disabled={loading}
+                  maxLength={100}
                 />
                 {errors.email && <span className="error-text09">{errors.email}</span>}
               </div>
@@ -287,6 +405,7 @@ function Register() {
                   className={errors.password ? "input-error09" : ""}
                   required
                   disabled={loading}
+                  maxLength={50}
                 />
                 <span
                   className="password-toggle09"
@@ -312,6 +431,7 @@ function Register() {
                   className={errors.confirmPassword ? "input-error09" : ""}
                   required
                   disabled={loading}
+                  maxLength={50}
                 />
                 <span
                   className="password-toggle09"
@@ -325,6 +445,10 @@ function Register() {
                 </span>
                 {errors.confirmPassword && <span className="error-text09">{errors.confirmPassword}</span>}
               </div>
+
+           {/* Requisitos de la contraseña */}
+
+
 
               {/* Mensaje de error general del formulario */}
               {formError && <p className="form-error-message09">{formError}</p>}
@@ -340,7 +464,7 @@ function Register() {
             {/* Enlace para redirigir a la página de inicio de sesión */}
             <div className="auth-links09">
               <p>
-                ¿Yaa tienes cuenta?{" "}
+                ¿Ya tienes cuenta?{" "}
                 <a href="#" onClick={handleLoginRedirect} className="login-link09">
                   Inicia Sesión
                 </a>

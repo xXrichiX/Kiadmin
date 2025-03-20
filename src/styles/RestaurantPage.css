@@ -1,5 +1,6 @@
-/* RestaurantPage.css - Estilos optimizados */
+/* RestaurantPage.css - Estilos para la gestión de restaurantes con diseño vertical */
 
+/* Variables CSS se mantienen igual */
 :root {
   --color-primary: #AB0831;
   --color-primary-dark: #8A0628;
@@ -31,7 +32,7 @@
   --transition-speed: 0.3s;
 }
 
-/* Estilos base */
+/* Estilos base - sin cambios */
 .restaurant-page100 {
   padding: var(--spacing-lg);
   font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
@@ -41,7 +42,7 @@
 }
 
 .page-title100 {
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--color-text-main);
   margin-bottom: var(--spacing-md);
@@ -55,15 +56,15 @@
   align-items: center;
   justify-content: center;
   padding: var(--spacing-xl);
-  min-height: 200px;
+  min-height: 300px;
 }
 
 .loading-spinner100 {
   border: 4px solid rgba(0, 0, 0, 0.1);
   border-radius: 50%;
   border-top: 4px solid var(--color-primary);
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   animation: spin 1s linear infinite;
   margin-bottom: var(--spacing-md);
 }
@@ -103,11 +104,11 @@
   justify-content: center;
   align-items: center;
   margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
   gap: var(--spacing-md);
 }
 
-.edit-restaurant-btn100, 
-.create-restaurant-btn100 {
+.edit-restaurant-btn100, .create-restaurant-btn100 {
   background-color: var(--color-primary);
   color: var(--color-white);
   padding: var(--spacing-sm) var(--spacing-md);
@@ -118,8 +119,7 @@
   font-weight: 600;
 }
 
-.edit-restaurant-btn100:hover, 
-.create-restaurant-btn100:hover {
+.edit-restaurant-btn100:hover, .create-restaurant-btn100:hover {
   background-color: var(--color-primary-dark);
 }
 
@@ -138,7 +138,7 @@
   background-color: #c82333;
 }
 
-/* Tarjeta de restaurante */
+/* Tarjeta de restaurante - Modificada para diseño vertical */
 .restaurant-card100 {
   background-color: var(--color-white);
   border-radius: var(--border-radius-md);
@@ -146,21 +146,24 @@
   overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
   margin-bottom: var(--spacing-lg);
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
   animation: fadeIn 0.3s ease-in-out;
 }
 
 .restaurant-card100:hover {
-  transform: translateY(-3px);
+  transform: translateY(-5px);
   box-shadow: var(--shadow-md);
 }
 
 .restaurant-image-container100 {
-  height: 220px;
+  position: relative;
+  height: 250px;
   overflow: hidden;
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
 }
 
 .restaurant-image-container100 img {
@@ -170,6 +173,10 @@
   transition: transform 0.3s ease;
 }
 
+.restaurant-card100:hover .restaurant-image-container100 img {
+  transform: scale(1.05);
+}
+
 .restaurant-details100 {
   padding: var(--spacing-md);
   display: flex;
@@ -177,267 +184,39 @@
 }
 
 .restaurant-details100 h3 {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 700;
   margin: 0 0 var(--spacing-sm) 0;
   color: var(--color-primary);
+  text-align: center;
 }
 
 .detail-section100 {
   margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm);
+  background-color: var(--color-light-gray);
+  border-radius: var(--border-radius-sm);
 }
 
 .detail-section100 h4 {
   font-size: 1.1rem;
   margin-bottom: var(--spacing-xs);
-  color: var(--color-text-main);
-  border-bottom: 1px solid var(--color-light-gray);
+  color: var(--color-primary);
+  border-bottom: 1px solid var(--color-medium-gray);
   padding-bottom: var(--spacing-xs);
+  text-align: center;
 }
 
 .detail-section100 p {
   margin: var(--spacing-xs) 0;
   line-height: 1.4;
   color: var(--color-text-secondary);
-}
-
-/* Sin restaurante */
-.no-restaurant-container100 {
-  background-color: var(--color-white);
-  border-radius: var(--border-radius-md);
-  padding: var(--spacing-lg);
-  box-shadow: var(--shadow-sm);
-  text-align: center;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.no-restaurant-message100 {
-  margin-bottom: var(--spacing-lg);
-  color: var(--color-text-secondary);
-  font-size: 1.1rem;
-  line-height: 1.5;
-}
-
-/* Modal */
-.modal-overlay100 {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease-in-out;
-}
-
-.modal-content100 {
-  background-color: var(--color-white);
-  border-radius: var(--border-radius-md);
-  width: 90%;
-  max-width: 700px;
-  padding: var(--spacing-lg);
-  box-shadow: var(--shadow-lg);
-  animation: slideIn 0.3s ease-in-out;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.compact-modal100 {
-  max-width: 600px;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateY(-30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.modal-content100 h3 {
-  margin-top: 0;
-  margin-bottom: var(--spacing-md);
-  font-size: 1.4rem;
-  color: var(--color-text-main);
   text-align: center;
 }
 
-/* Tabs de navegación */
-.tabs-container100 {
-  display: flex;
-  border-bottom: 1px solid var(--color-border);
-  margin-bottom: var(--spacing-md);
-  overflow-x: auto;
-}
-
-.tab100 {
-  padding: var(--spacing-sm) var(--spacing-md);
-  cursor: pointer;
-  transition: background-color var(--transition-speed);
-  font-weight: 500;
-  white-space: nowrap;
-  color: var(--color-text-secondary);
-}
-
-.tab100:hover {
-  background-color: var(--color-light-gray);
-}
-
-.tab100.active100 {
-  border-bottom: 2px solid var(--color-primary);
-  color: var(--color-primary);
-  font-weight: 600;
-}
-
-.tab-content100 {
-  padding: var(--spacing-sm) 0 var(--spacing-lg) 0;
-}
-
-/* Formulario */
-.form-grid100 {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-md);
-}
-
-@media (min-width: 576px) {
-  .form-grid100 {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.form-group100 {
-  margin-bottom: var(--spacing-md);
-}
-
-.full-width100 {
-  grid-column: 1 / -1;
-}
-
-.form-group100 label {
-  display: block;
-  margin-bottom: var(--spacing-xs);
-  font-weight: 500;
-  color: var(--color-text-main);
-}
-
-.form-group100 input,
-.form-group100 textarea,
-.form-group100 select {
-  width: 100%;
-  padding: var(--spacing-sm);
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-sm);
-  font-size: 0.95rem;
-  color: var(--color-text-main);
-  transition: border-color var(--transition-speed);
-}
-
-.form-group100 input:focus,
-.form-group100 textarea:focus,
-.form-group100 select:focus {
-  outline: none;
-  border-color: var(--color-primary);
-}
-
-/* Mejorar la visualización de la imagen en el formulario */
-.image-preview100 {
-  margin-top: var(--spacing-md);
-  text-align: center;
-  border-radius: var(--border-radius-sm);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  max-width: 200px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.image-preview100 img {
-  width: 100%;
-  height: auto;
-  display: block;
-  border-radius: var(--border-radius-sm);
-}
-
-/* Mejorar el input de archivo para la imagen */
-.file-input-container100 {
-  position: relative;
-  margin-bottom: var(--spacing-md);
-}
-
-.file-input-label100 {
-  display: inline-block;
-  padding: var(--spacing-sm) var(--spacing-md);
-  background-color: var(--color-light-gray);
-  color: var(--color-text-main);
-  border-radius: var(--border-radius-sm);
-  cursor: pointer;
-  transition: background-color var(--transition-speed);
-  font-weight: 500;
-  text-align: center;
-}
-
-.file-input-label100:hover {
-  background-color: var(--color-medium-gray);
-}
-
-.file-input100 {
-  position: absolute;
-  left: -9999px;
-}
-
-.uploading-message100 {
-  color: var(--color-text-secondary);
-  font-style: italic;
-  margin-top: var(--spacing-xs);
-  text-align: center;
-}
-
-.modal-buttons100 {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-lg);
-}
-
-.modal-buttons100 button {
-  flex: 1;
-  padding: var(--spacing-sm) 0;
-  border: none;
-  border-radius: var(--border-radius-sm);
-  cursor: pointer;
-  transition: background-color var(--transition-speed);
-  font-weight: 600;
-}
-
-.modal-buttons100 button:first-child {
-  background-color: var(--color-primary);
-  color: var(--color-white);
-}
-
-.modal-buttons100 button:first-child:hover {
-  background-color: var(--color-primary-dark);
-}
-
-.modal-buttons100 button:last-child {
-  background-color: var(--color-light-gray);
-  color: var(--color-text-secondary);
-}
-
-.modal-buttons100 button:last-child:hover {
-  background-color: var(--color-medium-gray);
-}
-
-/* Stripe Connect Button */
+/* Stripe Connect Container - Modificado para diseño vertical */
 .stripe-connect-container100 {
+  margin-top: var(--spacing-md);
   margin-bottom: var(--spacing-lg);
   text-align: center;
   padding: var(--spacing-md);
@@ -445,10 +224,13 @@
   border-radius: var(--border-radius-md);
   border: 1px solid #e2e8f0;
   box-shadow: var(--shadow-sm);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .stripe-connect-btn100 {
-  background-color: #6772e5;
+  background-color: #6772e5; /* Color oficial de Stripe */
   color: var(--color-white);
   padding: var(--spacing-md) var(--spacing-lg);
   border: none;
@@ -490,65 +272,215 @@
   font-size: 0.9rem;
 }
 
-/* Responsive */
-@media (max-width: 991px) {
-  .restaurant-card100 {
-    grid-template-columns: 1fr 1fr;
+/* Sin restaurante */
+.no-restaurant-container100 {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.no-restaurant-message100 {
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-text-secondary);
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+/* Modal */
+.modal-overlay100 {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.modal-content100 {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-md);
+  width: 90%;
+  max-width: 500px;
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-lg);
+  animation: slideIn 0.3s ease-in-out;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.compact-modal100 {
+  max-width: 500px;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
   }
-  
-  .restaurant-image-container100 {
-    height: 180px;
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 
+.modal-content100 h3 {
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+  font-size: 1.5rem;
+  color: var(--color-text-main);
+  text-align: center;
+}
+
+/* Tabs de navegación */
+.tabs-container100 {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--spacing-md);
+  overflow-x: auto;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.tab100 {
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  transition: background-color var(--transition-speed);
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+}
+
+.tab100:hover {
+  background-color: var(--color-light-gray);
+}
+
+.tab100.active100 {
+  border-bottom: 2px solid var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.tab-content100 {
+  padding: var(--spacing-sm) 0 var(--spacing-lg) 0;
+}
+
+/* Formulario */
+.form-grid100 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);
+}
+
+.form-group100 {
+  margin-bottom: var(--spacing-md);
+}
+
+.full-width100 {
+  grid-column: 1 / -1;
+}
+
+.form-group100 label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-weight: 500;
+  color: var(--color-text-main);
+}
+
+.form-group100 input,
+.form-group100 textarea,
+.form-group100 select {
+  width: 95%;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.95rem;
+  color: var(--color-text-main);
+  transition: border-color var(--transition-speed);
+}
+
+.form-group100 input:focus,
+.form-group100 textarea:focus,
+.form-group100 select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.image-preview100 {
+  margin-top: var(--spacing-sm);
+  text-align: center;
+}
+
+.modal-buttons100 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+.modal-buttons100 button {
+  padding: var(--spacing-sm) 0;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-speed);
+  font-weight: 600;
+}
+
+.modal-buttons100 button:first-child {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.modal-buttons100 button:first-child:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.modal-buttons100 button:last-child {
+  background-color: var(--color-light-gray);
+  color: var(--color-text-secondary);
+}
+
+.modal-buttons100 button:last-child:hover {
+  background-color: var(--color-medium-gray);
+}
+
+/* Mejoras para la visualización de la imagen en el formulario */
+.image-preview100 {
+  margin-top: var(--spacing-md);
+  text-align: center;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  max-width: 200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.image-preview100 img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--border-radius-sm);
+}
+
+/* Responsive para dispositivos móviles */
 @media (max-width: 768px) {
   .restaurant-page100 {
     padding: var(--spacing-md);
   }
   
-  .restaurant-card100 {
-    grid-template-columns: 1fr;
-  }
-  
-  .restaurant-image-container100 {
-    height: 200px;
-    max-height: 25vh;
-    margin: var(--spacing-md);
-    margin-bottom: 0;
-  }
-  
-  .toolbar100 {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .stripe-connect-container100 {
-    padding: var(--spacing-sm);
-  }
-  
-  .stripe-connect-btn100 {
-    width: 100%;
-    padding: var(--spacing-sm) var(--spacing-md);
-  }
-  
-  .modal-buttons100 {
-    flex-direction: column;
-  }
-  
-  .tabs-container100 {
-    flex-wrap: wrap;
-  }
-  
-  .modal-content100 {
-    width: 95%;
-    max-height: 80vh;
-    padding: var(--spacing-md);
-  }
-}
-
-@media (max-width: 576px) {
   .page-title100 {
-    font-size: 1.3rem;
+    font-size: 1.5rem;
   }
   
   .detail-section100 h4 {
@@ -556,18 +488,6 @@
   }
   
   .modal-content100 h3 {
-    font-size: 1.2rem;
-  }
-  
-  .restaurant-image-container100 {
-    height: 150px;
-  }
-  
-  .restaurant-details100 {
-    padding: var(--spacing-sm);
-  }
-  
-  .restaurant-details100 h3 {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
   }
 }

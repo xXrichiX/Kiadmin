@@ -30,10 +30,6 @@ const RestaurantManagement = () => {
     country: "",
     city: "",
     postalCode: "",
-    coordinates: {
-      lat: 20.967370,
-      lng: -89.592580
-    },
     
     // Dirección
     street: "",
@@ -58,39 +54,8 @@ const RestaurantManagement = () => {
     return token;
   };
 
-  const refreshToken = async () => {
-    try {
-      const refreshToken = Cookies.get("refreshToken");
-      if (!refreshToken) {
-        navigate("/login");
-        return null;
-      }
-      
-      const response = await fetch(`${API_URL}/api/auth/refresh`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ refreshToken }),
-      });
-      
-      if (!response.ok) {
-        throw new Error("Error al refrescar el token");
-      }
-      
-      const data = await response.json();
-      Cookies.set("authToken", data.token, { expires: 7 });
-      return data.token;
-    } catch (err) {
-      Cookies.remove("authToken");
-      Cookies.remove("refreshToken");
-      navigate("/login");
-      return null;
-    }
-  };
-
   const fetchAPI = async (endpoint, method = "GET", body = null) => {
-    let token = checkToken();
+    const token = checkToken();
     if (!token) return null;
 
     try {
@@ -103,16 +68,7 @@ const RestaurantManagement = () => {
         ...(body && { body: JSON.stringify(body) }),
       };
 
-      let response = await fetch(`${API_URL}${endpoint}`, options);
-
-      // Si el token ha expirado, intentar refrescarlo y reintentar
-      if (response.status === 401) {
-        token = await refreshToken();
-        if (!token) return null;
-        
-        options.headers.Authorization = `Bearer ${token}`;
-        response = await fetch(`${API_URL}${endpoint}`, options);
-      }
+      const response = await fetch(`${API_URL}${endpoint}`, options);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({
@@ -128,53 +84,147 @@ const RestaurantManagement = () => {
   };
 
   /////////////////// OBTENER DATOS DEL RESTAURANTE ///////////////////
-  const fetchRestaurantData = async () => {
-    try {
-      setLoading(true);
-      const data = await fetchAPI("/api/restaurants/myRestaurant");
-      
-      if (data && data.code === "RESTAURANT_REQUIRED") {
-        setHasRestaurant(false);
-      } else if (data) {
-        const simplifiedData = {
-          id: data._id,
-          name: data.name,
-          image: data.image,
-          country: data.location?.country || "",
-          city: data.location?.city || "",
-          street: data.location?.address?.street || "",
-          number: data.location?.address?.number || "",
-          crossStreets: data.location?.address?.crossStreets || "",
-          colony: data.location?.address?.colony || "",
-          references: data.location?.address?.references || "",
-          postalCode: data.location?.postalCode || "",
-          coordinates: data.location?.coordinates || { lat: 20.967370, lng: -89.592580 },
-          phone: data.contact?.phone || "",
-          email: data.contact?.email || "",
-          website: data.contact?.website || ""
-        };
-        setRestaurant(simplifiedData);
-        setHasRestaurant(true);
-      }
-    } catch (err) {
-      setError(`Error al obtener datos del restaurante: ${err.message}`);
-      setHasRestaurant(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchRestaurantData = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchAPI("/api/restaurants/myRestaurant");
+        
+        if (data.code === "RESTAURANT_REQUIRED") {
+          setHasRestaurant(false);
+        } else {
+          const simplifiedData = {
+            id: data._id,
+            name: data.name,
+            image: data.image,
+            country: data.location.country,
+            city: data.location.city,
+            street: data.location.address.street,
+            number: data.location.address.number,
+            crossStreets: data.location.address.crossStreets,
+            colony: data.location.address.colony,
+            references: data.location.address.references,
+            postalCode: data.location.postalCode,
+            phone: data.contact?.phone || "",
+            email: data.contact?.email || "",
+            website: data.contact?.website || ""
+          };
+          setRestaurant(simplifiedData);
+          setHasRestaurant(true);
+        }
+      } catch (err) {
+        setError(`Error al obtener datos del restaurante: ${err.message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchRestaurantData();
   }, []);
+
+  /////////////////// VALIDACIONES DE FORMULARIO ///////////////////
+  const validateField = (name, value) => {
+    // Valores máximos permitidos
+    const maxLengths = {
+      name: 50,
+      street: 100,
+      number: 10,
+      crossStreets: 100,
+      colony: 50,
+      references: 200,
+      postalCode: 5,  // Modificado a 5 exactamente
+      phone: 10,      // Modificado a 10 exactamente
+      email: 100,
+      website: 100
+    };
+
+    // Patrones de validación
+    const patterns = {
+      name: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s&'".,-]{3,}$/,
+      postalCode: /^\d{5}$/,  // Exactamente 5 dígitos
+      phone: /^\d{10}$/,      // Exactamente 10 dígitos
+      email: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      website: /^(https?:\/\/)?(www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/[^\s]*)?$/
+    };
+
+    // Validar longitud máxima
+    if (maxLengths[name] && value.length > maxLengths[name]) {
+      return `El campo no puede tener más de ${maxLengths[name]} caracteres`;
+    }
+
+    // Validaciones específicas por campo
+    switch (name) {
+      case 'name':
+        if (!patterns.name.test(value)) {
+          return "El nombre debe contener al menos 3 caracteres y solo puede incluir letras, espacios y algunos símbolos (&'\".,-)";
+        }
+        break;
+      case 'postalCode':
+        if (value && !patterns.postalCode.test(value)) {
+          return "El código postal debe contener exactamente 5 dígitos";
+        }
+        break;
+      case 'phone':
+        if (value && !patterns.phone.test(value)) {
+          return "El teléfono debe contener exactamente 10 dígitos";
+        }
+        break;
+      case 'email':
+        if (value && !patterns.email.test(value)) {
+          return "El correo electrónico debe tener un formato válido";
+        }
+        break;
+      case 'website':
+        if (value && !patterns.website.test(value)) {
+          return "La URL del sitio web debe tener un formato válido";
+        }
+        break;
+    }
+
+    return null;
+  };
 
   /////////////////// MANEJAR CAMBIOS EN INPUTS ///////////////////
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // Para teléfono y código postal, permitir solo dígitos y aplicar restricción de longitud
+    let processedValue = value;
+    if (name === 'phone' || name === 'postalCode') {
+      // Eliminar caracteres no numéricos
+      processedValue = value.replace(/\D/g, '');
+      
+      // Limitar longitud
+      if (name === 'phone' && processedValue.length > 10) {
+        processedValue = processedValue.slice(0, 10);
+      } else if (name === 'postalCode' && processedValue.length > 5) {
+        processedValue = processedValue.slice(0, 5);
+      }
+    }
+    
+    // Validar el campo
+    const validationError = validateField(name, processedValue);
+    
+    if (validationError) {
+      setError(validationError);
+      // Actualizar el estado incluso si hay error de validación para que el usuario pueda seguir escribiendo
+      setFormData(prev => ({
+        ...prev,
+        [name]: processedValue
+      }));
+      return;
+    }
+    
+    // Si pasa la validación, actualizar el estado y limpiar errores
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: processedValue
     }));
+    
+    // Solo limpiar el error si fue causado por este campo
+    if (error.includes(name) || error.includes(name.charAt(0).toUpperCase() + name.slice(1))) {
+      setError("");
+    }
   };
 
   /////////////////// SUBIR IMAGEN A CLOUDINARY ///////////////////
@@ -200,6 +250,7 @@ const RestaurantManagement = () => {
       
       const data = await response.json();
       
+      // Actualizar el formData con la URL de la imagen
       setFormData(prevData => ({
         ...prevData,
         image: data.secure_url
@@ -231,7 +282,6 @@ const RestaurantManagement = () => {
         colony: restaurant.colony || "",
         references: restaurant.references || "",
         postalCode: restaurant.postalCode || "",
-        coordinates: restaurant.coordinates || { lat: 20.967370, lng: -89.592580 },
         phone: restaurant.phone || "",
         email: restaurant.email || "",
         website: restaurant.website || ""
@@ -249,7 +299,6 @@ const RestaurantManagement = () => {
         colony: "",
         references: "",
         postalCode: "",
-        coordinates: { lat: 20.967370, lng: -89.592580 },
         phone: "",
         email: "",
         website: ""
@@ -280,10 +329,30 @@ const RestaurantManagement = () => {
       { field: 'references', message: 'Las referencias son obligatorias' }
     ];
 
+    // Verificar campos obligatorios
     for (const { field, message } of requiredFields) {
       if (!formData[field] || (typeof formData[field] === 'string' && !formData[field].trim())) {
         setError(message);
         return false;
+      }
+      
+      // Validar el contenido del campo
+      const validationError = validateField(field, formData[field]);
+      if (validationError) {
+        setError(validationError);
+        return false;
+      }
+    }
+
+    // Validar campos opcionales que tienen contenido
+    const optionalFields = ['phone', 'email', 'website'];
+    for (const field of optionalFields) {
+      if (formData[field] && formData[field].trim()) {
+        const validationError = validateField(field, formData[field]);
+        if (validationError) {
+          setError(validationError);
+          return false;
+        }
       }
     }
 
@@ -310,8 +379,7 @@ const RestaurantManagement = () => {
             colony: formData.colony,
             references: formData.references
           },
-          postalCode: formData.postalCode,
-          coordinates: formData.coordinates
+          postalCode: formData.postalCode
         }
       };
 
@@ -327,14 +395,25 @@ const RestaurantManagement = () => {
       const method = isEditing ? "PUT" : "POST";
       const data = await fetchAPI("/api/restaurants/myRestaurant", method, requestBody);
       
-      // Si es una creación, se recibe el token actualizado
-      if (!isEditing && data.token) {
-        Cookies.set("authToken", data.token, { expires: 7 });
-      }
+      const simplifiedData = {
+        id: data._id,
+        name: data.name,
+        image: data.image,
+        country: data.location.country,
+        city: data.location.city,
+        street: data.location.address.street,
+        number: data.location.address.number,
+        crossStreets: data.location.address.crossStreets,
+        colony: data.location.address.colony,
+        references: data.location.address.references,
+        postalCode: data.location.postalCode,
+        phone: data.contact?.phone || "",
+        email: data.contact?.email || "",
+        website: data.contact?.website || ""
+      };
       
-      // Actualizar todos los estados relevantes
-      await fetchRestaurantData();
-      
+      setRestaurant(simplifiedData);
+      setHasRestaurant(true);
       setIsModalOpen(false);
       setSuccessMessage(isEditing ? "Restaurante actualizado correctamente" : "Restaurante creado correctamente");
       
@@ -345,31 +424,31 @@ const RestaurantManagement = () => {
     }
   };
 
-  /////////////////// ELIMINAR RESTAURANTE ///////////////////
-  const deleteRestaurant = async () => {
-    if (!window.confirm('¿Estás seguro de eliminar este restaurante? Esta acción no se puede deshacer.')) return;
-    
-    try {
-      await fetchAPI(`/api/intern/restaurants/${restaurant.id}`, "DELETE");
-      
-      setSuccessMessage("Restaurante eliminado correctamente");
-      setHasRestaurant(false);
-      setRestaurant(null);
-      
-      // Limpiar mensaje después de un tiempo
-      setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (err) {
-      setError(`Error al eliminar restaurante: ${err.message}`);
-    }
-  };
-
   /////////////////// CONECTAR CON STRIPE ///////////////////
   const handleStripeConnect = async () => {
     try {
-      const data = await fetchAPI("/api/restaurants/connectStripe");
+      const token = checkToken();
+      if (!token) return;
       
-      if (data && data.url) {
-        localStorage.setItem("stripeConnectInProgress", "true");
+      const response = await fetch(`${API_URL}/api/restaurants/connectStripe`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({
+          message: `Error del servidor: ${response.status}`,
+        }));
+        throw new Error(errorData.message || `Error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Redirect to Stripe Connect URL
+      if (data.url) {
         window.location.href = data.url;
       } else {
         throw new Error('No se recibió URL de Stripe');
@@ -378,21 +457,6 @@ const RestaurantManagement = () => {
       setError(`Error al conectar con Stripe: ${err.message}`);
     }
   };
-
-  // Verificar si venimos de un proceso de conexión Stripe
-  useEffect(() => {
-    const stripeConnectInProgress = localStorage.getItem("stripeConnectInProgress");
-    if (stripeConnectInProgress === "true") {
-      localStorage.removeItem("stripeConnectInProgress");
-      
-      if (window.location.search.includes("success=true")) {
-        setSuccessMessage("Conexión con Stripe realizada correctamente");
-        setTimeout(() => setSuccessMessage(""), 3000);
-      }
-      
-      fetchRestaurantData();
-    }
-  }, []);
 
   /////////////////// RENDERIZADO DE FORMULARIO POR PESTAÑAS ///////////////////
   const renderFormContent = () => {
@@ -415,23 +479,18 @@ const RestaurantManagement = () => {
               
               <div className="form-group100 full-width100">
                 <label>Imagen del Restaurante:</label>
-                <div className="file-input-container100">
-                  <label className="file-input-label100">
-                    Seleccionar imagen
-                    <input
-                      type="file"
-                      onChange={handleImageUpload}
-                      accept="image/*"
-                      className="file-input100"
-                    />
-                  </label>
-                </div>
-                {imageUploading && <p className="uploading-message100">Subiendo imagen...</p>}
+                <input
+                  type="file"
+                  onChange={handleImageUpload}
+                  accept="image/*"
+                />
+                {imageUploading && <p>Subiendo imagen...</p>}
                 {formData.image && (
                   <div className="image-preview100">
                     <img 
                       src={formData.image} 
                       alt="Vista previa" 
+                      style={{ maxWidth: '200px', maxHeight: '200px' }} 
                     />
                   </div>
                 )}
@@ -472,11 +531,14 @@ const RestaurantManagement = () => {
                 <input
                   type="text"
                   name="postalCode"
-                  placeholder="Código Postal"
+                  placeholder="Código Postal (5 dígitos)"
                   value={formData.postalCode}
                   onChange={handleInputChange}
+                  maxLength="5"
+                  pattern="\d{5}"
                   required
                 />
+                <small>Debe contener exactamente 5 dígitos</small>
               </div>
             </div>
           </div>
@@ -556,10 +618,13 @@ const RestaurantManagement = () => {
                 <input
                   type="tel"
                   name="phone"
-                  placeholder="Teléfono de contacto"
+                  placeholder="Teléfono de contacto (10 dígitos)"
                   value={formData.phone}
                   onChange={handleInputChange}
+                  maxLength="10"
+                  pattern="\d{10}"
                 />
+                <small>Debe contener exactamente 10 dígitos</small>
               </div>
               
               <div className="form-group100">
@@ -618,7 +683,7 @@ const RestaurantManagement = () => {
                 >
                   Editar Restaurante
                 </button>
-                {/* Botón de eliminar comentado por seguridad
+                {/* Botón de eliminar comentado como en el original
                 <button
                   onClick={deleteRestaurant}
                   className="delete-restaurant-btn100"
@@ -636,7 +701,7 @@ const RestaurantManagement = () => {
                 >
                   Conectar con Stripe
                 </button>
-                <p className="stripe-info100">Conecta tu restaurante con Stripe para recibir pagos en línea de forma segura y rápida.</p>
+                <p className="stripe-info100">Conecta tu restaurante con Stripe para recibir pagos en línea.</p>
               </div>
 
               <div className="restaurant-card100">
