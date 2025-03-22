@@ -376,7 +376,7 @@
   margin-bottom: 20px;
 }
 
-/* Contenedor para alinear el input y el ícono */
+/* Estilos para el contenedor del input de contraseña */
 .password-input-wrapper09 {
   position: relative;
   display: flex;
@@ -389,17 +389,7 @@
   padding-right: 40px; /* Espacio para el ícono */
 }
 
-/* Posicionamiento del ícono */
-.password-input-wrapper {
-  position: relative;
-  width: 100%; /* O el ancho que necesites */
-}
-
-.password-input {
-  width: 100%;
-  padding-right: 30px; /* Espacio para el icono de la contraseña */
-}
-
+/* Posicionamiento fijo para el ícono de la contraseña */
 .password-toggle09 {
   position: absolute;
   right: 10px;
@@ -410,8 +400,11 @@
   align-items: center;
   justify-content: center;
   z-index: 2;
+  width: 20px;
+  height: 20px;
 }
 
+/* Estilo para el ícono */
 .password-icon09 {
   width: 20px;
   height: 20px;
@@ -422,6 +415,29 @@
 
 .password-icon09:hover {
   opacity: 1;
+}
+
+/* Asegurar que el mensaje de error no afecte la posición del ícono */
+.input-group09 {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+/* El mensaje de error se muestra debajo sin afectar la posición del input */
+.error-text09 {
+  color: #AB0831;
+  font-size: 0.8rem;
+  margin-top: 5px;
+  display: block;
+  position: absolute;
+  width: 100%;
+  top: 100%;
+  left: 0;
+}
+
+/* Ajuste cuando hay error para mantener el espacio para el mensaje */
+.input-group09.has-error {
+  margin-bottom: 42px; /* Espacio adicional para el mensaje de error */
 }
 
 

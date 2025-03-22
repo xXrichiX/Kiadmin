@@ -19,6 +19,11 @@ const KiosksPage = () => {
   const [passwordError, setPasswordError] = useState("");
   const [nameError, setNameError] = useState("");
   const [descriptionError, setDescriptionError] = useState("");
+  // Nuevos estados para el diálogo de confirmación de eliminación
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [kioskToDelete, setKioskToDelete] = useState(null);
+  // Nuevo estado para ordenamiento
+  const [sortOrder, setSortOrder] = useState("default");
 
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
@@ -129,6 +134,32 @@ const KiosksPage = () => {
 
     fetchKiosks();
   }, [API_URL, navigate]);
+
+  /////////////////// ORDENAR KIOSKOS ///////////////////
+  const sortKiosks = (order) => {
+    let sortedKiosks = [...kiosks];
+    switch (order) {
+      case "alphabetical":
+        sortedKiosks.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "newest":
+        sortedKiosks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        break;
+      case "oldest":
+        sortedKiosks.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        break;
+      case "status":
+        sortedKiosks.sort((a, b) => a.status.localeCompare(b.status));
+        break;
+      case "connection":
+        // Ordenar por estado de conexión (conectados primero)
+        sortedKiosks.sort((a, b) => (b.isConnected ? 1 : 0) - (a.isConnected ? 1 : 0));
+        break;
+      default:
+        break;
+    }
+    return sortedKiosks;
+  };
 
   /////////////////// CREAR UN KIOSKO ///////////////////
   const createKiosk = async () => {
@@ -256,17 +287,36 @@ const KiosksPage = () => {
     }
   };
 
+  /////////////////// CONFIRMAR ELIMINACIÓN DE UN KIOSKO ///////////////////
+  // Función para mostrar la confirmación de eliminación
+  const confirmDeleteKiosk = (kiosk) => {
+    setKioskToDelete(kiosk);
+    setShowDeleteConfirmation(true);
+  };
+
+  // Función para cancelar la eliminación
+  const cancelDelete = () => {
+    setKioskToDelete(null);
+    setShowDeleteConfirmation(false);
+  };
+
   /////////////////// ELIMINAR UN KIOSKO ///////////////////
-  const handleDeleteKiosk = async (kioskId) => {
+  const handleDeleteKiosk = async () => {
+    if (!kioskToDelete) return;
+    
     try {
       // Actualización: usar el nuevo endpoint para eliminar un kiosko
-      await fetchAPI(`/api/kiosks/myKiosk/${kioskId}`, "DELETE");
+      await fetchAPI(`/api/kiosks/myKiosk/${kioskToDelete._id}`, "DELETE");
 
       // Actualizar el estado local después de eliminar
-      setKiosks((prev) => prev.filter((kiosk) => kiosk._id !== kioskId));
+      setKiosks((prev) => prev.filter((kiosk) => kiosk._id !== kioskToDelete._id));
       setError(""); // Limpiar errores
+      
+      // Cerrar el diálogo de confirmación
+      cancelDelete();
     } catch (err) {
       setError(`Error al eliminar el kiosko: ${err.message}`);
+      cancelDelete();
     }
   };
 
@@ -346,6 +396,9 @@ const KiosksPage = () => {
     setPasswordError("");
   };
 
+  // Obtener los kioskos ordenados según el criterio seleccionado
+  const sortedKiosks = sortKiosks(sortOrder);
+
   /////////////////// RENDERIZADO ///////////////////
 
   return (
@@ -353,10 +406,24 @@ const KiosksPage = () => {
       <h2 className="page-title25">Gestión de Kioskos</h2>
       {error && <p className="error-message25">{error}</p>}
       
-      {/* Botón para crear un nuevo kiosko */}
-      <button onClick={openCreateModal} className="create-kiosk-btn25">
-        Crear Nuevo Kiosko
-      </button>
+      {/* Barra de herramientas con filtros y botón de creación */}
+      <div className="toolbar25">
+        {/* Botón para crear un nuevo kiosko */}
+        <button onClick={openCreateModal} className="create-kiosk-btn25">
+          Crear Nuevo Kiosko
+        </button>
+
+        {/* Selector para ordenar kioskos */}
+        <div className="sort-filter25">
+          <label>Ordenar por:</label>
+          <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+            <option value="default">Predeterminado</option>
+            <option value="alphabetical">Orden alfabético</option>
+            <option value="newest">Más recientes primero</option>
+            <option value="oldest">Más antiguos primero</option>
+          </select>
+        </div>
+      </div>
 
       {/* Modal de Creación */}
       {isCreating && (
@@ -501,6 +568,32 @@ const KiosksPage = () => {
         </div>
       )}
 
+      {/* Modal de Confirmación de Eliminación */}
+      {showDeleteConfirmation && kioskToDelete && (
+        <div className="modal-overlay25">
+          <div className="modal-content25 delete-confirmation-modal25">
+            <h3>Confirmar Eliminación</h3>
+            <p>¿Está seguro que desea eliminar el kiosko "{kioskToDelete.name}"?</p>
+            <p className="warning-text25">Esta acción no se puede deshacer.</p>
+            
+            <div className="modal-buttons25">
+              <button 
+                onClick={handleDeleteKiosk} 
+                className="delete-confirm-btn25"
+              >
+                Sí, Eliminar
+              </button>
+              <button
+                onClick={cancelDelete}
+                className="cancel-btn25"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Sección de carga o lista de kioskos */}
       {loading ? (
         <div className="loading-container25">
@@ -509,8 +602,8 @@ const KiosksPage = () => {
         </div>
       ) : (
         <div className="kiosks-list25">
-          {kiosks.length > 0 ? (
-            kiosks.map((kiosk) => (
+          {sortedKiosks.length > 0 ? (
+            sortedKiosks.map((kiosk) => (
               <div key={kiosk._id} className="kiosk-card25">
                 <h3 className="kiosk-title25">{kiosk.name}</h3>
                 <p className="kiosk-description25">{kiosk.description}</p>
@@ -532,7 +625,7 @@ const KiosksPage = () => {
                   ✏️ Editar
                 </button>
                 <button
-                  onClick={() => handleDeleteKiosk(kiosk._id)}
+                  onClick={() => confirmDeleteKiosk(kiosk)}
                   className="delete-kiosk-btn25"
                 >
                   🗑 Eliminar
