@@ -22,6 +22,10 @@ function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  // Nuevos estados para controlar el foco de los campos de contraseña
+  const [passwordFocused, setPasswordFocused] = useState(false);
+  const [confirmPasswordFocused, setConfirmPasswordFocused] = useState(false);
+  
   const navigate = useNavigate();
 
   const { name, lastName, phone, birthDate, email, password, confirmPassword } = formData;
@@ -153,6 +157,11 @@ function Register() {
     } else {
       return `(${truncatedValue.slice(0, 3)}) ${truncatedValue.slice(3, 6)}-${truncatedValue.slice(6)}`;
     }
+  };
+
+  // Función para determinar si un campo tiene error
+  const hasError = (fieldName) => {
+    return errors[fieldName] ? true : false;
   };
 
   /////////////////// MANEJADORES DE EVENTOS ///////////////////
@@ -313,7 +322,7 @@ function Register() {
             <h2 className="form-title09">Registro</h2>
             <form onSubmit={handleSubmit} noValidate>
               {/* Campo de nombre */}
-              <div className="input-group09">
+              <div className={`input-group09 ${hasError('name') ? 'has-error' : ''}`}>
                 <input
                   type="text"
                   name="name"
@@ -329,7 +338,7 @@ function Register() {
               </div>
 
               {/* Campo de apellido */}
-              <div className="input-group09">
+              <div className={`input-group09 ${hasError('lastName') ? 'has-error' : ''}`}>
                 <input
                   type="text"
                   name="lastName"
@@ -345,7 +354,7 @@ function Register() {
               </div>
 
               {/* Campo de teléfono */}
-              <div className="input-group09">
+              <div className={`input-group09 ${hasError('phone') ? 'has-error' : ''}`}>
                 <input
                   type="tel"
                   name="phone"
@@ -360,7 +369,7 @@ function Register() {
               </div>
 
               {/* Campo de fecha de nacimiento */}
-              <div className="input-group09">
+              <div className={`input-group09 ${hasError('birthDate') ? 'has-error' : ''}`}>
                 <label htmlFor="birthDate" className="date-label09">
                   Fecha de Nacimiento
                 </label>
@@ -379,7 +388,7 @@ function Register() {
               </div>
 
               {/* Campo de correo electrónico */}
-              <div className="input-group09">
+              <div className={`input-group09 ${hasError('email') ? 'has-error' : ''}`}>
                 <input
                   type="email"
                   name="email"
@@ -394,8 +403,8 @@ function Register() {
                 {errors.email && <span className="error-text09">{errors.email}</span>}
               </div>
 
-              {/* Campo de contraseña */}
-              <div className="input-group09">
+              {/* Campo de contraseña - MODIFICADO */}
+              <div className={`input-group09 ${hasError('password') ? 'has-error' : ''}`}>
                 <div className="password-input-wrapper09">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -403,6 +412,8 @@ function Register() {
                     placeholder="Contraseña (mínimo 8 caracteres)"
                     value={password}
                     onChange={handleChange}
+                    onFocus={() => setPasswordFocused(true)}
+                    onBlur={() => setPasswordFocused(false)}
                     className={errors.password ? "input-error09" : ""}
                     required
                     disabled={loading}
@@ -422,8 +433,8 @@ function Register() {
                 {errors.password && <span className="error-text09">{errors.password}</span>}
               </div>
 
-              {/* Campo de confirmación de contraseña */}
-              <div className="input-group09">
+              {/* Campo de confirmación de contraseña - MODIFICADO */}
+              <div className={`input-group09 ${hasError('confirmPassword') ? 'has-error' : ''}`}>
                 <div className="password-input-wrapper09">
                   <input
                     type={showConfirmPassword ? "text" : "password"}
@@ -431,6 +442,8 @@ function Register() {
                     placeholder="Confirmar Contraseña"
                     value={confirmPassword}
                     onChange={handleChange}
+                    onFocus={() => setConfirmPasswordFocused(true)}
+                    onBlur={() => setConfirmPasswordFocused(false)}
                     className={errors.confirmPassword ? "input-error09" : ""}
                     required
                     disabled={loading}
