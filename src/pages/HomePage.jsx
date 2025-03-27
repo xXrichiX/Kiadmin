@@ -153,12 +153,11 @@ const HomePage = () => {
           {activeSection === "dashboard" && <Dashboard />}
           {activeSection === "categories" && <CategoriesPage />}
           {activeSection === "kiosks" && <KiosksPage />}
-          {activeSection === "products" && <ProductsPage />}
           {activeSection === "restaurant" && <RestaurantManagement />}
+          {activeSection === "products" && <ProductsPage />}
           {activeSection === "orders" && <OrdersPage />}
-          {activeSection === "coupons" && <CouponsPage />}
+          {activeSection === "coupons" && <CouponsPage />}      
           {activeSection === "profile" && <Profile />}
-      
         </div>
       </div>
     </div>
