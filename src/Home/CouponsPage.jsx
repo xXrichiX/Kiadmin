@@ -11,6 +11,7 @@ const CouponsPage = () => {
   const [editingCouponId, setEditingCouponId] = useState(null);
   const [bulkCreateCount, setBulkCreateCount] = useState(1);
   const [formData, setFormData] = useState({
+    code: "",
     validity: "",
     type: "percentage", 
     discount: "",
@@ -80,6 +81,11 @@ const CouponsPage = () => {
   const validateCoupon = () => {
     setError("");
 
+    if (!formData.code) {
+      setError("El código de cupón es obligatorio");
+      return false;
+    }
+
     if (!formData.validity) {
       setError("La fecha de expiración es obligatoria");
       return false;
@@ -121,6 +127,7 @@ const CouponsPage = () => {
       // Reset form
       setIsCreating(false);
       setFormData({
+        code: "",
         validity: "",
         type: "percentage",
         discount: "",
@@ -139,6 +146,7 @@ const CouponsPage = () => {
   const editCoupon = (coupon) => {
     setEditingCouponId(coupon._id);
     setFormData({
+      code: coupon.code,
       validity: coupon.validity.split('T')[0],
       type: coupon.type,
       discount: coupon.discount.toString(),
@@ -166,6 +174,7 @@ const CouponsPage = () => {
       setIsEditing(false);
       setEditingCouponId(null);
       setFormData({
+        code: "",
         validity: "",
         type: "percentage",
         discount: "",
@@ -195,6 +204,7 @@ const CouponsPage = () => {
     setIsEditing(false);
     setEditingCouponId(null);
     setFormData({
+      code: "",
       validity: "",
       type: "percentage",
       discount: "",
@@ -227,6 +237,7 @@ const CouponsPage = () => {
                 setIsEditing(false);
                 setEditingCouponId(null);
                 setFormData({
+                  code: "",
                   validity: "",
                   type: "percentage",
                   discount: "",
@@ -246,6 +257,20 @@ const CouponsPage = () => {
                 <h3>{isEditing ? "Editar Cupón" : "Crear Nuevo Cupón"}</h3>
                 
                 <div className="form-grid">
+                  <div className="form-group">
+                    <label>Código de Cupón</label>
+                    <input
+                      type="text"
+                      value={formData.code}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev, 
+                        code: e.target.value.toUpperCase()
+                      }))}
+                      placeholder="Código único del cupón"
+                      maxLength="10"
+                    />
+                  </div>
+
                   <div className="form-group">
                     <label>Fecha de Expiración</label>
                     <input
@@ -336,6 +361,10 @@ const CouponsPage = () => {
                 <div key={coupon._id} className="coupon-card">
                   <div className="coupon-details">
                     <div className="coupon-code">
+                      <strong>Código:</strong> {coupon.code}
+                    </div>
+                    
+                    <div className="coupon-value">
                       {coupon.type === 'percentage' 
                         ? `${coupon.discount}% Descuento` 
                         : `$${coupon.discount} Descuento`}

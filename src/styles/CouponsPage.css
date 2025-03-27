@@ -112,7 +112,7 @@
   background-color: var(--color-primary-dark);
 }
 
-/* Modal */
+/* Modal Adjustments */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -130,11 +130,13 @@
 .modal-content {
   background-color: var(--color-white);
   border-radius: var(--border-radius-md);
-  width: 90%;
-  max-width: 500px;
-  padding: var(--spacing-lg);
+  width: 95%;
+  max-width: 400px; /* Reduced max-width */
+  padding: var(--spacing-md); /* Reduced padding */
   box-shadow: var(--shadow-lg);
   animation: slideIn 0.3s ease-in-out;
+  max-height: 90vh; /* Added max-height */
+  overflow-y: auto; /* Added scrolling if content is too long */
 }
 
 @keyframes slideIn {
@@ -150,8 +152,8 @@
 
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-md);
+  grid-template-columns: 1fr;
+  gap: var(--spacing-sm); /* Reduced gap */
 }
 
 .form-group {
@@ -160,12 +162,13 @@
 }
 
 .form-group.full-width {
-  grid-column: span 2;
+  grid-column: span 1;
 }
 
 .form-group label {
   margin-bottom: var(--spacing-xs);
   font-weight: 500;
+  font-size: 0.9rem; /* Slightly smaller label text */
 }
 
 .form-group input,
@@ -173,20 +176,22 @@
   padding: var(--spacing-sm);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-sm);
+  font-size: 0.9rem; /* Slightly smaller input text */
 }
 
 .modal-buttons {
   display: flex;
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-lg);
+  gap: var(--spacing-sm); /* Reduced gap */
+  margin-top: var(--spacing-md); /* Reduced margin */
 }
 
 .modal-buttons button {
   flex: 1;
-  padding: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm); /* Reduced padding */
   border: none;
   border-radius: var(--border-radius-sm);
   cursor: pointer;
+  font-size: 0.9rem; /* Smaller button text */
 }
 
 .modal-buttons button:first-child {
@@ -294,15 +299,109 @@
     grid-template-columns: 1fr;
   }
 
-  .form-group.full-width {
-    grid-column: span 1;
-  }
-
   .modal-buttons {
     flex-direction: column;
   }
 
   .coupons-grid {
     grid-template-columns: 1fr;
+  }
+/* Modal and Responsive Adjustments */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: var(--spacing-sm);
+  box-sizing: border-box;
+}
+
+.modal-content {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-md);
+  width: 100%;
+  max-width: 380px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-lg);
+  box-sizing: border-box;
+  position: relative;
+  margin: auto;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-sm);
+}
+
+.form-group {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+.modal-buttons button {
+  width: 100%;
+  padding: var(--spacing-sm);
+  box-sizing: border-box;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: var(--spacing-xs);
+  }
+
+  .modal-content {
+    width: calc(100% - var(--spacing-sm) * 2);
+    margin: 0 auto;
+    max-width: 100%;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+  }
+}
+
+/* Ensure full responsiveness for other elements */
+* {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+}
+
+/* Additional Mobile Specific Styles */
+@media (max-width: 480px) {
+  .modal-content {
+    width: 95%;
+    margin: 0 var(--spacing-sm);
+  }
+
+  .modal-buttons {
+    flex-direction: column;
+    gap: var(--spacing-xs);
   }
 }

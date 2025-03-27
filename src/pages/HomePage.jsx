@@ -105,6 +105,12 @@ const HomePage = () => {
             Kioskos
           </li>
           <li
+            className={activeSection === "coupons" ? "active" : ""}
+            onClick={() => changeSection("coupons")}
+          >
+            Cupones
+          </li>
+          <li
             className={activeSection === "categories" ? "active" : ""}
             onClick={() => changeSection("categories")}
           >
@@ -121,12 +127,6 @@ const HomePage = () => {
             onClick={() => changeSection("orders")}
           >
             Órdenes
-          </li>
-          <li
-            className={activeSection === "coupons" ? "active" : ""}
-            onClick={() => changeSection("coupons")}
-          >
-            Cupones
           </li>
         </ul>
       </div>

@@ -225,12 +225,13 @@
   background-color: var(--color-white);
   border-radius: var(--border-radius-md);
   width: 90%;
-  max-width: 500px;
-  max-height: 90vh;
+  max-width: 400px; /* Reducido de 500px */
+  max-height: 80vh; /* Altura reducida */
   overflow-y: auto;
   box-shadow: var(--shadow-lg);
   animation: slideIn 0.3s ease-in-out;
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md); /* Padding reducido */
+  margin: auto; /* Centrar modal */
 }
 
 @keyframes slideIn {
@@ -245,8 +246,8 @@
 }
 
 .modal-content25 h3 {
-  margin: 0 0 var(--spacing-md);
-  font-size: 1.5rem;
+  margin: 0 0 var(--spacing-sm); /* Reducido */
+  font-size: 1.3rem; /* Tamaño de fuente ligeramente reducido */
   color: var(--color-text-main);
   text-align: center;
 }
@@ -262,16 +263,17 @@
   margin-bottom: var(--spacing-xs);
   font-weight: 600;
   color: var(--color-text-main);
+  font-size: 0.9rem; /* Fuente más pequeña */
 }
 
 .text-input25 {
   width: 95%;
-  padding: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm); /* Padding reducido */
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-sm);
-  font-size: 1rem;
+  font-size: 0.9rem; /* Tamaño de fuente reducido */
   color: var(--color-text-main);
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-sm); /* Margen reducido */
   transition: border-color var(--transition-speed);
 }
 
@@ -284,13 +286,11 @@
 .password-input-container25 {
   position: relative;
   width: 100%;
-  margin-bottom: var(--spacing-md);
 }
 
 .password-toggle25 {
   position: absolute;
-  right: var(--spacing-sm);
-  top: 50%;
+  right: 6px;  /* Convertido de var(--spacing-sm) */  top: 50%;
   transform: translateY(-65%);
   cursor: pointer;
 }
@@ -301,6 +301,7 @@
   opacity: 0.7;
 }
 
+
 .password-icon25:hover {
   opacity: 1;
 }
@@ -308,18 +309,20 @@
 /* Botones del modal */
 .modal-buttons25 {
   display: flex;
-  justify-content: space-between;
-  margin-top: var(--spacing-md);
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
 }
 
 .submit-btn25, .cancel-btn25 {
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: var(--spacing-xs) var(--spacing-md); /* Padding reducido */
   border-radius: var(--border-radius-sm);
   font-weight: 600;
   cursor: pointer;
   transition: background-color var(--transition-speed);
-  flex: 1;
-  margin: 0 var(--spacing-xs);
+  font-size: 0.9rem; /* Fuente más pequeña */
+  width: 100%;
+  margin: var(--spacing-xs) 0;
 }
 
 .submit-btn25 {
@@ -341,6 +344,7 @@
 .cancel-btn25:hover {
   background-color: var(--color-medium-gray);
 }
+
 /* Toolbar y filtros */
 .toolbar25 {
   display: flex;
@@ -377,7 +381,48 @@
   border-color: var(--color-primary);
 }
 
-/* Para responsive en móviles */
+/* Estilos para el modal de confirmación de eliminación */
+.delete-confirmation-modal25 {
+  text-align: center;
+  max-width: 350px;
+}
+
+.delete-confirmation-modal25 h3 {
+  color: #AB0831;
+  margin-bottom: var(--spacing-md);
+}
+
+.delete-confirmation-modal25 p {
+  margin-bottom: var(--spacing-sm);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.warning-text25 {
+  color: #AB0831;
+  font-weight: 600;
+  margin-bottom: var(--spacing-lg);
+  font-size: 0.9rem;
+}
+
+.delete-confirm-btn25 {
+  background-color: #AB0831;
+  color: var(--color-white);
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--transition-speed);
+  width: 100%;
+  margin: var(--spacing-xs) 0;
+}
+
+.delete-confirm-btn25:hover {
+  background-color: #8A0628;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .toolbar25 {
     flex-direction: column;
@@ -388,71 +433,14 @@
     width: 100%;
     justify-content: space-between;
   }
-}
-/* Estilos para el modal de confirmación de eliminación */
-.delete-confirmation-modal25 {
-  text-align: center;
-}
 
-.delete-confirmation-modal25 h3 {
-  color: #AB0831;
-  margin-bottom: var(--spacing-md);
-}
-
-.delete-confirmation-modal25 p {
-  margin-bottom: var(--spacing-md);
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
-.warning-text25 {
-  color: #AB0831;
-  font-weight: 600;
-  margin-bottom: var(--spacing-lg);
-}
-
-.delete-confirm-btn25 {
-  background-color: #AB0831;
-  color: var(--color-white);
-  border: none;
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border-radius: var(--border-radius-sm);
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color var(--transition-speed);
-  flex: 1;
-  margin: 0 var(--spacing-xs);
-}
-
-.delete-confirm-btn25:hover {
-  background-color: #AB0831;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
   .kiosks-list25 {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   }
   
   .modal-content25 {
     width: 95%;
-    padding: var(--spacing-md);
-  }
-  
-  .modal-buttons25 {
-    flex-direction: column;
-  }
-  
-  .submit-btn25, .cancel-btn25, .delete-confirm-btn25 {
-    margin: var(--spacing-xs) 0;
-  }
-  
-  .submit-btn25, .delete-confirm-btn25 {
-    order: 1;
-  }
-  
-  .cancel-btn25 {
-    order: 2;
+    padding: var(--spacing-sm);
   }
 }
 
@@ -467,5 +455,30 @@
   
   .create-kiosk-btn25 {
     width: 100%;
+  }
+
+  .modal-content25 {
+    width: 95%;
+    max-width: 95%; /* Casi ancho completo en pantallas muy pequeñas */
+    margin: auto;
+    padding: var(--spacing-sm);
+  }
+
+  .modal-content25 h3 {
+    font-size: 1.2rem;
+  }
+
+  .text-input25 {
+    width: 100%; /* Inputs de ancho completo */
+    font-size: 0.85rem;
+  }
+
+  .modal-buttons25 {
+    gap: var(--spacing-xs);
+  }
+
+  .submit-btn25, .cancel-btn25, .delete-confirm-btn25 {
+    font-size: 0.85rem;
+    padding: var(--spacing-xs);
   }
 }

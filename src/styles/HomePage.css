@@ -38,8 +38,6 @@
   
   padding-top: 60px;
   
-  transition: transform 0.3s ease, width 0.3s ease;
-  
   transform: translateX(-250px);
   
   z-index: 1000;
@@ -49,8 +47,8 @@
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
   
   }
+
   
-    
   
   .slider-menu.open {
   
