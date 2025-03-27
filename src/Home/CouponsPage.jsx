@@ -172,7 +172,7 @@ const CouponsPage = () => {
       });
       setError("");
     } catch (err) {
-      setError(`Error al actualizar cupón: ${err.message}`);
+      setError(`Error al actualizar el cupón: ${err.message}`);
     }
   };
 
