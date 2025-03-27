@@ -17,6 +17,10 @@ const CategoriesPage = () => {
   const [loading, setLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState("default");
   const [nameError, setNameError] = useState("");
+  
+  // Nuevos estados para el diálogo de confirmación de eliminación
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
 
   const navigate = useNavigate();
   // URL base fija para garantizar que todas las solicitudes usen la URL correcta
@@ -147,15 +151,12 @@ const CategoriesPage = () => {
     }
     
     switch (sortOrder) {
-      case "first":
-        // Ordenar por fecha de creación (más antiguas primero)
-        return sortedCategories.sort((a, b) => {
-          // Asegurarse de que ambos elementos tengan createdAt y sean fechas válidas
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          return dateA - dateB;
-        });
-      case "last":
+      case "alphabetical":
+        // Ordenar alfabéticamente por nombre (case-insensitive)
+        return sortedCategories.sort((a, b) => 
+          a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+        );
+      case "newest":
         // Ordenar por fecha de creación (más recientes primero)
         return sortedCategories.sort((a, b) => {
           // Asegurarse de que ambos elementos tengan createdAt y sean fechas válidas
@@ -163,36 +164,57 @@ const CategoriesPage = () => {
           const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
           return dateB - dateA;
         });
-      case "alphabetical":
-        // Ordenar alfabéticamente por nombre (case-insensitive)
-        return sortedCategories.sort((a, b) => 
-          a.name.toLowerCase().localeCompare(b.name.toLowerCase())
-        );
+      case "oldest":
+        // Ordenar por fecha de creación (más antiguas primero)
+        return sortedCategories.sort((a, b) => {
+          // Asegurarse de que ambos elementos tengan createdAt y sean fechas válidas
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateA - dateB;
+        });
       default:
         // No hacer nada, mantener el orden original
         return sortedCategories;
     }
   };
 
-  /////////////////// ELIMINAR CATEGORÍA ///////////////////
-  const deleteCategory = async (categoryId) => {
-    try {
-      // Actualizado: Uso del endpoint correcto para eliminar una categoría
-      await fetchAPI(`/api/categories/myCategory/${categoryId}`, "DELETE");
+  /////////////////// FUNCIONES PARA ELIMINAR CATEGORÍA ///////////////////
+  // Función para mostrar la confirmación de eliminación
+  const confirmDeleteCategory = (category) => {
+    setCategoryToDelete(category);
+    setShowDeleteConfirmation(true);
+  };
 
-      // Actualizar el estado localmente después de eliminar
-      setCategories((prev) => prev.filter((c) => c._id !== categoryId));
-      setProducts((prev) => prev.filter((p) => p.category !== categoryId));
+  // Función para cancelar la eliminación
+  const cancelDelete = () => {
+    setCategoryToDelete(null);
+    setShowDeleteConfirmation(false);
+  };
+
+  // Función para manejar la eliminación después de confirmar
+  const handleDeleteCategory = async () => {
+    if (!categoryToDelete) return;
+    
+    try {
+      // Usar el endpoint para eliminar una categoría
+      await fetchAPI(`/api/categories/myCategory/${categoryToDelete._id}`, "DELETE");
+
+      // Actualizar el estado local después de eliminar
+      setCategories((prev) => prev.filter((c) => c._id !== categoryToDelete._id));
+      setProducts((prev) => prev.filter((p) => p.category !== categoryToDelete._id));
       
       // Si se ha borrado la categoría seleccionada, deseleccionar
-      if (selectedCategory === categoryId) {
+      if (selectedCategory === categoryToDelete._id) {
         setSelectedCategory(null);
       }
       
       setError("");
+      
+      // Cerrar el diálogo de confirmación
+      cancelDelete();
     } catch (err) {
-      setError(`Error eliminando categoría ID ${categoryId}: ${err.message}`);
-      console.error("Detalles completos:", err);
+      setError(`Error al eliminar la categoría: ${err.message}`);
+      cancelDelete();
     }
   };
 
@@ -303,35 +325,37 @@ const CategoriesPage = () => {
           <h2 className="page-title">Gestión de Categorías</h2>
           {error && <p className="error-message">{error}</p>}
 
-          {/* Botón para crear una nueva categoría */}
-          <button
-            onClick={() => {
-              setIsCreating(true);
-              setIsEditing(false);
-              setEditingCategoryId(null);
-              setName("");
-              setDescription("");
-              setError("");
-              setNameError("");
-            }}
-            className="create-category-btn"
-          >
-            Crear Nueva Categoría
-          </button>
-
-          {/* Selector para ordenar categorías */}
-          <div className="sort-filter">
-            <label>Ordenar por:</label>
-            <select 
-              value={sortOrder} 
-              onChange={(e) => setSortOrder(e.target.value)}
-              className="sort-select"
+          {/* Barra de herramientas con filtros */}
+          <div className="toolbar25">
+            {/* Botón para crear */}
+            <button
+              onClick={() => {
+                setIsCreating(true);
+                setIsEditing(false);
+                setEditingCategoryId(null);
+                setName("");
+                setDescription("");
+                setError("");
+                setNameError("");
+              }}
+              className="create-kiosk-btn25"
             >
-              <option value="default">Predeterminado</option>
-              <option value="first">Primera creada</option>
-              <option value="last">Última creada</option>
-              <option value="alphabetical">Orden alfabético</option>
-            </select>
+              Crear Nueva Categoría
+            </button>
+            
+            {/* Selector para ordenar categorías */}
+            <div className="sort-filter25">
+              <label>Ordenar por:</label>
+              <select 
+                value={sortOrder} 
+                onChange={(e) => setSortOrder(e.target.value)}
+              >
+                <option value="default">Predeterminado</option>
+                <option value="alphabetical">Orden alfabético</option>
+                <option value="newest">Más recientes primero</option>
+                <option value="oldest">Más antiguos primero</option>
+              </select>
+            </div>
           </div>
 
           {/* Modal para crear o editar categorías */}
@@ -387,7 +411,7 @@ const CategoriesPage = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation(); // Evitar que se seleccione la categoría
-                        deleteCategory(category._id);
+                        confirmDeleteCategory(category);
                       }}
                       title={`ID: ${category._id}`}
                     >
@@ -420,6 +444,32 @@ const CategoriesPage = () => {
               ) : (
                 <p>No hay productos en esta categoría</p>
               )}
+            </div>
+          )}
+          
+          {/* Modal de confirmación de eliminación */}
+          {showDeleteConfirmation && categoryToDelete && (
+            <div className="modal-overlay25">
+              <div className="modal-content25 delete-confirmation-modal25">
+                <h3>Confirmar Eliminación</h3>
+                <p>¿Está seguro que desea eliminar la categoría "{categoryToDelete.name}"?</p>
+                <p className="warning-text25">Esta acción no se puede deshacer.</p>
+                
+                <div className="modal-buttons25">
+                  <button 
+                    onClick={handleDeleteCategory} 
+                    className="delete-confirm-btn25"
+                  >
+                    Sí, Eliminar
+                  </button>
+                  <button
+                    onClick={cancelDelete}
+                    className="cancel-btn25"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </>

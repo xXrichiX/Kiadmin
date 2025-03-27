@@ -14,6 +14,7 @@ import RestaurantPage from "./Home/RestaurantPage";
 import Profile from "./Home/Profile";
 import OrdersPage from "./Home/OrdersPage";
 import Dashboard from "./Home/Dashboard";
+import CouponsPage from "./Home/CouponsPage";
 
 function App() {
   return (
@@ -21,78 +22,86 @@ function App() {
       <Routes>
         {/* Ruta por defecto - redirige a login en la primera ejecución */}
         <Route path="/" element={<Navigate to="/login" replace />} />
-        
+       
         {/* Rutas públicas */}
-        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-code" element={<VerifyCode />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        
+       
         {/* Rutas protegidas */}
-        <Route 
-          path="/home" 
+        <Route
+          path="/home"
           element={
             <ProtectedRoute>
               <HomePage />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/categories" 
+        <Route
+          path="/categories"
           element={
             <ProtectedRoute>
               <CategoriesPage />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/kiosks" 
+        <Route
+          path="/kiosks"
           element={
             <ProtectedRoute>
               <KiosksPage />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/products" 
+        <Route
+          path="/products"
           element={
             <ProtectedRoute>
               <ProductsPage />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/restaurant" 
+        <Route
+          path="/restaurant"
           element={
             <ProtectedRoute>
               <RestaurantPage />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/profile" 
+        <Route
+          path="/profile"
           element={
             <ProtectedRoute>
               <Profile />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/orders" 
+        <Route
+          path="/orders"
           element={
             <ProtectedRoute>
               <OrdersPage />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/dashboard" 
+        <Route
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <Dashboard />
             </ProtectedRoute>
-          } 
+          }
+        />
+        <Route
+          path="/coupons"
+          element={
+            <ProtectedRoute>
+              <CouponsPage />
+            </ProtectedRoute>
+          }
         />
       </Routes>
     </div>

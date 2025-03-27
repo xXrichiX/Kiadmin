@@ -18,6 +18,10 @@ const ProductsPage = () => {
   const [sortOrder, setSortOrder] = useState("default");
   const [currentTab, setCurrentTab] = useState("basic"); // Para la navegación por pestañas
   
+  // Estados para confirmar eliminación
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
+  
   // Datos del formulario de producto
   const [formData, setFormData] = useState({
     name: "",
@@ -227,21 +231,37 @@ const ProductsPage = () => {
     }
   };
 
+  /////////////////// MOSTRAR CONFIRMACIÓN DE ELIMINACIÓN ///////////////////
+  const confirmDeleteProduct = (product) => {
+    setProductToDelete(product);
+    setShowDeleteConfirmation(true);
+  };
+
+  /////////////////// CANCELAR ELIMINACIÓN ///////////////////
+  const cancelDelete = () => {
+    setProductToDelete(null);
+    setShowDeleteConfirmation(false);
+  };
+
   /////////////////// ELIMINAR PRODUCTO ///////////////////
-  const deleteProduct = async (productId) => {
-    if (!window.confirm('¿Estás seguro de eliminar este producto?')) return;
+  const handleDeleteProduct = async () => {
+    if (!productToDelete) return;
     
     try {
-      await fetchAPI(`/api/products/myProduct/${productId}`, "DELETE");
+      await fetchAPI(`/api/products/myProduct/${productToDelete._id}`, "DELETE");
       
       // Actualizar estado y mostrar mensaje
       setSuccessMessage("Producto eliminado correctamente");
-      setProducts(products.filter((p) => p._id !== productId));
+      setProducts(products.filter((p) => p._id !== productToDelete._id));
+      
+      // Cerrar el diálogo de confirmación
+      cancelDelete();
       
       // Limpiar mensaje después de un tiempo
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err) {
       setError(`Error al eliminar producto: ${err.message}`);
+      cancelDelete();
     }
   };
 
@@ -574,6 +594,32 @@ const ProductsPage = () => {
             </div>
           )}
 
+          {/* Modal de confirmación de eliminación */}
+          {showDeleteConfirmation && productToDelete && (
+            <div className="modal-overlay69">
+              <div className="modal-content69 delete-confirmation-modal69">
+                <h3>Confirmar Eliminación</h3>
+                <p>¿Está seguro que desea eliminar el producto "{productToDelete.name}"?</p>
+                <p className="warning-text69">Esta acción no se puede deshacer.</p>
+                
+                <div className="modal-buttons69">
+                  <button 
+                    onClick={handleDeleteProduct} 
+                    className="delete-confirm-btn69"
+                  >
+                    Sí, Eliminar
+                  </button>
+                  <button
+                    onClick={cancelDelete}
+                    className="cancel-btn69"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Grid de productos */}
           <div className="products-grid69">
             {sortedProducts.length > 0 ? (
@@ -620,7 +666,7 @@ const ProductsPage = () => {
                       <button onClick={() => editProduct(product)} className="edit-btn69">
                         Editar
                       </button>
-                      <button onClick={() => deleteProduct(product._id)} className="delete-btn69">
+                      <button onClick={() => confirmDeleteProduct(product)} className="delete-btn69">
                         Eliminar
                       </button>
                     </div>
