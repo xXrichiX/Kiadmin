@@ -156,9 +156,8 @@ const HomePage = () => {
           {activeSection === "products" && <ProductsPage />}
           {activeSection === "restaurant" && <RestaurantManagement />}
           {activeSection === "orders" && <OrdersPage />}
-          {activeSection === "coupons" && <CouponsPage />}
           {activeSection === "profile" && <Profile />}
-      
+          {activeSection === "coupons" && <CouponsPage />}      
         </div>
       </div>
     </div>
