@@ -393,23 +393,29 @@ const RestaurantManagement = () => {
       }
 
       const method = isEditing ? "PUT" : "POST";
-      const data = await fetchAPI("/api/restaurants/myRestaurant", method, requestBody);
+      const response = await fetchAPI("/api/restaurants/myRestaurant", method, requestBody);
       
+      // Check if the response includes a new token
+      if (response.token) {
+        // Update the token in cookies
+        Cookies.set("authToken", response.token, { expires: 7 }); // Set expiration as needed
+      }
+
       const simplifiedData = {
-        id: data._id,
-        name: data.name,
-        image: data.image,
-        country: data.location.country,
-        city: data.location.city,
-        street: data.location.address.street,
-        number: data.location.address.number,
-        crossStreets: data.location.address.crossStreets,
-        colony: data.location.address.colony,
-        references: data.location.address.references,
-        postalCode: data.location.postalCode,
-        phone: data.contact?.phone || "",
-        email: data.contact?.email || "",
-        website: data.contact?.website || ""
+        id: response.restaurant._id,
+        name: response.restaurant.name,
+        image: response.restaurant.image,
+        country: response.restaurant.location.country,
+        city: response.restaurant.location.city,
+        street: response.restaurant.location.address.street,
+        number: response.restaurant.location.address.number,
+        crossStreets: response.restaurant.location.address.crossStreets,
+        colony: response.restaurant.location.address.colony,
+        references: response.restaurant.location.address.references,
+        postalCode: response.restaurant.location.postalCode,
+        phone: response.restaurant.contact?.phone || "",
+        email: response.restaurant.contact?.email || "",
+        website: response.restaurant.contact?.website || ""
       };
       
       setRestaurant(simplifiedData);
@@ -695,22 +701,17 @@ const RestaurantManagement = () => {
 
               {/* Stripe Connect Button */}
               <div className="stripe-connect-container100">
-  {
-  <button 
-    onClick={handleStripeConnect}
-    className="stripe-connect-btn100"
-  >
-    Conectar con Stripe
-  </button>
-  }
+                <button 
+                  onClick={handleStripeConnect}
+                  className="stripe-connect-btn100"
+                >
+                  Conectar con Stripe
+                </button>
 
-  {
-  <p className="stripe-info100">
-    Conecta tu restaurante con Stripe para recibir pagos en línea.
-  </p>
-  }
-</div>
-
+                <p className="stripe-info100">
+                  Conecta tu restaurante con Stripe para recibir pagos en línea.
+                </p>
+              </div>
 
               <div className="restaurant-card100">
                 <div className="restaurant-image-container100">

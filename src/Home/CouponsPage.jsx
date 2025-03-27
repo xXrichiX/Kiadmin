@@ -60,7 +60,8 @@ const CouponsPage = () => {
   /////////////////// FETCH COUPONS ///////////////////
   const fetchAllCoupons = async () => {
     try {
-      const data = await fetchAPI("/api/coupons/myCoupons");
+      setLoading(true);
+      const data = await fetchAPI("/api/coupons/mineCoupons");
       if (data) {
         setCoupons(data);
       }
