@@ -3,6 +3,40 @@ import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import "../styles/RestaurantPage.css";
 
+// Lista de países y ciudades verificados (ejemplo)
+const VERIFIED_COUNTRIES = [
+  "México", 
+  "Estados Unidos", 
+  "Canadá", 
+  "España", 
+  "Argentina", 
+  "Colombia", 
+  "Chile"
+];
+
+const VERIFIED_CITIES = {
+  "México": [
+    "Ciudad de México", 
+    "Guadalajara", 
+    "Monterrey", 
+    "Puebla", 
+    "Querétaro", 
+    "Mérida", 
+    "Cancún", 
+    "Tijuana"
+  ],
+  "Estados Unidos": [
+    "Nueva York", 
+    "Los Ángeles", 
+    "Chicago", 
+    "Houston", 
+    "San Francisco", 
+    "Miami", 
+    "Boston"
+  ]
+  // Añadir más países y ciudades según sea necesario
+};
+
 const RestaurantManagement = () => {
   /////////////////// ESTADOS ///////////////////
   const [hasRestaurant, setHasRestaurant] = useState(false);
@@ -132,24 +166,47 @@ const RestaurantManagement = () => {
       crossStreets: 100,
       colony: 50,
       references: 200,
-      postalCode: 5,  // Modificado a 5 exactamente
-      phone: 10,      // Modificado a 10 exactamente
+      postalCode: 5,
+      phone: 10,
       email: 100,
-      website: 100
+      website: 100,
+      country: 50,
+      city: 50
     };
 
-    // Patrones de validación
+    // Patrones de validación mejorados
     const patterns = {
       name: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s&'".,-]{3,}$/,
-      postalCode: /^\d{5}$/,  // Exactamente 5 dígitos
-      phone: /^\d{10}$/,      // Exactamente 10 dígitos
+      postalCode: /^\d{5}$/,
+      phone: /^\d{10}$/,
       email: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      website: /^(https?:\/\/)?(www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/[^\s]*)?$/
+      website: /^(https?:\/\/)?(www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/[^\s]*)?$/,
+      country: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{2,}$/,
+      city: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{2,}$/
+    };
+
+    // Patrones para limitar palabras
+    const wordLimits = {
+      name: 5,        // Máximo 5 palabras
+      street: 6,      // Máximo 6 palabras
+      crossStreets: 6,// Máximo 6 palabras
+      colony: 4,      // Máximo 4 palabras
+      references: 15, // Máximo 15 palabras
+      country: 3,     // Máximo 3 palabras
+      city: 3         // Máximo 3 palabras
     };
 
     // Validar longitud máxima
     if (maxLengths[name] && value.length > maxLengths[name]) {
       return `El campo no puede tener más de ${maxLengths[name]} caracteres`;
+    }
+
+    // Validar límite de palabras para campos de texto
+    if (wordLimits[name]) {
+      const words = value.trim().split(/\s+/);
+      if (words.length > wordLimits[name]) {
+        return `Este campo no puede tener más de ${wordLimits[name]} palabras`;
+      }
     }
 
     // Validaciones específicas por campo
@@ -177,6 +234,27 @@ const RestaurantManagement = () => {
       case 'website':
         if (value && !patterns.website.test(value)) {
           return "La URL del sitio web debe tener un formato válido";
+        }
+        break;
+      case 'country':
+        if (!patterns.country.test(value)) {
+          return "El país debe contener solo letras y espacios";
+        }
+        // Validar país verificado
+        if (!VERIFIED_COUNTRIES.includes(value)) {
+          return "Por favor, selecciona un país de la lista de países verificados";
+        }
+        break;
+      case 'city':
+        if (!patterns.city.test(value)) {
+          return "La ciudad debe contener solo letras y espacios";
+        }
+        // Validar ciudad verificada para el país seleccionado
+        const currentCountry = formData.country;
+        if (currentCountry && VERIFIED_CITIES[currentCountry]) {
+          if (!VERIFIED_CITIES[currentCountry].includes(value)) {
+            return `Por favor, selecciona una ciudad verificada para ${currentCountry}`;
+          }
         }
         break;
     }
@@ -510,26 +588,35 @@ const RestaurantManagement = () => {
             <div className="form-grid100">
               <div className="form-group100">
                 <label>País:</label>
-                <input
-                  type="text"
+                <select
                   name="country"
-                  placeholder="País"
                   value={formData.country}
                   onChange={handleInputChange}
                   required
-                />
+                >
+                  <option value="">Selecciona un país</option>
+                  {VERIFIED_COUNTRIES.map(country => (
+                    <option key={country} value={country}>{country}</option>
+                  ))}
+                </select>
               </div>
               
               <div className="form-group100">
                 <label>Ciudad:</label>
-                <input
-                  type="text"
+                <select
                   name="city"
-                  placeholder="Ciudad"
                   value={formData.city}
                   onChange={handleInputChange}
                   required
-                />
+                  disabled={!formData.country}
+                >
+                  <option value="">Selecciona una ciudad</option>
+                  {formData.country && VERIFIED_CITIES[formData.country] && 
+                    VERIFIED_CITIES[formData.country].map(city => (
+                      <option key={city} value={city}>{city}</option>
+                    ))
+                  }
+                </select>
               </div>
               
               <div className="form-group100">
@@ -602,16 +689,17 @@ const RestaurantManagement = () => {
               </div>
               
               <div className="form-group100 full-width100">
-                <label>Referencias:</label>
-                <textarea
-                  name="references"
-                  placeholder="Referencias del lugar"
-                  value={formData.references}
-                  onChange={handleInputChange}
-                  required
-                  rows="3"
-                ></textarea>
-              </div>
+  <label>Referencias:</label>
+  <input
+    type="text"
+    name="references"
+    placeholder="Referencias del lugar"
+    value={formData.references}
+    onChange={handleInputChange}
+    required
+  />
+</div>
+
             </div>
           </div>
         );
@@ -689,14 +777,6 @@ const RestaurantManagement = () => {
                 >
                   Editar Restaurante
                 </button>
-                {/* Botón de eliminar comentado como en el original
-                <button
-                  onClick={deleteRestaurant}
-                  className="delete-restaurant-btn100"
-                >
-                  Eliminar Restaurante
-                </button>
-                */}
               </div>
 
               {/* Stripe Connect Button */}
@@ -731,8 +811,8 @@ const RestaurantManagement = () => {
                     <h4>Dirección</h4>
                     <p>{restaurant.street} {restaurant.number}, {restaurant.colony}</p>
                     <p>Entre: {restaurant.crossStreets}</p>
-                    <p><strong>Referencias:</strong> {restaurant.references}</p>
-                  </div>
+                    <p>Referencias: {restaurant.references}</p>
+                    </div>
                   
                   {(restaurant.phone || restaurant.email || restaurant.website) && (
                     <div className="detail-section100">

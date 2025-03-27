@@ -99,6 +99,15 @@
   margin-bottom: 20px;
 }
 
+.input-group09 {
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.password-input-wrapper09 {
+  position: relative;
+}
+
 .password-toggle09 {
   position: absolute;
   right: 10px;
@@ -122,6 +131,10 @@
 
 .password-icon09:hover {
   opacity: 1;
+}
+
+.input-error09 {
+  border-color: red;
 }
 
 .button-container09 {
