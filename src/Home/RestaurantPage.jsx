@@ -473,27 +473,22 @@ const RestaurantManagement = () => {
       const method = isEditing ? "PUT" : "POST";
       const response = await fetchAPI("/api/restaurants/myRestaurant", method, requestBody);
       
-      // Check if the response includes a new token
-      if (response.token) {
-        // Update the token in cookies
-        Cookies.set("authToken", response.token, { expires: 7 }); // Set expiration as needed
-      }
-
+      // Ahora usa directamente 'response' ya que el objeto restaurante está en la raíz
       const simplifiedData = {
-        id: response.restaurant._id,
-        name: response.restaurant.name,
-        image: response.restaurant.image,
-        country: response.restaurant.location.country,
-        city: response.restaurant.location.city,
-        street: response.restaurant.location.address.street,
-        number: response.restaurant.location.address.number,
-        crossStreets: response.restaurant.location.address.crossStreets,
-        colony: response.restaurant.location.address.colony,
-        references: response.restaurant.location.address.references,
-        postalCode: response.restaurant.location.postalCode,
-        phone: response.restaurant.contact?.phone || "",
-        email: response.restaurant.contact?.email || "",
-        website: response.restaurant.contact?.website || ""
+        id: response._id,
+        name: response.name,
+        image: response.image,
+        country: response.location.country,
+        city: response.location.city,
+        street: response.location.address.street,
+        number: response.location.address.number,
+        crossStreets: response.location.address.crossStreets,
+        colony: response.location.address.colony,
+        references: response.location.address.references,
+        postalCode: response.location.postalCode,
+        phone: response.contact?.phone || "",
+        email: response.contact?.email || "",
+        website: response.contact?.website || ""
       };
       
       setRestaurant(simplifiedData);

@@ -650,6 +650,16 @@ function OrdersPage() {
                             </div>
                           )}
                           
+                          {/* Nueva sección para mostrar el nombre del cliente */}
+                          {order.customerName && (
+                            <div className="details-section">
+                              <h4>Cliente</h4>
+                              <div className="customer-name">
+                                <p><strong>Nombre:</strong> {order.customerName}</p>
+                              </div>
+                            </div>
+                          )}
+                          
                           {(order.kioskId || order.createdById) && (
                             <div className="details-section">
                               <h4>Información del Kiosko</h4>

@@ -6,6 +6,7 @@ import "../styles/CouponsPage.css";
 const CouponsPage = () => {
   /////////////////// STATE MANAGEMENT ///////////////////
   const [coupons, setCoupons] = useState([]);
+  const [filteredCoupons, setFilteredCoupons] = useState([]);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingCouponId, setEditingCouponId] = useState(null);
@@ -20,9 +21,37 @@ const CouponsPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState("");
+  // Estado para los filtros
+  const [filters, setFilters] = useState({
+    status: "valid", // Por defecto mostrar activos
+    type: "",
+    searchTerm: ""
+  });
+  // Estadísticas de cupones
+  const [couponStats, setCouponStats] = useState({
+    total: 0,
+    valid: 0,
+    expired: 0,
+    consumed: 0,
+    disabled: 0
+  });
 
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
+
+  // Estados de cupones
+  const couponStatuses = {
+    "valid": "Válido",
+    "expired": "Expirado",
+    "consumed": "Consumido",
+    "disabled": "Deshabilitado"
+  };
+
+  // Tipos de cupones
+  const couponTypes = {
+    "percentage": "Porcentaje",
+    "fixed": "Monto Fijo"
+  };
 
   /////////////////// AUTHENTICATION AND API FETCH HELPER ///////////////////
   const fetchAPI = async (endpoint, method = "GET", body = null) => {
@@ -64,7 +93,26 @@ const CouponsPage = () => {
       setLoading(true);
       const data = await fetchAPI("/api/coupons/mineCoupons");
       if (data) {
-        setCoupons(data);
+        // Procesar estado del cupón basado en la fecha de validez
+        const processedCoupons = data.map(coupon => {
+          let status = coupon.status || 'valid';
+          const now = new Date();
+          const validityDate = new Date(coupon.validity);
+          
+          // Solo actualizamos el estado a expirado si está válido pero la fecha ya pasó
+          if (status === 'valid' && validityDate < now) {
+            status = "expired";
+          }
+          
+          return {
+            ...coupon,
+            status
+          };
+        });
+        
+        setCoupons(processedCoupons);
+        applyFilters(processedCoupons);
+        calculateCouponStats(processedCoupons);
       }
       setLoading(false);
     } catch (err) {
@@ -76,6 +124,69 @@ const CouponsPage = () => {
   useEffect(() => {
     fetchAllCoupons();
   }, []);
+
+  // Aplicar filtros a los cupones
+  const applyFilters = (couponList) => {
+    let result = [...couponList];
+    
+    // Filtrar por estado
+    if (filters.status) {
+      result = result.filter(coupon => coupon.status === filters.status);
+    }
+    
+    // Filtrar por tipo
+    if (filters.type) {
+      result = result.filter(coupon => coupon.type === filters.type);
+    }
+    
+    // Filtrar por término de búsqueda (código o descripción)
+    if (filters.searchTerm) {
+      const searchLower = filters.searchTerm.toLowerCase();
+      result = result.filter(coupon => 
+        coupon.code.toLowerCase().includes(searchLower) ||
+        (coupon.description && coupon.description.toLowerCase().includes(searchLower))
+      );
+    }
+    
+    setFilteredCoupons(result);
+  };
+
+  // Calcular estadísticas de cupones
+  const calculateCouponStats = (couponList) => {
+    const stats = {
+      total: couponList.length,
+      valid: couponList.filter(coupon => coupon.status === "valid").length,
+      expired: couponList.filter(coupon => coupon.status === "expired").length,
+      consumed: couponList.filter(coupon => coupon.status === "consumed").length,
+      disabled: couponList.filter(coupon => coupon.status === "disabled").length
+    };
+    setCouponStats(stats);
+  };
+
+  // Actualizar filtros cuando cambian
+  useEffect(() => {
+    if (coupons.length > 0) {
+      applyFilters(coupons);
+    }
+  }, [filters, coupons]);
+
+  // Manejar cambios en filtros
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Resetear filtros
+  const resetFilters = () => {
+    setFilters({
+      status: "valid",
+      type: "",
+      searchTerm: ""
+    });
+  };
 
   /////////////////// VALIDATION ///////////////////
   const validateCoupon = () => {
@@ -230,6 +341,88 @@ const CouponsPage = () => {
           {error && <p className="error-message">{error}</p>}
           {successMessage && <p className="success-message">{successMessage}</p>}
 
+          {/* Resumen de estadísticas */}
+          <div className="stats-container">
+            <div className="stat-card">
+              <h3>Cupones Totales</h3>
+              <p>{couponStats.total}</p>
+            </div>
+            <div className="stat-card valid">
+              <h3>Válidos</h3>
+              <p>{couponStats.valid}</p>
+            </div>
+            <div className="stat-card expired">
+              <h3>Expirados</h3>
+              <p>{couponStats.expired}</p>
+            </div>
+            <div className="stat-card consumed">
+              <h3>Consumidos</h3>
+              <p>{couponStats.consumed}</p>
+            </div>
+            <div className="stat-card disabled">
+              <h3>Deshabilitados</h3>
+              <p>{couponStats.disabled}</p>
+            </div>
+          </div>
+
+          {/* Panel de filtros */}
+          <div className="filters-panel">
+            <h3>Filtros</h3>
+            <div className="filters-grid">
+              <div className="filter-group">
+                <label htmlFor="status">Estado:</label>
+                <select
+                  id="status"
+                  name="status"
+                  value={filters.status}
+                  onChange={handleFilterChange}
+                >
+                  <option value="">Todos</option>
+                  {Object.keys(couponStatuses).map(status => (
+                    <option key={status} value={status}>
+                      {couponStatuses[status]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="filter-group">
+                <label htmlFor="type">Tipo de Cupón:</label>
+                <select
+                  id="type"
+                  name="type"
+                  value={filters.type}
+                  onChange={handleFilterChange}
+                >
+                  <option value="">Todos</option>
+                  {Object.keys(couponTypes).map(type => (
+                    <option key={type} value={type}>
+                      {couponTypes[type]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="filter-group">
+                <label htmlFor="searchTerm">Buscar:</label>
+                <input
+                  type="text"
+                  id="searchTerm"
+                  name="searchTerm"
+                  placeholder="Código o descripción..."
+                  value={filters.searchTerm}
+                  onChange={handleFilterChange}
+                />
+              </div>
+            </div>
+            
+            <div className="filter-actions">
+              <button onClick={resetFilters} className="reset-btn">
+                Limpiar Filtros
+              </button>
+            </div>
+          </div>
+
           <div className="toolbar">
             <button 
               onClick={() => {
@@ -351,14 +544,18 @@ const CouponsPage = () => {
           )}
 
           {/* Coupons List */}
+          <div className="results-info">
+            <p>Mostrando {filteredCoupons.length} de {coupons.length} cupones</p>
+          </div>
+
           <div className="coupons-grid">
-            {coupons.length === 0 ? (
+            {filteredCoupons.length === 0 ? (
               <div className="no-coupons-message">
-                No hay cupones creados aún
+                No hay cupones que coincidan con los filtros seleccionados
               </div>
             ) : (
-              coupons.map((coupon) => (
-                <div key={coupon._id} className="coupon-card">
+              filteredCoupons.map((coupon) => (
+                <div key={coupon._id} className={`coupon-card ${coupon.status}`}>
                   <div className="coupon-details">
                     <div className="coupon-code">
                       <strong>Código:</strong> {coupon.code}
@@ -371,7 +568,9 @@ const CouponsPage = () => {
                     </div>
                     
                     <div className="coupon-info">
-                      <span className="status-badge active">Activo</span>
+                      <span className={`status-badge ${coupon.status}`}>
+                        {couponStatuses[coupon.status] || coupon.status}
+                      </span>
                       <span className="coupon-type">
                         {coupon.type === 'percentage' ? 'Porcentaje' : 'Monto Fijo'}
                       </span>
@@ -389,6 +588,7 @@ const CouponsPage = () => {
                       <button 
                         onClick={() => editCoupon(coupon)}
                         className="edit-btn"
+                        disabled={coupon.status !== 'valid'}
                       >
                         ✏️ Editar
                       </button>
